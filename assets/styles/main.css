@@ -1,2 +1,8 @@
-@import "tailwindcss/preflight";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
+
+.input {
+  @apply w-full px-4 py-2 border rounded-md;
+}
+.btn {
+  @apply bg-blue-600 text-white font-semibold px-4 py-2 rounded-md hover:bg-blue-700;
+}
