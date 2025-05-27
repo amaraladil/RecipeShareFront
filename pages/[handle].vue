@@ -4,7 +4,7 @@ import { useRecipes } from '@/composables/useRecipes'
 const route = useRoute()
 const handle = route.params.handle.toString().replace(/^@/, '')
 
-const { data: profile } = await useFetch(`/api/users/handle/${handle}`)
+// const { data: profile } = await useFetch(`/api/users/handle/${handle}`)
 
 const {
   posts,
@@ -16,7 +16,9 @@ const {
   isLoading
 } = useRecipes(handle)
 
-await fetchPosts()
+onMounted(async () => {
+  await fetchPosts()
+})
 
 const activeTab = ref('posts')
 

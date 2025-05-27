@@ -1,12 +1,18 @@
 export function useApi<T = any>() {
   const config = useRuntimeConfig();
-  const token = useCookie("sb-access-token");
+  const { $supabase } = useNuxtApp();
+
+  console.log("useApi initialized with base URL:", config.public.apiBase);
 
   return async (url: string, options: any = {}): Promise<T> => {
+    console.log("Fetching API:", url, "with options:", options);
+    const token = (await $supabase.auth.getSession()).data?.session
+      ?.access_token;
+    console.log("Current token value:", token);
     return await $fetch(url, {
       baseURL: config.public.apiBase,
       headers: {
-        Authorization: token.value ? `Bearer ${token.value}` : "",
+        Authorization: token ? `Bearer ${token}` : "",
         ...options.headers,
       },
       ...options,

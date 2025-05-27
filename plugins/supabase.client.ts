@@ -7,9 +7,9 @@ export default defineNuxtPlugin(() => {
     config.public.supabaseKey,
     {
       auth: {
-        persistSession: true, // Persist session across page reloads
-        autoRefreshToken: true, // Automatically refresh the token
-        detectSessionInUrl: false, // Disable session detection in URL
+        // persistSession: true, // Persist session across page reloads
+        // autoRefreshToken: true, // Automatically refresh the token
+        // detectSessionInUrl: false, // Disable session detection in URL
       },
     }
   );

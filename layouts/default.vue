@@ -38,13 +38,18 @@ import { useSupabaseUser } from '~/composables/useSupabaseUser'
 
 const { user, fetchUser } = useSupabaseUser()
 const { $supabase } = useNuxtApp()
+// console.log('Supabase Client on defaultvue: ', $supabase)
 
 const userLoading = ref(true)
 const authVisible = ref(false)
 
 onMounted(async () => {
   // Wait for Supabase to load session
-  fetchUser()
+  await fetchUser()
+  // if (user){
+  //   console.log('Fetch User:', user)
+  // }
+  // console.log('Supabase Client default mounted: ', (await $supabase.auth.getSession()).data.session?.access_token)
   userLoading.value = false
 })
 

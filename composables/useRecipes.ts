@@ -1,6 +1,7 @@
 import { useApi } from "./useApi";
 
 export function useRecipes(handle: string) {
+  console.log("useRecipes initialized with handle:", handle);
   const fetchApi = useApi();
 
   const posts = ref([]);
@@ -11,7 +12,9 @@ export function useRecipes(handle: string) {
 
   const fetchPosts = async () => {
     isLoading.value = true;
-    posts.value = await fetchApi(`/recipes/by/${handle}`);
+    console.log("Fetching posts for handle:", handle);
+    posts.value = await fetchApi(`/recipes/`);
+    console.log("Fetched posts:", posts.value);
     isLoading.value = false;
   };
 

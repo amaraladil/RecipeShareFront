@@ -8,6 +8,8 @@ export default defineNuxtConfig({
     public: {
       supabaseUrl: process.env.SUPABASE_URL,
       supabaseKey: process.env.SUPABASE_ANON_KEY,
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || "http://localhost:3000/api",
+      supabaseCookieName: process.env.COOKIE_SUPABASE_NAME,
     },
   },
   css: ["@/assets/styles/main.css"],
