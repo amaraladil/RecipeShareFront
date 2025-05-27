@@ -32,18 +32,19 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import AuthModal from '../components/AuthModal.vue'
-
-const { $supabase } = useNuxtApp()
 import { useSupabaseUser } from '~/composables/useSupabaseUser'
 
-const user = useSupabaseUser($supabase)
+const { user, fetchUser } = useSupabaseUser()
+const { $supabase } = useNuxtApp()
+
 const userLoading = ref(true)
 const authVisible = ref(false)
 
 onMounted(async () => {
   // Wait for Supabase to load session
-  await $supabase.auth.getSession()
+  fetchUser()
   userLoading.value = false
 })
 
@@ -55,5 +56,7 @@ const openLogin = () => {
 const logout = async () => {
   await $supabase.auth.signOut()
   authVisible.value = false
+  user.value = null
+  location.reload() // Reload to update user state
 }
 </script>

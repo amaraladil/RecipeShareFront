@@ -1,15 +1,25 @@
-import { ref, onMounted } from "vue";
+import type { User } from "@supabase/supabase-js";
 
-export const user = ref(null);
+export const useSupabaseUser = () => {
+  const user = useState<User | null>("user", () => null);
+  const supabase = useNuxtApp().$supabase;
 
-export function useSupabaseUser($supabase: any) {
-  onMounted(async () => {
-    const { data } = await $supabase.auth.getUser();
-    user.value = data.user;
-    // Listen for auth changes
-    $supabase.auth.onAuthStateChange((_event: any, session: any) => {
+  // Load user session from Supabase
+  const fetchUser = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (data?.user) {
+      user.value = data.user;
+    } else {
+      user.value = null;
+    }
+  };
+
+  // Subscribe to auth state changes
+  if (process.client) {
+    supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null;
     });
-  });
-  return user;
-}
+  }
+
+  return { user, fetchUser };
+};
