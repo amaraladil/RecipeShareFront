@@ -2,7 +2,12 @@
 import { pageTitle } from '~/utils/meta'
 console.log('Index Page Loaded')
 const fetchApi = useApi()
-const recipes = ref([])
+interface Recipe {
+  id: number
+  // add other properties as needed, e.g. title: string
+}
+
+const recipes = ref<Recipe[]>([])
 
 onMounted(async () => {
   recipes.value = await fetchApi('/recipes/')
