@@ -1,14 +1,13 @@
 <script setup lang="ts">
+import { useUserProfile } from '~/composables/useUserProfile'
 import { useRecipes } from '@/composables/useRecipes'
 import { pageTitle } from '~/utils/meta'
-const config = useRuntimeConfig();
 
+const config = useRuntimeConfig()
 const route = useRoute()
 const handle = route.params.handle.toString().replace(/^@/, '')
 
-const profile = ref<any>(null)
-const profileLoading = ref(true)
-
+const { profile, loading: profileLoading, error, fetchUserProfile } = useUserProfile()
 const {
   posts,
   liked,
@@ -19,19 +18,12 @@ const {
   isLoading
 } = useRecipes(handle)
 
-onMounted(async () => {
-  await fetchPosts()
-  try {
-    const { data } = await useFetch(`/users/handle/${handle}`)
-    profile.value = data.value
-  } catch (e) {
-    profile.value = null
-  } finally {
-    profileLoading.value = false
-  }
-})
-
 const activeTab = ref('posts')
+
+onMounted(async () => {
+  await fetchUserProfile(handle)
+  await fetchPosts()
+})
 
 watch(activeTab, async (tab) => {
   if (tab === 'liked') await fetchLiked()
@@ -53,24 +45,23 @@ useSeoMeta({
 </script>
 
 <template>
-  <div>
+  <div class="container mx-auto p-6">
     <div v-if="profileLoading" class="mb-4">Loading profile...</div>
     <div v-else-if="profile">
       <!-- Profile Info -->
       <div class="flex items-center gap-4 mb-6">
         <img
-          v-if="profile.avatar_url"
-          :src="profile.avatar_url"
+          :src="profile.avatarUrl"
           alt="Profile picture"
           class="w-20 h-20 rounded-full object-cover border"
         />
         <div>
-          <div class="text-2xl font-bold">@{{ profile.username }}</div>
-          <div class="text-lg text-gray-700">{{ profile.nickname }}</div>
+          <div class="text-2xl font-bold">@{{ profile.displayName }}</div>
+          <div class="text-lg text-gray-700">{{ profile.nickName }}</div>
           <div class="text-gray-500">{{ profile.bio }}</div>
         </div>
       </div>
-      <!-- Tabs and recipes as before -->
+      <!-- Tabs -->
       <div class="tabs flex gap-2 mb-4">
         <button
           @click="activeTab = 'posts'"
@@ -93,12 +84,16 @@ useSeoMeta({
       </div>
       <div v-if="isLoading">Loading...</div>
       <div v-else>
-        <RecipeCard v-for="recipe in activeTab === 'posts' ? posts : activeTab === 'liked' ? liked : saved" :key="recipe._id" :recipe="recipe" />
+        <RecipeCard
+          v-for="recipe in activeTab === 'posts' ? posts : activeTab === 'liked' ? liked : saved"
+          :key="recipe._id"
+          :recipe="recipe"
+        />
       </div>
     </div>
     <div
       v-else
-      class="flex flex-col items-center justify-center min-h-[40vh] mb-4 text-xl font-bold"
+      class="flex flex-col items-center justify-center min-h-[40vh] mb-4 text-xl font-bold text-red-500"
     >
       Couldn't find this account.
     </div>
