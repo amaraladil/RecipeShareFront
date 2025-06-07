@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useUserProfile } from '~/composables/useUserProfile'
 import { useRecipes } from '@/composables/useRecipes'
 import { pageTitle } from '~/utils/meta'
 
@@ -7,7 +6,22 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const handle = route.params.handle.toString().replace(/^@/, '')
 
-const { profile, loading: profileLoading, error, fetchUserProfile } = useUserProfile()
+// Use baseURL for SSR and client
+interface Profile {
+  avatarUrl: string
+  displayName: string
+  nickName: string
+  bio: string
+  // add other properties as needed
+}
+
+const { data: profile, pending: profileLoading, error } = await useFetch<Profile>(`/users/${handle}`, {
+  baseURL: config.public.apiBase || 'http://localhost:8000',
+  key: `profile-${handle}`,
+})
+
+
+
 const {
   posts,
   liked,
@@ -21,7 +35,6 @@ const {
 const activeTab = ref('posts')
 
 onMounted(async () => {
-  await fetchUserProfile(handle)
   await fetchPosts()
 })
 
@@ -45,7 +58,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="container mx-auto p-6">
+  <div class="container ml-4 p-6">
     <div v-if="profileLoading" class="mb-4">Loading profile...</div>
     <div v-else-if="profile">
       <!-- Profile Info -->
@@ -93,7 +106,7 @@ useSeoMeta({
     </div>
     <div
       v-else
-      class="flex flex-col items-center justify-center min-h-[40vh] mb-4 text-xl font-bold text-red-500"
+      class="flex flex-col items-center justify-center min-h-[40vh] mb-4 text-xl font-bold"
     >
       Couldn't find this account.
     </div>
