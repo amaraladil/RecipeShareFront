@@ -15,7 +15,7 @@
           <button
             v-else
             @click="logout"
-            class="text-red-600"
+            class="rounded-2xl bg-red-600 px-4 py-2 font-bold leading-none text-white"
           >Logout</button>
         </template>
       </nav>
