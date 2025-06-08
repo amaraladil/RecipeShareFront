@@ -20,5 +20,7 @@ export function useUserProfile() {
     }
   };
 
-  return { profile, loading, error, fetchUserProfile };
+  const updateUserProfile = async (handle: string) => {};
+
+  return { profile, loading, error, fetchUserProfile, updateUserProfile };
 }

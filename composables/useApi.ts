@@ -8,7 +8,7 @@ export function useApi<T = any>() {
     console.log("Fetching API:", url, "with options:", options);
     const token = (await $supabase.auth.getSession()).data?.session
       ?.access_token;
-    console.log("Current token value:", token);
+    console.log("useAPI Current token value:", token);
     return await $fetch(url, {
       baseURL: config.public.apiBase,
       headers: {

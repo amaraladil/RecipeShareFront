@@ -1,7 +1,7 @@
 import { useApi } from "./useApi";
 
 export function useRecipes(handle: string) {
-  console.log("useRecipes initialized with handle:", handle);
+  console.log("useRecipes initialized with handle num:", handle);
   const fetchApi = useApi();
 
   const posts = ref([]);

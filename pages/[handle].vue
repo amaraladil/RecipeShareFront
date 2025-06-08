@@ -2,16 +2,28 @@
 import { useRecipes } from '@/composables/useRecipes'
 import { pageTitle } from '~/utils/meta'
 import { useSupabaseUser } from '~/composables/useSupabaseUser'
+import EditProfileModal from '~/components/EditProfileModal.vue'
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const handle = route.params.handle.toString().replace(/^@/, '')
+const { user } = useSupabaseUser()
+
+
+const showModal = ref(false)
+const openModal = () => showModal.value = true
+const closeModal = () => showModal.value = false
+
+const refreshProfile = async () => {
+  // Refetch profile info from backend
+}
 
 // Use baseURL for SSR and client
 interface Profile {
-  avatarUrl: string
-  displayName: string
-  nickName: string
+  id: string
+  avatar_url: string
+  display_name: string
+  nick_name: string
   bio: string
   // add other properties as needed
 }
@@ -21,7 +33,7 @@ const { data: profile, pending: profileLoading, error } = await useFetch<Profile
   key: `profile-${handle}`,
 })
 
-const { user } = useSupabaseUser()
+
 
 const isOwnProfile = computed(() => {
   // Compare by id, handle, or email as appropriate for your app
@@ -71,7 +83,7 @@ useSeoMeta({
       <!-- Profile Info -->
       <div class="flex items-center gap-4 mb-6">
         <img
-          :src="profile.avatarUrl"
+          :src="profile.avatar_url"
           alt="Profile picture"
           class="w-20 h-20 rounded-full object-cover border"
         />
@@ -79,8 +91,9 @@ useSeoMeta({
           <div v-if="isOwnProfile">
             <span class="text-green-600 font-semibold">(This is your profile)</span>
           </div>
-          <div class="text-2xl font-bold">@{{ profile.displayName }}</div>
-          <div class="text-lg text-gray-700">{{ profile.nickName }}</div>
+          <button v-if="isOwnProfile" class="btn" @click="openModal">Edit Profile</button>
+          <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
+          <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
           <div class="text-gray-500">{{ profile.bio }}</div>
         </div>
       </div>
@@ -121,4 +134,11 @@ useSeoMeta({
       Couldn't find this account.
     </div>
   </div>
+  <EditProfileModal
+      v-if="isOwnProfile && profile"
+      :show="showModal"
+      :user="profile"
+      @close="closeModal"
+      @updated="refreshProfile"
+    />
 </template>
