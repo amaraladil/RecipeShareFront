@@ -8,6 +8,8 @@
 
       <h2 class="text-xl font-semibold mb-4">Edit Profile</h2>
 
+      <div v-if="errorMessage" class="text-red-500 text-sm" > {{errorMessage}} </div>
+
       <form @submit.prevent="save">
         <div class="mb-4">
           <label class="block mb-1">Username</label>
@@ -16,7 +18,7 @@
 
         <div class="mb-4">
           <label class="block mb-1">Name</label>
-          <input v-model="form.nickname" class="input" />
+          <input v-model="form.nick_name" class="input" />
           <p class="text-xs text-gray-400">Can only be changed every 7 days</p>
         </div>
 
@@ -53,41 +55,66 @@ const close = () => emits('close')
 
 const form = reactive({
   display_name: '',
-  nickname: '',
+  nick_name: '',
   bio: '',
   avatar_url: ''
 })
 
 const api = useApi()
 
+const errorMessage = ref('')
+
 watch(() => props.user, (val) => {
     console.info(val)
   if (val) {
     Object.assign(form, {
       display_name: val.display_name,
-      nickname: val.nick_name || '',
+      nick_name: val.nick_name || '',
       bio: val.bio || '',
       avatar_url: val.avatar_url || ''
     })
   }
 }, { immediate: true })
 
+const original = ref({ ...props.user })
+
 const save = async () => {
-  try {
-    await api(`/users/${props.user?.id}`, {
-      method: 'PATCH',
-      body: {
-        nickname: form.nickname,
-        bio: form.bio,
-        avatar_url: form.avatar_url
-      }
-    })
-    emits('updated')
-    close()
-  } catch (err) {
-    console.error('Failed to update profile', err)
-  }
+    type FormField = 'display_name' | 'nick_name' | 'bio' | 'avatar_url'
+    const getUpdatedFields = () => {
+        const updated: Record<string, any> = {}
+        
+        ;(Object.keys(form) as FormField[]).forEach((key) => {
+            if (form[key] !== original.value[key] && form[key] != null && form[key] !== "") {
+                updated[key] = form[key]
+            } 
+        })
+
+        return updated
+    }
+
+    const updatedFields = getUpdatedFields()
+
+    if (Object.keys(updatedFields).length === 0) {
+        errorMessage.value = "No value has changed"
+        console.log("Nothing changed")
+        return
+    }
+
+    try {
+        await api(`/users/${props.user?.id}`, {
+        method: 'PATCH',
+        body: updatedFields
+        })
+        emits('updated')
+        close()
+    } catch (err) {
+        console.error('Failed to update profile', err)
+    }
+    
+
 }
+
+
 </script>
 
 <style scoped>
