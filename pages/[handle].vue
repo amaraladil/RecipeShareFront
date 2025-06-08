@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRecipes } from '@/composables/useRecipes'
 import { pageTitle } from '~/utils/meta'
+import { useSupabaseUser } from '~/composables/useSupabaseUser'
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -20,7 +21,13 @@ const { data: profile, pending: profileLoading, error } = await useFetch<Profile
   key: `profile-${handle}`,
 })
 
+const { user } = useSupabaseUser()
 
+const isOwnProfile = computed(() => {
+  // Compare by id, handle, or email as appropriate for your app
+  return user.value && profile.value && user.value.id === profile.value.id
+  // Or, if using handle: return user.value && profile.value && user.value.handle === profile.value.handle
+})
 
 const {
   posts,
@@ -69,6 +76,9 @@ useSeoMeta({
           class="w-20 h-20 rounded-full object-cover border"
         />
         <div>
+          <div v-if="isOwnProfile">
+            <span class="text-green-600 font-semibold">(This is your profile)</span>
+          </div>
           <div class="text-2xl font-bold">@{{ profile.displayName }}</div>
           <div class="text-lg text-gray-700">{{ profile.nickName }}</div>
           <div class="text-gray-500">{{ profile.bio }}</div>
