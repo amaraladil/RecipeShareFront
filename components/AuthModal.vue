@@ -58,6 +58,8 @@
 
 <script setup lang="ts">
 const { $supabase } = useNuxtApp()
+const emits = defineEmits(['close'])
+
 
 const isLogin = ref(true)
 const email = ref('')
@@ -74,6 +76,7 @@ const handleSubmit = async () => {
   if (err) {
     error.value = err.message
   } else {
+    emits('close')
     location.reload()
   }
 }

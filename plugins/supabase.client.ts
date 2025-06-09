@@ -2,6 +2,7 @@ import { createBrowserClient } from "@supabase/ssr";
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
+  console.log("SUPABASE CLIENT");
   const supabase = createBrowserClient(
     config.public.supabaseUrl,
     config.public.supabaseKey,

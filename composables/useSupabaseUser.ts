@@ -15,7 +15,7 @@ export const useSupabaseUser = () => {
   };
 
   // Subscribe to auth state changes
-  if (process.client) {
+  if (import.meta.client) {
     supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null;
     });

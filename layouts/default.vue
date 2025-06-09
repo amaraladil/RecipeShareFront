@@ -2,6 +2,7 @@
   <div class="flex h-screen">
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r p-4">
+      <template v-if="!userLoading">
       <div class="text-xl font-bold mb-4">RecipeShare</div>
       <nav class="flex flex-col gap-2">
         <NuxtLink to="/" class="hover:underline">Home</NuxtLink>
@@ -19,6 +20,7 @@
           >Logout</button>
         </template>
       </nav>
+      </template>
     </aside>
 
     <!-- Main Content -->
@@ -27,7 +29,7 @@
     </main>
 
     <!-- Auth Modal -->
-    <AuthModal v-if="authVisible" @close="authVisible = false" />
+    <AuthModal v-if="authVisible" @close="closeAuthModal" />
   </div>
 </template>
 
@@ -42,6 +44,7 @@ const { $supabase } = useNuxtApp()
 
 const userLoading = ref(true)
 const authVisible = ref(false)
+const closeAuthModal = () => authVisible.value = false
 
 onMounted(async () => {
   // Wait for Supabase to load session
