@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     },
   },
   css: ["@/assets/styles/main.css"],
-  modules: ["@nuxtjs/tailwindcss"],
+  modules: ["@nuxtjs/tailwindcss", "@nuxt/ui"],
   tailwindcss: {
     // Options
   },

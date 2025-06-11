@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
 .input {
   @apply w-full px-4 py-2 border rounded-md;
