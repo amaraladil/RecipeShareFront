@@ -9,5 +9,5 @@
 }
 
 .primary-btn {
-  @apply;
+  @apply w-full;
 }
