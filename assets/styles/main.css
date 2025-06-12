@@ -2,7 +2,7 @@
 @import "@nuxt/ui";
 
 .input {
-  @apply w-full px-4 py-2 border rounded-md;
+  @apply w-full px-4 py-2 bg-zinc-800/50 rounded-md;
 }
 .btn {
   @apply bg-blue-600 text-white font-semibold px-4 py-2 rounded-md hover:bg-blue-700;
