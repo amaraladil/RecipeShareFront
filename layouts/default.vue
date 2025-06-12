@@ -3,10 +3,10 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r p-4">
       <template v-if="!userLoading">
-      <div class="text-xl font-bold mb-4">RecipeShare</div>
+      <div class="text-xl font-bold mb-4 dark:text-black">RecipeShare</div>
       <nav class="flex flex-col gap-2">
-        <NuxtLink to="/" class="hover:underline">Home</NuxtLink>
-        <NuxtLink to="/explore" class="hover:underline">Explore</NuxtLink>
+        <NuxtLink to="/" class="hover:underline dark:text-black">Home</NuxtLink>
+        <NuxtLink to="/explore" class="hover:underline dark:text-black">Explore</NuxtLink>
         <template v-if="!userLoading">
           <NuxtLink
             v-if="!user"
@@ -19,8 +19,17 @@
             class="rounded-2xl bg-red-600 px-4 py-2 font-bold leading-none text-white"
           >Logout</button>
         </template>
+        <UButton icon="i-lucide-rocket" size="md" color="primary" variant="solid">Button</UButton>
       </nav>
       </template>
+      <div v-else class="flex flex-col gap-2">
+        <USkeleton class="h-4 w-60" />
+        <USkeleton class="h-4 w-60" />
+        <USkeleton class="h-4 w-60" />
+        <USkeleton class="h-4 w-60" />
+        <USkeleton class="h-4 w-60" />
+        <USkeleton class="h-4 w-60" />
+      </div>
     </aside>
 
     <!-- Main Content -->
@@ -28,7 +37,6 @@
       <NuxtPage />
     </main>
 
-    <!-- Auth Modal -->
     <AuthModal v-if="authVisible" @close="closeAuthModal" />
   </div>
 </template>

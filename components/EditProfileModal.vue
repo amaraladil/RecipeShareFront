@@ -76,7 +76,7 @@ const save = async () => {
     v-if="show"
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
   >
-    <div class="flex flex-col bg-zinc-900 w-[700px] text-white/90 rounded-lg overflow-hidden relative">
+    <div class="flex flex-col bg-zinc-900 w-[700px] text-white/90 rounded-lg relative">
       <div class="px-6 pt-6 pb-3 border-b-[0.5px] border-white/20">
         <h2 class="pb-[0.5px] pl border-/20 text-2xl font-semibold mb-4">Edit Profile</h2>
         <button class="absolute top-5 right-8 cursor-pointer text-zinc-400 text-2xl" @click="close">&times;</button>
@@ -129,7 +129,7 @@ const save = async () => {
 </template>
 
 <style scoped>
-@import "tailwindcss";
+@import "@/assets/styles/main.css";
 
 .form-row {
     @apply flex py-4  w-full  border-white/80  border-b-[0.5px] last:bg-amber-600;
