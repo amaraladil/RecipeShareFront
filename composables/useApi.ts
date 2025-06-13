@@ -6,7 +6,11 @@ export function useApi<T = any>() {
 
   console.log("useApi initialized with base URL:", config.public.apiBase);
 
-  return async (url: string, options: any = {}): Promise<T> => {
+  return async (
+    url: string,
+    options: any = {},
+    server: boolean = false
+  ): Promise<T> => {
     console.log("Fetching API:", url, "with options:", options);
 
     let accessToken: string | undefined;
@@ -16,7 +20,7 @@ export function useApi<T = any>() {
         ?.access_token;
 
       console.log("useApi Client Side token:", accessToken);
-    } else if (import.meta.server) {
+    } else if (server) {
       // Server-side: read cookie
       const event = useRequestEvent();
       if (event) {

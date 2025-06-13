@@ -1,26 +1,12 @@
-import { ref } from "vue";
-import { useApi } from "./useApi";
+export const useUserProfile = (handle: string) => {
+  const profile = useState(`profile-${handle}`, () => null);
+  const api = useApi();
 
-export function useUserProfile() {
-  const profile = ref<any>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
-
-  const fetchUserProfile = async (handle: string) => {
-    loading.value = true;
-    error.value = null;
-    try {
-      const api = useApi();
-      profile.value = await api(`/users/${handle}`);
-    } catch (e: any) {
-      error.value = e.message || "Failed to fetch user";
-      profile.value = null;
-    } finally {
-      loading.value = false;
-    }
+  const fetchProfile = async () => {
+    const data = await api(`/users/${handle}`);
+    // profile.value = data;
+    return data;
   };
 
-  const updateUserProfile = async (handle: string) => {};
-
-  return { profile, loading, error, fetchUserProfile, updateUserProfile };
-}
+  return { profile, fetchProfile };
+};

@@ -9,6 +9,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const handle = route.params.handle.toString().replace(/^@/, '')
 const { user } = useSupabaseUser()
+const { fetchProfile } = useUserProfile(handle)
 
 
 const showModal = ref(false)
@@ -29,10 +30,10 @@ interface Profile {
   // add other properties as needed
 }
 
-const { data: profile, pending: profileLoading, error } = await useFetch<Profile>(`/users/${handle}`, {
-  baseURL: config.public.apiBase || 'http://localhost:8000',
-  key: `profile-${handle}`,
-})
+const { data: profile, pending: profileLoading, error } = await useAsyncData<Profile | null>(
+  `profile-${handle}`,
+  () => fetchProfile()
+)
 
 
 
@@ -89,9 +90,6 @@ useSeoMeta({
           class="w-20 h-20 rounded-full object-cover border"
         />
         <div>
-          <div v-if="isOwnProfile">
-            <span class="text-green-600 font-semibold">(This is your profile)</span>
-          </div>
           <button v-if="isOwnProfile" class="btn" @click="openModal">Edit Profile</button>
           <EditProfileModal2
       v-if="isOwnProfile && profile"
@@ -102,7 +100,7 @@ useSeoMeta({
     />
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
           <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
-          <div class="text-gray-500">{{ profile.bio }}</div>
+          <div class="text-gray-500 whitespace-pre-line">{{ profile.bio }}</div>
         </div>
       </div>
       <!-- Tabs -->

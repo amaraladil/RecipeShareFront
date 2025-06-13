@@ -7,9 +7,12 @@
       <nav class="flex flex-col gap-2">
         <NuxtLink to="/" class="hover:underline ">Home</NuxtLink>
         <NuxtLink to="/explore" class="hover:underline ">Explore</NuxtLink>
-        <UButton icon="typcn:home-outline" size="xl" color="neutral" variant="solid">Home</UButton>
-        <UButton icon="teenyicons:compass-outline" size="xl" color="neutral" variant="solid">Explore</UButton>
-        <UButton icon="ri:edit-line" size="xl" color="neutral" variant="solid">write</UButton>
+        <UButton icon="typcn:home-outline" size="xl" color="neutral" variant="solid" href="/">Home</UButton>
+        <UButton icon="teenyicons:compass-outline" size="xl" color="neutral" variant="solid" href="/@user4328175">Explore</UButton>
+        <UButton icon="ri:edit-line" size="xl" color="neutral" variant="solid" href="/@user5371307" a>write</UButton>
+        <UChip :text="5" icon="i-lucide-mail" position="bottom-right"  size="3xl"  inset>
+          <UAvatar src="https://github.com/benjamincanac.png" class="w-32 h-32"/>
+        </UChip>
         <template v-if="!userLoading">
           <NuxtLink
             v-if="!user"
@@ -17,7 +20,7 @@
             class="text-blue-600 cursor-pointer"
           >Login</NuxtLink>
           <template v-else>
-            <UButton icon="ci:user" size="xl" color="neutral" variant="solid">Profile</UButton>
+            <UButton v-if="profile" :to="`/@${profile.display_name}`" icon="ci:user" size="xl" color="neutral" variant="solid">Profile</UButton>
             <button
               @click="logout"
               class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"
@@ -84,6 +87,7 @@
 import { ref, onMounted } from 'vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useSupabaseUser } from '~/composables/useSupabaseUser'
+const profile = useProfileState()
 
 const { user, fetchUser } = useSupabaseUser()
 const { $supabase } = useNuxtApp()
@@ -96,10 +100,11 @@ const closeAuthModal = () => authVisible.value = false
 onMounted(async () => {
   // Wait for Supabase to load session
   await fetchUser()
-  // if (user){
-  //   console.log('Fetch User:', user)
-  // }
-  // console.log('Supabase Client default mounted: ', (await $supabase.auth.getSession()).data.session?.access_token)
+
+  if (user && !profile.value) {
+    fetchCurrentUserProfile()
+  }
+
   userLoading.value = false
 })
 
