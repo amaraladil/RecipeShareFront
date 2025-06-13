@@ -108,7 +108,7 @@ const save = async () => {
         <div class="form-row">
           <label>Bio</label>
           <div>
-            <textarea v-model="form.bio" maxlength="80" class="input resize-none h-24" />
+            <textarea v-model="form.bio" rows="4" maxlength="80" class="input resize-none h-24" />
             <p>{{ form.bio.length }}/80</p>
           </div>
           

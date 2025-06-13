@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white dark:bg-black dark:text-white border-r p-4">
+    <aside class="w-50 bg-white dark:bg-black dark:text-white border-r p-4">
       <template v-if="!userLoading">
       <div class="text-xl font-bold mb-4">RecipeShare</div>
       <nav class="flex flex-col gap-2">
@@ -20,7 +20,7 @@
             class="text-blue-600 cursor-pointer"
           >Login</NuxtLink>
           <template v-else>
-            <UButton v-if="profile" :to="`/@${profile.display_name}`" icon="ci:user" size="xl" color="neutral" variant="solid">Profile</UButton>
+            <UButton v-if="profile" :avatar="{ src: 'https://github.com/nuxt.png' }" :to="`/@${profile.display_name}`"  size="xl" color="neutral" variant="solid">Profile</UButton>
             <button
               @click="logout"
               class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"

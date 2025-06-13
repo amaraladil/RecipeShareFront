@@ -1,4 +1,4 @@
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_DURATION = 1 * 60 * 1000; // 5 minutes
 
 export const useUserProfile = (handle: string) => {
   const profileState = useState<{ data: any; ts: number } | null>(
@@ -7,9 +7,13 @@ export const useUserProfile = (handle: string) => {
   );
   const api = useApi();
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (force = false) => {
     const now = Date.now();
-    if (profileState.value && now - profileState.value.ts < CACHE_DURATION) {
+    if (
+      !force &&
+      profileState.value &&
+      now - profileState.value.ts < CACHE_DURATION
+    ) {
       return profileState.value.data;
     }
     const data = await api(`/users/${handle}`, { server: true });

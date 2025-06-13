@@ -16,9 +16,7 @@ const showModal = ref(false)
 const openModal = () => showModal.value = true
 const closeModal = () => showModal.value = false
 
-const refreshProfile = async () => {
-  // Refetch profile info from backend
-}
+
 
 // Use baseURL for SSR and client
 interface Profile {
@@ -34,6 +32,10 @@ const { data: profile, pending: profileLoading, error } = await useAsyncData<Pro
   `profile-${handle}`,
   () => fetchProfile()
 )
+
+const refreshProfile = async () => {
+  profile.value = await fetchProfile(true)
+}
 
 
 
@@ -87,7 +89,7 @@ useSeoMeta({
         <img
           :src="profile.avatar_url"
           alt="Profile picture"
-          class="w-20 h-20 rounded-full object-cover border"
+          class="w-53 h-53 rounded-full object-cover border"
         />
         <div>
           <button v-if="isOwnProfile" class="btn" @click="openModal">Edit Profile</button>
