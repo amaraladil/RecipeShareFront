@@ -35,42 +35,24 @@
       </nav>
       </template>
       <div v-else class="flex flex-col gap-2">
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
-        <USkeleton class="h-6 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 w-[223px]" />
       </div>
     </aside>
 
@@ -89,7 +71,7 @@ import AuthModal from '../components/AuthModal.vue'
 import { useSupabaseUser } from '~/composables/useSupabaseUser'
 const profile = useProfileState()
 
-const { user, fetchUser } = useSupabaseUser()
+const { user } = useSupabaseUser()
 const { $supabase } = useNuxtApp()
 // console.log('Supabase Client on defaultvue: ', $supabase)
 
@@ -99,10 +81,10 @@ const closeAuthModal = () => authVisible.value = false
 
 onMounted(async () => {
   // Wait for Supabase to load session
-  await fetchUser()
+  // await fetchUser()
 
   if (user && !profile.value) {
-    fetchCurrentUserProfile()
+    await fetchCurrentUserProfile()
   }
 
   userLoading.value = false
