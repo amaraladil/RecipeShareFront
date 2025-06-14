@@ -62,6 +62,19 @@ const save = async () => {
         body: updatedFields
         })
         emits('updated')
+        if (updatedFields.display_name) {
+            // Define the expected type for profileState.value
+            interface ProfileState {
+                display_name: string;
+                [key: string]: any;
+            }
+            const profileState = useProfileState() as { value: ProfileState | null };
+            
+            if (profileState.value) {
+                profileState.value.display_name = updatedFields.display_name;
+            }
+            navigateTo(`/@${updatedFields.display_name}`)
+        }
         close()
     } catch (err) {
         console.error('Failed to update profile', err)

@@ -20,7 +20,7 @@
             class="text-blue-600 cursor-pointer"
           >Login</NuxtLink>
           <template v-else>
-            <UButton v-if="profile" :avatar="{ src: 'https://github.com/nuxt.png' }" :to="`/@${profile.display_name}`"  size="xl" color="neutral" variant="solid">Profile</UButton>
+            <UButton v-if="profile" :avatar="{ src: `${profile.avatar_url}` }" :to="`/@${profile.display_name}`"  size="xl" color="neutral" variant="solid">Profile</UButton>
             <button
               @click="logout"
               class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"
@@ -35,24 +35,24 @@
       </nav>
       </template>
       <div v-else class="flex flex-col gap-2">
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
-        <USkeleton class="h-10 w-[223px]" />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
+        <USkeleton class="h-10 " />
       </div>
     </aside>
 
@@ -71,7 +71,7 @@ import AuthModal from '../components/AuthModal.vue'
 import { useSupabaseUser } from '~/composables/useSupabaseUser'
 const profile = useProfileState()
 
-const { user } = useSupabaseUser()
+const { user, fetchUser } = useSupabaseUser()
 const { $supabase } = useNuxtApp()
 // console.log('Supabase Client on defaultvue: ', $supabase)
 
@@ -81,9 +81,9 @@ const closeAuthModal = () => authVisible.value = false
 
 onMounted(async () => {
   // Wait for Supabase to load session
-  // await fetchUser()
+  await fetchUser()
 
-  if (user && !profile.value) {
+  if (user.value && !profile.value) {
     await fetchCurrentUserProfile()
   }
 
