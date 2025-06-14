@@ -79,9 +79,15 @@ const save = async () => {
     } catch (err) {
         console.error('Failed to update profile', err)
     }
-    
-
 }
+
+const limitLines = (event: KeyboardEvent) => {
+  const currentLines = form.bio.split('\n').length
+  if (currentLines >= 4) {
+    event.preventDefault()
+  }
+}
+
 </script>
 
 <template>
@@ -121,7 +127,7 @@ const save = async () => {
         <div class="form-row">
           <label>Bio</label>
           <div>
-            <textarea v-model="form.bio" rows="4" maxlength="80" class="input resize-none h-24" />
+            <textarea v-model="form.bio" rows="4" maxlength="80" class="input resize-none h-24" @keydown.enter="limitLines" />
             <p>{{ form.bio.length }}/80</p>
           </div>
           

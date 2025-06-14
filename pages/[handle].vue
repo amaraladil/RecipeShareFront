@@ -66,18 +66,34 @@ watch(activeTab, async (tab) => {
   if (tab === 'saved') await fetchSaved()
 })
 
-useSeoMeta({
-  title: pageTitle(`@${handle} - Profile`),
-  description: '[description]',
-  ogTitle: pageTitle(`@${handle} - Profile`),
-  ogDescription: '[og:description]',
-  ogImage: '[og:image]',
-  ogUrl: config.public.baseUrl + route.path,
-  twitterTitle: pageTitle(`@${handle} - Profile`),
-  twitterDescription: '[twitter:description]',
-  twitterImage: '[twitter:image]',
-  twitterCard: 'summary'
-})
+if (profile.value){
+  useSeoMeta({
+    title: pageTitle(`${profile.value?.nick_name} (@${handle})`),
+    description: ` @${profile.value?.display_name} - Explore their recipes and culinary creations.`,
+    ogTitle: pageTitle(`@${handle} - Profile`),
+    ogDescription: ` @${profile.value?.display_name} - Explore their recipes and culinary creations.`,
+    ogImage: '[og:image]',
+    ogUrl: config.public.baseUrl + route.path,
+    twitterTitle: pageTitle(`@${handle} - Profile`),
+    twitterDescription: `@${profile.value?.display_name} - Explore their recipes and culinary creations.`,
+    twitterImage: '[twitter:image]',
+    twitterCard: 'summary'
+  })
+} else {
+  useSeoMeta({
+    title: pageTitle(`Discover Recipes here`),
+    description: 'Find and share your favorite recipes with our community.',
+    ogTitle: pageTitle(`Discover Recipes here`),
+    ogDescription: 'Find and share your favorite recipes with our community.',
+    ogImage: '[og:image]',
+    ogUrl: config.public.baseUrl + route.path,
+    twitterTitle: pageTitle(`Discover Recipes here`),
+    twitterDescription: 'Find and share your favorite recipes with our community.',
+    twitterImage: '[twitter:image]',
+    twitterCard: 'summary_large_image'
+  })
+}
+
 </script>
 
 <template>

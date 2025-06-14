@@ -10,7 +10,7 @@ interface Recipe {
 const recipes = ref<Recipe[]>([])
 
 onMounted(async () => {
-  recipes.value = await fetchApi('/recipes/')
+  recipes.value = await fetchApi('/recipes/', { server: true })
 })
 
 useSeoMeta({
@@ -43,6 +43,6 @@ useHead({
 <template>
   <div class="p-6">
     <h1 class="text-3xl font-bold mb-4">Recent Recipes</h1>
-    <RecipeCard v-for="r in recipes" :key="r.id" :recipe="r" />
+    <RecipeCard v-for="recipe in recipes" :key="recipe._id" :recipe="recipe" />
   </div>
 </template>
