@@ -17,6 +17,7 @@ interface Recipe {
   _id: string
   title: string
   createdBy: string
+  description: string
   status: number
   ingredients: Ingredient[]
   steps: string[]
@@ -52,6 +53,35 @@ const saveRecipe = async () => {
   await refresh()
   isEditing.value = false
 }
+
+if (recipe.value){
+  useSeoMeta({
+    title: pageTitle(`${recipe.value?.title}`),
+    description: `${recipe.value?.description}`,
+    ogTitle: pageTitle(`${recipe.value?.title}`),
+    ogDescription: `${recipe.value?.description}`,
+    ogImage: '[og:image]',
+    ogUrl: route.fullPath,
+    twitterTitle: pageTitle(`${recipe.value?.title}`),
+    twitterDescription: `${recipe.value?.description}`,
+    twitterImage: '[twitter:image]',
+    twitterCard: 'summary'
+  })
+} else {
+  useSeoMeta({
+    title: pageTitle(`Find and Share Recipes`),
+    description: 'Find and share your favorite recipes with our community.',
+    ogTitle: pageTitle(`Find and Share Recipes`),
+    ogDescription: 'Find and share your favorite recipes with our community.',
+    ogImage: '[og:image]',
+    ogUrl: route.fullPath,
+    twitterTitle: pageTitle(`Find and Share Recipes`),
+    twitterDescription: 'Find and share your favorite recipes with our community.',
+    twitterImage: '[twitter:image]',
+    twitterCard: 'summary_large_image'
+  })
+}
+
 </script>
 
 <template>
@@ -85,6 +115,13 @@ const saveRecipe = async () => {
       ]" />
     </div>
 
+    <section class="mb-6">
+      <div v-if="!isEditing">{{ recipe?.description }}</div>
+      <div v-else>
+        <UTextarea v-model="draft.description" :rows="4" />
+      </div>
+    </section>
+
     <!-- Ingredients -->
     <section class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Ingredients</h2>
@@ -101,6 +138,7 @@ const saveRecipe = async () => {
       </div>
     </section>
 
+    
     <!-- Instructions -->
     <section>
       <h2 class="text-xl font-semibold mb-2">Instructions</h2>
