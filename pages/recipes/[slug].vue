@@ -1,0 +1,118 @@
+<script setup lang="ts">
+const route = useRoute()
+import { useSupabaseUser } from '~/composables/useSupabaseUser'
+const { user } = useSupabaseUser() // assuming you're using Supabase auth
+const isEditing = ref(false)
+
+import { useApi } from '~/composables/useApi'
+const api = useApi();
+
+interface Ingredient {
+  name: string
+  quantity: string
+  measurement: string
+}
+
+interface Recipe {
+  _id: string
+  title: string
+  createdBy: string
+  status: number
+  ingredients: Ingredient[]
+  steps: string[]
+  tags: string[]
+}
+
+const { data: recipe, pending, refresh } = await useAsyncData<Recipe| null>(`recipe-${route.params.slug}`, 
+    () => api(`/recipes/${route.params.slug}`, { server: true })
+);
+
+const isOwner = computed(() => user.value && recipe.value?.createdBy === user.value?.id)
+
+// Editable draft form state
+const draft = reactive({ 
+  ...recipe.value, 
+  ingredients: recipe.value?.ingredients ?? [], 
+  instructions: recipe.value?.steps ?? [] 
+})
+
+const toggleEdit = () => {
+  if (isOwner.value) {
+    isEditing.value = !isEditing.value
+    Object.assign(draft, recipe.value) // Reset draft when toggling
+  }
+}
+
+const saveRecipe = async () => {
+  if (!recipe.value) return
+  await $fetch(`/api/recipes/${recipe.value._id}`, {
+    method: 'PATCH',
+    body: draft
+  })
+  await refresh()
+  isEditing.value = false
+}
+</script>
+
+<template>
+  <div class="container mx-auto py-10 px-8">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold">
+                <template v-if="!isEditing">{{ recipe?.title }}</template>
+                <template v-else><UInput v-model="draft.title" /></template>
+            </h1>
+            <div>Author: {{ recipe?.createdBy }}</div>
+
+        </div>
+      
+
+      <div v-if="isOwner">
+        <UButton label="Edit" @click="toggleEdit" v-if="!isEditing" />
+        <UButton label="Save" color="primary" @click="saveRecipe" v-if="isEditing" />
+      </div>
+    </div>
+
+    <!-- Visibility Toggle -->
+    <div v-if="isEditing" class="mb-4">
+      <label class="text-sm">Visibility</label>
+      <USelect v-model="draft.status" :options="[
+        { label: 'Public', value: 1 },
+        { label: 'Unlisted', value: 2 },
+        { label: 'Private', value: 3 }
+      ]" />
+    </div>
+
+    <!-- Ingredients -->
+    <section class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">Ingredients</h2>
+      <ul v-if="!isEditing">
+        <li v-for="item in recipe?.ingredients" :key="item.name">- {{ item.name }} <span class="">{{ item.quantity }} {{ item.measurement }}</span></li>
+      </ul>
+      <div v-else>
+        <div v-for="(item, i) in draft.ingredients" :key="i" class="flex gap-2 mb-2">
+          <UInput v-model="item.quantity" placeholder="1 cup" class="w-1/3" />
+          <UInput v-model="item.name" placeholder="flour" class="w-2/3" />
+          <UInput v-model="item.measurement" placeholder="flour" class="w-2/3" />
+        </div>
+        <UButton label="Add Ingredient" @click="draft.ingredients.push({ name: '', quantity: '', measurement: '' })" size="xs" />
+      </div>
+    </section>
+
+    <!-- Instructions -->
+    <section>
+      <h2 class="text-xl font-semibold mb-2">Instructions</h2>
+      <ol v-if="!isEditing" class="list-decimal ml-6">
+        <li v-for="(step, i) in recipe?.steps" :key="i">{{ step }}</li>
+      </ol>
+      <div v-else>
+        <div v-for="(step, i) in draft.instructions" :key="i" class="mb-2">
+            <UTextarea v-model="draft.instructions[i]" :rows="2" />
+        </div>
+        <UButton label="Add Step" @click="draft.instructions.push('')" size="xs" />
+      </div>
+    </section>
+  </div>
+</template>

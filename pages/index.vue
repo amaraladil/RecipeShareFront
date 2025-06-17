@@ -3,7 +3,7 @@ import { pageTitle } from '~/utils/meta'
 console.log('Index Page Loaded')
 const fetchApi = useApi()
 interface Recipe {
-  id: number
+  id: string
   // add other properties as needed, e.g. title: string
 }
 
@@ -43,6 +43,6 @@ useHead({
 <template>
   <div class="p-6">
     <h1 class="text-3xl font-bold mb-4">Recent Recipes</h1>
-    <RecipeCard v-for="recipe in recipes" :key="recipe._id" :recipe="recipe" />
+    <RecipeCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
   </div>
 </template>
