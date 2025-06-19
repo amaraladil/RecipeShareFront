@@ -22,9 +22,7 @@ export function useApi<T = any>() {
       if (event) {
         const cookies = parseCookies(event);
         accessToken = cookies["sb-access-token"];
-        console.log("useApi Server Side cookies:", cookies);
       }
-      console.log("useApi Server Side token:", accessToken);
     }
     const token = accessToken;
 

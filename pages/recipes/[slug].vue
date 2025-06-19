@@ -19,14 +19,26 @@ interface Recipe {
   createdBy: string
   description: string
   status: number
+  author: User
   ingredients: Ingredient[]
   steps: string[]
   tags: string[]
 }
 
+interface User {
+  id: string
+  display_name: string
+  avatar_url: string
+}
+
 const { data: recipe, pending, refresh } = await useAsyncData<Recipe| null>(`recipe-${route.params.slug}`, 
     () => api(`/recipes/${route.params.slug}`)
 );
+
+console.log('Recipe Data:', recipe.value)
+
+
+
 
 const isOwner = computed(() => user.value && recipe.value?.createdBy === user.value?.id)
 
@@ -94,7 +106,13 @@ if (recipe.value){
                 <template v-if="!isEditing">{{ recipe?.title }}</template>
                 <template v-else><UInput v-model="draft.title" /></template>
             </h1>
-            <div>Author: {{ recipe?.createdBy }}</div>
+            
+            <div class="text-xl italic">Author:
+              <NuxtLink :to="`/@${recipe?.author.display_name}`" class="hover:underline">
+                <img v-if="recipe?.author.avatar_url" :src="recipe?.author.avatar_url"  alt="User Avatar" class="text-sm inline-block w-6 h-6 rounded-full mr-2">
+                <span v-if="recipe?.author.display_name">{{ recipe.author.display_name }}</span>
+              </NuxtLink>
+            </div>
 
         </div>
       
