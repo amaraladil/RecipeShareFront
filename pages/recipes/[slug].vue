@@ -16,7 +16,6 @@ interface Ingredient {
 interface Recipe {
   _id: string
   title: string
-  createdBy: string
   description: string
   status: number
   author: User
@@ -35,12 +34,7 @@ const { data: recipe, pending, refresh } = await useAsyncData<Recipe| null>(`rec
     () => api(`/recipes/${route.params.slug}`)
 );
 
-console.log('Recipe Data:', recipe.value)
-
-
-
-
-const isOwner = computed(() => user.value && recipe.value?.createdBy === user.value?.id)
+const isOwner = computed(() => user.value && recipe.value?.author.id === user.value?.id)
 
 // Editable draft form state
 const draft = reactive({ 
@@ -109,7 +103,7 @@ if (recipe.value){
             
             <div class="text-xl italic">Author:
               <NuxtLink :to="`/@${recipe?.author.display_name}`" class="hover:underline">
-                <img v-if="recipe?.author.avatar_url" :src="recipe?.author.avatar_url"  alt="User Avatar" class="text-sm inline-block w-6 h-6 rounded-full mr-2">
+                <img v-if="recipe?.author.avatar_url" :src="recipe?.author.avatar_url"  alt="User Avatar" class="text-sm inline-block w-15 h-15 rounded-full mr-2 object-cover border">
                 <span v-if="recipe?.author.display_name">{{ recipe.author.display_name }}</span>
               </NuxtLink>
             </div>
