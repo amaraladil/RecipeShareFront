@@ -48,7 +48,7 @@
         } as Recipe
       },
       getCachedData(key) {
-        const data = nuxtApp.payload.data[key]
+        const data = nuxtApp.payload.data[key] || nuxtApp.static.data[key]
 
         if (!data) return null
 
