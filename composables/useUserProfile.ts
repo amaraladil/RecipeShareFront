@@ -16,7 +16,7 @@ export const useUserProfile = (handle: string) => {
     ) {
       return profileState.value.data;
     }
-    const data = await api(`/users/${handle}`, { server: true });
+    const data = await api(`/users/${handle}`);
     profileState.value = { data, ts: now };
     return data;
   };

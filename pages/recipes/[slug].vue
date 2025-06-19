@@ -25,7 +25,7 @@ interface Recipe {
 }
 
 const { data: recipe, pending, refresh } = await useAsyncData<Recipe| null>(`recipe-${route.params.slug}`, 
-    () => api(`/recipes/${route.params.slug}`, { server: true })
+    () => api(`/recipes/${route.params.slug}`)
 );
 
 const isOwner = computed(() => user.value && recipe.value?.createdBy === user.value?.id)
