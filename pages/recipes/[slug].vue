@@ -22,6 +22,7 @@
     ingredients: Ingredient[]
     steps: string[]
     tags: string[]
+    fetchTime?: Date
   }
 
   interface User {
@@ -30,12 +31,38 @@
     avatar_url: string
   }
 
+  const nuxtApp = useNuxtApp()
   const {
     data: recipe,
     pending,
     refresh
-  } = await useAsyncData<Recipe | null>(`recipe-${route.params.slug}`, () =>
-    api(`/recipes/${route.params.slug}`)
+  } = await useAsyncData<Recipe | null>(
+    `recipe-${route.params.slug}`,
+    () => api(`/recipes/${route.params.slug}`),
+    {
+      transform(input) {
+        if (!input) return null
+        return {
+          ...input,
+          fetchTime: new Date()
+        } as Recipe
+      },
+      getCachedData(key) {
+        const data = nuxtApp.payload.data[key]
+
+        if (!data) return null
+
+        const expired = data.fetchTime
+          ? new Date(data.fetchTime) < new Date(Date.now() - 30 * 1000)
+          : false
+
+        if (expired) {
+          return null // Cache expired, fetch new data
+        }
+
+        return data as Recipe
+      }
+    }
   )
 
   const isOwner = computed(

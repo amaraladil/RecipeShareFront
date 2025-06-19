@@ -38,9 +38,7 @@
   }
 
   const isOwnProfile = computed(() => {
-    // Compare by id, handle, or email as appropriate for your app
     return user.value && profile.value && user.value.id === profile.value.id
-    // Or, if using handle: return user.value && profile.value && user.value.handle === profile.value.handle
   })
 
   const { posts, liked, saved, fetchPosts, fetchLiked, fetchSaved, isLoading } =
