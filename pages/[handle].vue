@@ -22,15 +22,42 @@
     display_name: string
     nick_name: string
     bio: string
+    fetchTime?: Date
     // add other properties as needed
   }
 
+  const nuxtApp = useNuxtApp()
   const {
     data: profile,
     pending: profileLoading,
     error
-  } = await useAsyncData<Profile | null>(`profile-${handle}`, () =>
-    fetchProfile()
+  } = await useAsyncData<Profile | null>(
+    `profile-${handle}`,
+    () => fetchProfile(),
+    {
+      transform(input) {
+        if (!input) return null
+        return {
+          ...input,
+          fetchTime: new Date()
+        } as Profile
+      },
+      getCachedData(key) {
+        const data = nuxtApp.payload.data[key] || nuxtApp.static.data[key]
+
+        if (!data) return null
+
+        const expired = data.fetchTime
+          ? new Date(data.fetchTime) < new Date(Date.now() - 30 * 1000)
+          : false
+
+        if (expired) {
+          return null // Cache expired, fetch new data
+        }
+
+        return data as Profile
+      }
+    }
   )
 
   const refreshProfile = async () => {
