@@ -3,56 +3,93 @@
     <!-- Sidebar -->
     <aside class="w-50 bg-white dark:bg-black dark:text-white border-r p-4">
       <template v-if="!userLoading">
-      <div class="text-xl font-bold mb-4">RecipeShare</div>
-      <nav class="flex flex-col gap-2">
-        <NuxtLink to="/" class="hover:underline ">Home</NuxtLink>
-        <NuxtLink to="/explore" class="hover:underline ">Explore</NuxtLink>
-        <UButton icon="typcn:home-outline" size="xl" color="neutral" variant="solid" href="/">Home</UButton>
-        <UButton icon="teenyicons:compass-outline" size="xl" color="neutral" variant="solid" href="/@user4328175">Explore</UButton>
-        <UButton icon="ri:edit-line" size="xl" color="neutral" variant="solid" href="/@user5371307" a>write</UButton>
-        <UChip :text="5" icon="i-lucide-mail" position="bottom-right"  size="3xl"  inset>
-          <UAvatar src="https://github.com/benjamincanac.png" class="w-32 h-32"/>
-        </UChip>
-        <template v-if="!userLoading">
-          <NuxtLink
-            v-if="!user"
-            @click="openLogin"
-            class="text-blue-600 cursor-pointer"
-          >Login</NuxtLink>
-          <template v-else>
-            <UButton v-if="profile" :avatar="{ src: `${profile.avatar_url}` }" :to="`/@${profile.display_name}`"  size="xl" color="neutral" variant="solid">Profile</UButton>
-            <button
-              @click="logout"
-              class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"
-            >Logout</button>
-            
-
+        <div class="text-xl font-bold mb-4">RecipeShare</div>
+        <nav class="flex flex-col gap-2">
+          <NuxtLink to="/" class="hover:underline">Home</NuxtLink>
+          <NuxtLink to="/explore" class="hover:underline">Explore</NuxtLink>
+          <UButton
+            icon="typcn:home-outline"
+            size="xl"
+            color="neutral"
+            variant="solid"
+            href="/"
+            >Home</UButton
+          >
+          <UButton
+            icon="teenyicons:compass-outline"
+            size="xl"
+            color="neutral"
+            variant="solid"
+            href="/@user4328175"
+            >Explore</UButton
+          >
+          <UButton
+            icon="ri:edit-line"
+            size="xl"
+            color="neutral"
+            variant="solid"
+            href="/@user5371307"
+            a
+            >write</UButton
+          >
+          <UChip
+            :text="5"
+            icon="i-lucide-mail"
+            position="bottom-right"
+            size="3xl"
+            inset
+          >
+            <UAvatar
+              src="https://github.com/benjamincanac.png"
+              class="w-32 h-32"
+            />
+          </UChip>
+          <template v-if="!userLoading">
+            <NuxtLink
+              v-if="!user"
+              @click="openLogin"
+              class="text-blue-600 cursor-pointer"
+              >Login</NuxtLink
+            >
+            <template v-else>
+              <UButton
+                v-if="profile"
+                :avatar="{ src: `${profile.avatar_url}` }"
+                :to="`/@${profile.display_name}`"
+                size="xl"
+                color="neutral"
+                variant="solid"
+                >Profile</UButton
+              >
+              <button
+                @click="logout"
+                class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"
+              >
+                Logout
+              </button>
+            </template>
           </template>
-          
-        </template>
-        
-        
-      </nav>
+        </nav>
       </template>
       <div v-else class="flex flex-col gap-2">
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
-        <USkeleton class="h-10 " />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
+        <USkeleton class="h-10" />
       </div>
     </aside>
 
@@ -66,39 +103,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import AuthModal from '../components/AuthModal.vue'
-import { useSupabaseUser } from '~/composables/useSupabaseUser'
-const profile = useProfileState()
+  import { ref, onMounted } from 'vue'
+  import AuthModal from '../components/AuthModal.vue'
+  import { useSupabaseUser } from '~/composables/useSupabaseUser'
+  const profile = useProfileState()
 
-const { user, fetchUser } = useSupabaseUser()
-const { $supabase } = useNuxtApp()
-// console.log('Supabase Client on defaultvue: ', $supabase)
+  const { user, fetchUser } = useSupabaseUser()
+  const { $supabase } = useNuxtApp()
+  // console.log('Supabase Client on defaultvue: ', $supabase)
 
-const userLoading = ref(true)
-const authVisible = ref(false)
-const closeAuthModal = () => authVisible.value = false
+  const userLoading = ref(true)
+  const authVisible = ref(false)
+  const closeAuthModal = () => (authVisible.value = false)
 
-onMounted(async () => {
-  // Wait for Supabase to load session
-  await fetchUser()
+  onMounted(async () => {
+    // Wait for Supabase to load session
+    await fetchUser()
 
-  if (user.value && !profile.value) {
-    await fetchCurrentUserProfile()
+    if (user.value && !profile.value) {
+      await fetchCurrentUserProfile()
+    }
+
+    userLoading.value = false
+  })
+
+  const openLogin = () => {
+    authVisible.value = true
   }
 
-  userLoading.value = false
-})
-
-
-const openLogin = () => {
-  authVisible.value = true
-}
-
-const logout = async () => {
-  await $supabase.auth.signOut()
-  authVisible.value = false
-  user.value = null
-  location.reload() // Reload to update user state
-}
+  const logout = async () => {
+    await $supabase.auth.signOut()
+    authVisible.value = false
+    user.value = null
+    location.reload() // Reload to update user state
+  }
 </script>
