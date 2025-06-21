@@ -1,6 +1,6 @@
 import { useApi } from './useApi'
 
-export function useRecipes(handle: string) {
+export function useRecipes(handle: string, isOwner: boolean) {
   console.log('useRecipes initialized with handle num:', handle)
   const fetchApi = useApi()
 
@@ -8,12 +8,14 @@ export function useRecipes(handle: string) {
   const liked = ref<null | any[]>(null)
   const saved = ref<null | any[]>(null)
 
+  const page = ref(0)
+  const recipes = ref<any[]>([])
   const isLoading = ref(false)
+  const hasMore = ref(true)
 
   const fetchPosts = async () => {
     isLoading.value = true
-    console.log('Fetching posts for handle:', handle)
-    posts.value = await fetchApi(`/recipes/`, { method: 'GET' })
+    posts.value = await fetchApi(`/recipes/u/${handle}`, { method: 'GET' })
     console.log('Fetched posts:', posts.value)
     isLoading.value = false
   }
@@ -23,7 +25,8 @@ export function useRecipes(handle: string) {
   }
 
   const fetchSaved = async () => {
-    if (!saved.value) saved.value = await fetchApi(`/recipes/saved/${handle}`)
+    if (!saved.value) saved.value = await fetchApi(`/recipes/saved/`)
+    console.log('Fetched saved recipes:', saved.value)
   }
 
   return { posts, liked, saved, isLoading, fetchPosts, fetchLiked, fetchSaved }

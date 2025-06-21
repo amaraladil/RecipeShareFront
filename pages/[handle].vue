@@ -69,7 +69,7 @@
   })
 
   const { posts, liked, saved, fetchPosts, fetchLiked, fetchSaved, isLoading } =
-    useRecipes(handle)
+    useRecipes(handle, isOwnProfile.value ?? false)
 
   const activeTab = ref('posts')
 
@@ -200,3 +200,7 @@
     @updated="refreshProfile"
   />
 </template>
+
+<style scoped>
+  @import '@/assets/styles/main.css';
+</style>
