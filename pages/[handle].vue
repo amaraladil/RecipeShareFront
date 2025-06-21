@@ -78,15 +78,25 @@
     isLoading,
     loadMore,
     hasMore,
-    resetTab
+    resetTab,
+    itemsPerPage,
+    cleanup
   } = useRecipes(handle, isOwnProfile.value ?? false)
 
   const activeTab = ref('posts')
-  const recipesContainer = ref<HTMLElement>()
+  const loadMoreTrigger = ref<HTMLElement>()
+  let intersectionObserver: IntersectionObserver | null = null
 
   onMounted(async () => {
     await fetchPosts()
-    setupInfiniteScroll()
+    setupIntersectionObserver()
+  })
+
+  onUnmounted(() => {
+    cleanup()
+    if (intersectionObserver) {
+      intersectionObserver.disconnect()
+    }
   })
 
   // Watch for tab changes and load initial data
@@ -98,55 +108,46 @@
     }
   })
 
-  // Infinite scroll setup
-  const setupInfiniteScroll = () => {
-    const handleScroll = () => {
-      if (!recipesContainer.value || isLoading.value) return
+  // Setup Intersection Observer for infinite scroll
+  const setupIntersectionObserver = () => {
+    if (!process.client) return
 
-      const container = recipesContainer.value
-      const scrollTop = container.scrollTop
-      const scrollHeight = container.scrollHeight
-      const clientHeight = container.clientHeight
-
-      // Load more when user scrolls to within 200px of bottom
-      if (scrollTop + clientHeight >= scrollHeight - 200) {
-        const currentTab = activeTab.value as 'posts' | 'liked' | 'saved'
-        if (hasMore.value[currentTab]) {
-          loadMore(currentTab)
-        }
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isLoading.value) {
+            const currentTab = activeTab.value as 'posts' | 'liked' | 'saved'
+            if (hasMore.value[currentTab]) {
+              console.log('Loading more recipes for tab:', currentTab)
+              loadMore(currentTab)
+            }
+          }
+        })
+      },
+      {
+        root: null, // Use viewport as root
+        rootMargin: '100px', // Trigger 100px before the element comes into view
+        threshold: 0.1
       }
-    }
+    )
 
-    // Also listen to window scroll if container doesn't have its own scroll
-    const handleWindowScroll = () => {
-      if (isLoading.value) return
-
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      const scrollHeight = document.documentElement.scrollHeight
-      const clientHeight = window.innerHeight
-
-      if (scrollTop + clientHeight >= scrollHeight - 200) {
-        const currentTab = activeTab.value as 'posts' | 'liked' | 'saved'
-        if (hasMore.value[currentTab]) {
-          loadMore(currentTab)
-        }
+    // Observe the trigger element when it's available
+    nextTick(() => {
+      if (loadMoreTrigger.value) {
+        intersectionObserver?.observe(loadMoreTrigger.value)
       }
-    }
-
-    // Add scroll listeners
-    if (recipesContainer.value) {
-      recipesContainer.value.addEventListener('scroll', handleScroll)
-    }
-    window.addEventListener('scroll', handleWindowScroll)
-
-    // Cleanup on unmount
-    onUnmounted(() => {
-      if (recipesContainer.value) {
-        recipesContainer.value.removeEventListener('scroll', handleScroll)
-      }
-      window.removeEventListener('scroll', handleWindowScroll)
     })
   }
+
+  // Re-observe trigger when tab changes
+  watch(activeTab, () => {
+    nextTick(() => {
+      if (loadMoreTrigger.value && intersectionObserver) {
+        intersectionObserver.unobserve(loadMoreTrigger.value)
+        intersectionObserver.observe(loadMoreTrigger.value)
+      }
+    })
+  })
 
   // Get current recipes based on active tab
   const currentRecipes = computed(() => {
@@ -161,6 +162,18 @@
         return []
     }
   })
+
+  // Debug info
+  const debugInfo = computed(() => ({
+    activeTab: activeTab.value,
+    recipesCount: currentRecipes.value.length,
+    itemsPerPage: itemsPerPage.value,
+    isLoading: isLoading.value,
+    hasMore: hasMore.value[activeTab.value as 'posts' | 'liked' | 'saved']
+  }))
+
+  // Expose environment to template
+  const isDev = false // process.env.NODE_ENV === 'development'
 
   if (profile.value) {
     useSeoMeta({
@@ -252,12 +265,15 @@
         >
           Saved ({{ saved.length }})
         </button>
+        <div class="bg-gray-100 p-2 mb-4 text-xs rounded" v-if="isDev">
+          Debug: {{ debugInfo }}
+        </div>
       </div>
 
       <!-- Recipes Grid Container -->
-      <div ref="recipesContainer" class="recipes-container">
+      <div class="recipes-container">
         <!-- Recipes Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <RecipeCard
             v-for="recipe in currentRecipes"
             :key="recipe._id"
@@ -265,25 +281,9 @@
           />
         </div>
 
-        <!-- Loading indicator -->
-        <div v-if="isLoading" class="flex justify-center items-center py-8">
-          <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-          ></div>
-          <span class="ml-2 text-gray-600">Loading more recipes...</span>
-        </div>
-
-        <!-- No more items indicator -->
-        <div
-          v-else-if="currentRecipes.length > 0 && !hasMore[activeTab as 'posts' | 'liked' | 'saved']"
-          class="text-center py-8 text-gray-500"
-        >
-          No more recipes to load
-        </div>
-
         <!-- Empty state -->
         <div
-          v-else-if="!isLoading && currentRecipes.length === 0"
+          v-if="!isLoading && currentRecipes.length === 0"
           class="text-center py-12 text-gray-500"
         >
           <div class="text-lg font-medium mb-2">No recipes found</div>
@@ -295,6 +295,34 @@
                 ? 'No liked recipes yet'
                 : 'No saved recipes yet'
             }}
+          </div>
+        </div>
+
+        <!-- Loading trigger and indicator -->
+        <div
+          v-if="currentRecipes.length > 0"
+          ref="loadMoreTrigger"
+          class="load-more-trigger py-8"
+        >
+          <!-- Loading indicator -->
+          <div v-if="isLoading" class="flex justify-center items-center">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            ></div>
+            <span class="ml-2 text-gray-600">Loading more recipes...</span>
+          </div>
+
+          <!-- No more items indicator -->
+          <div
+            v-else-if="!hasMore[activeTab as 'posts' | 'liked' | 'saved']"
+            class="text-center text-gray-500"
+          >
+            <div class="text-sm">No more recipes to load</div>
+          </div>
+
+          <!-- Load more trigger (visible but subtle) -->
+          <div v-else class="text-center text-gray-400 text-sm">
+            Scroll down for more recipes...
           </div>
         </div>
       </div>
@@ -322,5 +350,9 @@
 
   .recipes-container {
     min-height: 400px;
+  }
+
+  .load-more-trigger {
+    min-height: 50px;
   }
 </style>

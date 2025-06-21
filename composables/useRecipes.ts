@@ -8,16 +8,34 @@ export function useRecipes(handle: string, isOwner: boolean) {
   const liked = ref<any[]>([])
   const saved = ref<any[]>([])
 
-  const postsPage = ref(0)
-  const likedPage = ref(0)
-  const savedPage = ref(0)
-
   const isLoading = ref(false)
   const hasMorePosts = ref(true)
   const hasMoreLiked = ref(true)
   const hasMoreSaved = ref(true)
 
-  const ITEMS_PER_PAGE = 6 // Adjust based on your grid layout (2 rows of 3 cards each)
+  // Dynamic items per page based on screen width
+  const getItemsPerPage = () => {
+    if (process.client) {
+      const width = window.innerWidth
+      if (width < 640) return 4 // Mobile: 1 column, show 4 rows
+      if (width < 1024) return 6 // Tablet: 2 columns, show 3 rows
+      return 9 // Desktop: 3 columns, show 3 rows
+    }
+    return 6 // Default for SSR
+  }
+
+  const itemsPerPage = ref(getItemsPerPage())
+
+  // Update items per page on window resize
+  if (process.client) {
+    const updateItemsPerPage = () => {
+      itemsPerPage.value = getItemsPerPage()
+    }
+
+    window.addEventListener('resize', updateItemsPerPage)
+
+    // Cleanup function will be handled by the component
+  }
 
   const fetchPosts = async (reset = false) => {
     if (isLoading.value || (!hasMorePosts.value && !reset)) return
@@ -26,16 +44,16 @@ export function useRecipes(handle: string, isOwner: boolean) {
 
     try {
       if (reset) {
-        postsPage.value = 0
         posts.value = []
         hasMorePosts.value = true
       }
 
+      const skip = reset ? 0 : posts.value.length
       const response = await fetchApi(`/recipes/u/${handle}`, {
         method: 'GET',
         params: {
-          page: postsPage.value,
-          limit: ITEMS_PER_PAGE
+          skip,
+          limit: itemsPerPage.value
         }
       })
 
@@ -47,14 +65,15 @@ export function useRecipes(handle: string, isOwner: boolean) {
         }
 
         // Check if we have more items
-        hasMorePosts.value = response.length === ITEMS_PER_PAGE
-        postsPage.value++
+        hasMorePosts.value = response.length === itemsPerPage.value
 
         console.log(
           'Fetched posts:',
           response.length,
           'Total:',
-          posts.value.length
+          posts.value.length,
+          'Skip:',
+          skip
         )
       } else {
         hasMorePosts.value = false
@@ -74,16 +93,16 @@ export function useRecipes(handle: string, isOwner: boolean) {
 
     try {
       if (reset) {
-        likedPage.value = 0
         liked.value = []
         hasMoreLiked.value = true
       }
 
+      const skip = reset ? 0 : liked.value.length
       const response = await fetchApi(`/recipes/liked/${handle}`, {
         method: 'GET',
         params: {
-          page: likedPage.value,
-          limit: ITEMS_PER_PAGE
+          skip,
+          limit: itemsPerPage.value
         }
       })
 
@@ -94,14 +113,15 @@ export function useRecipes(handle: string, isOwner: boolean) {
           liked.value = [...liked.value, ...response]
         }
 
-        hasMoreLiked.value = response.length === ITEMS_PER_PAGE
-        likedPage.value++
+        hasMoreLiked.value = response.length === itemsPerPage.value
 
         console.log(
           'Fetched liked:',
           response.length,
           'Total:',
-          liked.value.length
+          liked.value.length,
+          'Skip:',
+          skip
         )
       } else {
         hasMoreLiked.value = false
@@ -121,16 +141,16 @@ export function useRecipes(handle: string, isOwner: boolean) {
 
     try {
       if (reset) {
-        savedPage.value = 0
         saved.value = []
         hasMoreSaved.value = true
       }
 
+      const skip = reset ? 0 : saved.value.length
       const response = await fetchApi(`/recipes/saved/`, {
         method: 'GET',
         params: {
-          page: savedPage.value,
-          limit: ITEMS_PER_PAGE
+          skip,
+          limit: itemsPerPage.value
         }
       })
 
@@ -141,14 +161,15 @@ export function useRecipes(handle: string, isOwner: boolean) {
           saved.value = [...saved.value, ...response]
         }
 
-        hasMoreSaved.value = response.length === ITEMS_PER_PAGE
-        savedPage.value++
+        hasMoreSaved.value = response.length === itemsPerPage.value
 
         console.log(
           'Fetched saved recipes:',
           response.length,
           'Total:',
-          saved.value.length
+          saved.value.length,
+          'Skip:',
+          skip
         )
       } else {
         hasMoreSaved.value = false
@@ -197,6 +218,15 @@ export function useRecipes(handle: string, isOwner: boolean) {
     }
   }
 
+  // Cleanup function for resize listener
+  const cleanup = () => {
+    if (process.client) {
+      window.removeEventListener('resize', () => {
+        itemsPerPage.value = getItemsPerPage()
+      })
+    }
+  }
+
   return {
     posts,
     liked,
@@ -207,6 +237,8 @@ export function useRecipes(handle: string, isOwner: boolean) {
     fetchSaved,
     loadMore,
     hasMore,
-    resetTab
+    resetTab,
+    itemsPerPage: readonly(itemsPerPage),
+    cleanup
   }
 }
