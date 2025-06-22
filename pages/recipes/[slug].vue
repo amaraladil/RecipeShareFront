@@ -261,43 +261,76 @@
             <span>by @{{ recipe.author?.display_name || 'Unknown' }}</span>
             <span>•</span>
             <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
+            <span v-if="recipe.updatedAt">
+              (Updated: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
+            </span>
           </div>
         </div>
 
-        <!-- Owner Controls -->
-        <div v-if="isOwner" class="flex gap-2">
-          <button
-            v-if="!isEditMode"
-            @click="toggleEditMode"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Edit Recipe
-          </button>
-
-          <template v-else>
+        <div class="grid grid-flow-col grid-rows-2">
+          <!-- Owner Controls -->
+          <div v-if="isOwner" class="row-span-1 flex gap-2">
             <button
-              @click="saveRecipe"
-              :disabled="isSaving"
-              class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {{ isSaving ? 'Saving...' : 'Save Changes' }}
-            </button>
-            <button
+              v-if="!isEditMode"
               @click="toggleEditMode"
-              :disabled="isSaving"
-              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
             >
-              Cancel
+              Edit Recipe
             </button>
-          </template>
 
-          <button
-            v-if="!isEditMode"
-            @click="deleteRecipe"
-            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-          >
-            Delete
-          </button>
+            <template v-else>
+              <button
+                @click="saveRecipe"
+                :disabled="isSaving"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              </button>
+              <button
+                @click="toggleEditMode"
+                :disabled="isSaving"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </template>
+
+            <button
+              v-if="!isEditMode"
+              @click="deleteRecipe"
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+          <div v-else class="row-span-1 h-10"></div>
+          <div class="row-span-1 flex justify-end items-end gap-2">
+            <UIcon
+              v-if="recipe.is_saved"
+              name="ic:outline-bookmark"
+              @click="recipe.is_saved = !recipe.is_saved"
+              class="size-7 text-gray-900/90 cursor-pointer"
+            />
+            <UIcon
+              v-else
+              name="ic:outline-bookmark-border"
+              @click="recipe.is_saved = !recipe.is_saved"
+              class="size-7 text-gray-600 cursor-pointer"
+            />
+
+            <UIcon
+              v-if="recipe.is_liked"
+              name="ic:outline-favorite"
+              @click="recipe.is_liked = !recipe.is_liked"
+              class="size-7 text-red-600 cursor-pointer"
+            />
+            <UIcon
+              v-else
+              name="ic:outline-favorite-border"
+              @click="recipe.is_liked = !recipe.is_liked"
+              class="size-7 text-gray-600 cursor-pointer"
+            />
+          </div>
         </div>
       </div>
 
