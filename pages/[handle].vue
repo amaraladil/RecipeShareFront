@@ -110,7 +110,7 @@
 
   // Setup Intersection Observer for infinite scroll
   const setupIntersectionObserver = () => {
-    if (!process.client) return
+    if (!import.meta.client) return
 
     intersectionObserver = new IntersectionObserver(
       (entries) => {
@@ -173,7 +173,7 @@
   }))
 
   // Expose environment to template
-  const isDev = false // process.env.NODE_ENV === 'development'
+  const isDev = process.env.NODE_ENV === 'development'
 
   if (profile.value) {
     useSeoMeta({
@@ -286,7 +286,7 @@
           v-if="!isLoading && currentRecipes.length === 0"
           class="text-center py-12 text-gray-500"
         >
-          <div class="text-lg font-medium mb-2">No recipes found</div>
+          <!-- <div class="text-lg font-medium mb-2">No recipes found</div> -->
           <div class="text-sm">
             {{
               activeTab === 'posts'
@@ -299,11 +299,7 @@
         </div>
 
         <!-- Loading trigger and indicator -->
-        <div
-          v-if="currentRecipes.length > 0"
-          ref="loadMoreTrigger"
-          class="load-more-trigger py-8"
-        >
+        <div ref="loadMoreTrigger" class="load-more-trigger py-8">
           <!-- Loading indicator -->
           <div v-if="isLoading" class="flex justify-center items-center">
             <div
@@ -314,16 +310,16 @@
 
           <!-- No more items indicator -->
           <div
-            v-else-if="!hasMore[activeTab as 'posts' | 'liked' | 'saved']"
+            v-else-if="currentRecipes.length != 0 && !hasMore[activeTab as 'posts' | 'liked' | 'saved']"
             class="text-center text-gray-500"
           >
             <div class="text-sm">No more recipes to load</div>
           </div>
 
           <!-- Load more trigger (visible but subtle) -->
-          <div v-else class="text-center text-gray-400 text-sm">
+          <!-- <div v-else class="text-center text-gray-400 text-sm">
             Scroll down for more recipes...
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

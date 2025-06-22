@@ -220,7 +220,7 @@ export function useRecipes(handle: string, isOwner: boolean) {
 
   // Cleanup function for resize listener
   const cleanup = () => {
-    if (process.client) {
+    if (import.meta.client) {
       window.removeEventListener('resize', () => {
         itemsPerPage.value = getItemsPerPage()
       })
