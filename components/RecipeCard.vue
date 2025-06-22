@@ -1,11 +1,19 @@
 <!-- components/RecipeCard.vue -->
 <template>
   <div class="bg-white shadow-md rounded-xl overflow-hidden mb-4">
-    <img
-      :src="recipe.image || '/default-recipe.jpg'"
-      alt="Recipe image"
-      class="w-full h-48 object-cover"
-    />
+    <div class="relative">
+      <img
+        :src="recipe.image || '/default-recipe.jpg'"
+        alt="Recipe image"
+        class="w-full h-48 object-cover"
+      />
+
+      <UIcon
+        v-if="recipe.is_saved"
+        name="ic:outline-bookmark"
+        class="size-5 absolute top-1 right-1"
+      />
+    </div>
     <div class="p-4">
       <!-- <h2 class="text-xl font-semibold">{{ recipe.title }}</h2> -->
       <NuxtLink

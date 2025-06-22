@@ -1,249 +1,597 @@
 <script setup lang="ts">
+  import { useApi } from '@/composables/useApi'
+  import { useSupabaseUser } from '@/composables/useSupabaseUser'
+  import { pageTitle } from '~/utils/meta'
+
   const route = useRoute()
-  import { useSupabaseUser } from '~/composables/useSupabaseUser'
-  const { user } = useSupabaseUser() // assuming you're using Supabase auth
-  const isEditing = ref(false)
+  const router = useRouter()
+  const config = useRuntimeConfig()
+  const { user } = useSupabaseUser()
+  const fetchApi = useApi()
 
-  import { useApi } from '~/composables/useApi'
-  const api = useApi()
+  const slug = route.params.slug as string
 
-  interface Ingredient {
-    name: string
-    quantity: string
-    measurement: string
-  }
+  // Recipe data
+  const recipe = ref<any>(null)
+  const isLoading = ref(true)
+  const isEditMode = ref(false)
+  const isSaving = ref(false)
+  const error = ref('')
 
-  interface Recipe {
-    _id: string
-    title: string
-    description: string
-    status: number
-    author: User
-    ingredients: Ingredient[]
-    steps: string[]
-    tags: string[]
-    fetchTime?: Date
-  }
-
-  interface User {
-    id: string
-    display_name: string
-    avatar_url: string
-  }
-
-  const nuxtApp = useNuxtApp()
-  const {
-    data: recipe,
-    pending,
-    refresh
-  } = await useAsyncData<Recipe | null>(
-    `recipe-${route.params.slug}`,
-    () => api(`/recipes/${route.params.slug}`),
-    {
-      transform(input) {
-        if (!input) return null
-        return {
-          ...input,
-          fetchTime: new Date()
-        } as Recipe
-      },
-      getCachedData(key) {
-        const data = nuxtApp.payload.data[key] || nuxtApp.static.data[key]
-
-        if (!data) return null
-
-        const expired = data.fetchTime
-          ? new Date(data.fetchTime) < new Date(Date.now() - 30 * 1000)
-          : false
-
-        if (expired) {
-          return null // Cache expired, fetch new data
-        }
-
-        return data as Recipe
-      }
-    }
-  )
-
-  const isOwner = computed(
-    () => user.value && recipe.value?.author.id === user.value?.id
-  )
-
-  // Editable draft form state
-  const draft = reactive({
-    ...recipe.value,
-    ingredients: recipe.value?.ingredients ?? [],
-    instructions: recipe.value?.steps ?? []
+  // Edit form data
+  const editForm = ref({
+    title: '',
+    description: '',
+    ingredients: [] as string[],
+    steps: [] as string[],
+    prep_time: 0,
+    cook_time: 0,
+    servings: 1,
+    difficulty: 'Easy',
+    tags: [] as string[],
+    image: ''
   })
 
-  const toggleEdit = () => {
-    if (isOwner.value) {
-      isEditing.value = !isEditing.value
-      Object.assign(draft, recipe.value) // Reset draft when toggling
+  // Computed properties
+  const isOwner = computed(() => {
+    return (
+      user.value && recipe.value && user.value.id === recipe.value.author?.id
+    )
+  })
+
+  const totalTime = computed(() => {
+    if (isEditMode.value) {
+      return editForm.value.prep_time + editForm.value.cook_time
+    }
+    return (recipe.value?.prep_time || 0) + (recipe.value?.cook_time || 0)
+  })
+
+  // Fetch recipe data
+  const fetchRecipe = async () => {
+    try {
+      isLoading.value = true
+      error.value = ''
+
+      const response = await fetchApi(`/recipes/${slug}`, { method: 'GET' })
+
+      if (response) {
+        recipe.value = response
+        // Initialize edit form with recipe data
+        editForm.value = {
+          title: response.title || '',
+          description: response.description || '',
+          ingredients: [...(response.ingredients || [])],
+          steps: [...(response.steps || [])],
+          prep_time: response.prep_time || 0,
+          cook_time: response.cook_time || 0,
+          servings: response.servings || 1,
+          difficulty: response.difficulty || 'Easy',
+          tags: [...(response.tags || [])],
+          image: response.image || ''
+        }
+      } else {
+        throw new Error('Recipe not found')
+      }
+    } catch (err) {
+      console.error('Error fetching recipe:', err)
+      error.value = 'Failed to load recipe'
+    } finally {
+      isLoading.value = false
     }
   }
 
-  const saveRecipe = async () => {
-    if (!recipe.value) return
-    await $fetch(`/api/recipes/${recipe.value._id}`, {
-      method: 'PATCH',
-      body: draft
-    })
-    await refresh()
-    isEditing.value = false
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    if (isEditMode.value) {
+      // Reset form to original values when canceling edit
+      if (recipe.value) {
+        editForm.value = {
+          title: recipe.value.title || '',
+          description: recipe.value.description || '',
+          ingredients: [...(recipe.value.ingredients || [])],
+          steps: [...(recipe.value.steps || [])],
+          prep_time: recipe.value.prep_time || 0,
+          cook_time: recipe.value.cook_time || 0,
+          servings: recipe.value.servings || 1,
+          difficulty: recipe.value.difficulty || 'Easy',
+          tags: [...(recipe.value.tags || [])],
+          image: recipe.value.image || ''
+        }
+      }
+    }
+    isEditMode.value = !isEditMode.value
   }
 
-  if (recipe.value) {
-    useSeoMeta({
-      title: pageTitle(`${recipe.value?.title}`),
-      description: `${recipe.value?.description}`,
-      ogTitle: pageTitle(`${recipe.value?.title}`),
-      ogDescription: `${recipe.value?.description}`,
-      ogImage: '[og:image]',
-      ogUrl: route.fullPath,
-      twitterTitle: pageTitle(`${recipe.value?.title}`),
-      twitterDescription: `${recipe.value?.description}`,
-      twitterImage: '[twitter:image]',
-      twitterCard: 'summary'
-    })
-  } else {
-    useSeoMeta({
-      title: pageTitle(`Find and Share Recipes`),
-      description: 'Find and share your favorite recipes with our community.',
-      ogTitle: pageTitle(`Find and Share Recipes`),
-      ogDescription: 'Find and share your favorite recipes with our community.',
-      ogImage: '[og:image]',
-      ogUrl: route.fullPath,
-      twitterTitle: pageTitle(`Find and Share Recipes`),
-      twitterDescription:
-        'Find and share your favorite recipes with our community.',
-      twitterImage: '[twitter:image]',
-      twitterCard: 'summary_large_image'
-    })
+  // Save recipe changes
+  const saveRecipe = async () => {
+    try {
+      isSaving.value = true
+      error.value = ''
+
+      const response = await fetchApi(`/recipes/${slug}`, {
+        method: 'PUT',
+        body: JSON.stringify(editForm.value)
+      })
+
+      if (response) {
+        recipe.value = response
+        isEditMode.value = false
+        // Show success message (you can add a toast notification here)
+        console.log('Recipe updated successfully')
+      }
+    } catch (err) {
+      console.error('Error saving recipe:', err)
+      error.value = 'Failed to save recipe changes'
+    } finally {
+      isSaving.value = false
+    }
   }
+
+  // Add/remove ingredient
+  const addIngredient = () => {
+    editForm.value.ingredients.push('')
+  }
+
+  const removeIngredient = (index: number) => {
+    editForm.value.ingredients.splice(index, 1)
+  }
+
+  // Add/remove instruction
+  const addInstruction = () => {
+    editForm.value.steps.push('')
+  }
+
+  const removeInstruction = (index: number) => {
+    editForm.value.steps.splice(index, 1)
+  }
+
+  // Add/remove tag
+  const newTag = ref('')
+  const addTag = () => {
+    if (
+      newTag.value.trim() &&
+      !editForm.value.tags.includes(newTag.value.trim())
+    ) {
+      editForm.value.tags.push(newTag.value.trim())
+      newTag.value = ''
+    }
+  }
+
+  const removeTag = (index: number) => {
+    editForm.value.tags.splice(index, 1)
+  }
+
+  // Delete recipe
+  const deleteRecipe = async () => {
+    if (
+      !confirm(
+        'Are you sure you want to delete this recipe? This action cannot be undone.'
+      )
+    ) {
+      return
+    }
+
+    try {
+      await fetchApi(`/recipes/${slug}`, { method: 'DELETE' })
+      router.push('/') // Redirect to home or profile
+    } catch (err) {
+      console.error('Error deleting recipe:', err)
+      error.value = 'Failed to delete recipe'
+    }
+  }
+
+  // Initialize
+  onMounted(() => {
+    fetchRecipe()
+  })
+
+  // SEO Meta
+  watchEffect(() => {
+    if (recipe.value) {
+      useSeoMeta({
+        title: pageTitle(recipe.value.title),
+        description: recipe.value.description,
+        ogTitle: pageTitle(recipe.value.title),
+        ogDescription: recipe.value.description,
+        ogImage: recipe.value.image || '[og:image]',
+        ogUrl: config.public.baseUrl + route.path,
+        twitterTitle: pageTitle(recipe.value.title),
+        twitterDescription: recipe.value.description,
+        twitterImage: recipe.value.image || '[twitter:image]',
+        twitterCard: 'summary_large_image'
+      })
+    }
+  })
 </script>
 
 <template>
-  <div class="container mx-auto py-10 px-8">
-    <div v-if="recipe">
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-3xl font-bold">
-            <template v-if="!isEditing">{{ recipe?.title }}</template>
-            <template v-else><UInput v-model="draft.title" /></template>
+  <div class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+      ></div>
+      <span class="ml-3 text-lg text-gray-600">Loading recipe...</span>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="text-center py-12">
+      <div class="text-red-600 text-lg font-medium mb-2">{{ error }}</div>
+      <button
+        @click="fetchRecipe"
+        class="btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Try Again
+      </button>
+    </div>
+
+    <!-- Recipe Content -->
+    <div v-else-if="recipe" class="space-y-6">
+      <!-- Header with Edit Controls -->
+      <div class="flex justify-between items-start gap-4">
+        <div class="flex-1">
+          <!-- View Mode Title -->
+          <h1
+            v-if="!isEditMode"
+            class="text-3xl md:text-4xl font-bold text-gray-900 mb-2"
+          >
+            {{ recipe.title }}
           </h1>
 
-          <div class="text-xl italic">
-            Author:
-            <NuxtLink
-              :to="`/@${recipe?.author.display_name}`"
-              class="hover:underline"
+          <!-- Edit Mode Title -->
+          <div v-else class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Recipe Title</label
             >
-              <img
-                v-if="recipe?.author.avatar_url"
-                :src="recipe?.author.avatar_url"
-                alt="User Avatar"
-                class="text-sm inline-block w-15 h-15 rounded-full mr-2 object-cover border"
-              />
-              <span v-if="recipe?.author.display_name">{{
-                recipe.author.display_name
-              }}</span>
-            </NuxtLink>
+            <input
+              v-model="editForm.title"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter recipe title"
+            />
+          </div>
+
+          <!-- Author Info -->
+          <div class="flex items-center gap-3 text-gray-600">
+            <img
+              :src="recipe.author?.avatar_url || '/default-avatar.jpg'"
+              alt="Author"
+              class="w-8 h-8 rounded-full"
+            />
+            <span>by @{{ recipe.author?.display_name || 'Unknown' }}</span>
+            <span>•</span>
+            <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
           </div>
         </div>
 
-        <div v-if="isOwner">
-          <UButton label="Edit" @click="toggleEdit" v-if="!isEditing" />
-          <UButton
-            label="Save"
-            color="primary"
-            @click="saveRecipe"
-            v-if="isEditing"
-          />
+        <!-- Owner Controls -->
+        <div v-if="isOwner" class="flex gap-2">
+          <button
+            v-if="!isEditMode"
+            @click="toggleEditMode"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Edit Recipe
+          </button>
+
+          <template v-else>
+            <button
+              @click="saveRecipe"
+              :disabled="isSaving"
+              class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <button
+              @click="toggleEditMode"
+              :disabled="isSaving"
+              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </template>
+
+          <button
+            v-if="!isEditMode"
+            @click="deleteRecipe"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+          >
+            Delete
+          </button>
         </div>
       </div>
 
-      <!-- Visibility Toggle -->
-      <div v-if="isEditing" class="mb-4">
-        <label class="text-sm">Visibility</label>
-        <USelect
-          v-model="draft.status"
-          :options="[
-            { label: 'Public', value: 1 },
-            { label: 'Unlisted', value: 2 },
-            { label: 'Private', value: 3 }
-          ]"
+      <!-- Recipe Image -->
+      <div class="w-full h-64 md:h-96 rounded-lg overflow-hidden bg-gray-200">
+        <img
+          v-if="isEditMode ? editForm.image : recipe.image"
+          :src="isEditMode ? editForm.image : recipe.image"
+          :alt="isEditMode ? editForm.title : recipe.title"
+          class="w-full h-full object-cover"
+        />
+        <div
+          v-else
+          class="w-full h-full flex items-center justify-center text-gray-400"
+        >
+          No image available
+        </div>
+      </div>
+
+      <!-- Edit Image URL -->
+      <div v-if="isEditMode" class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Image URL</label>
+        <input
+          v-model="editForm.image"
+          type="url"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="https://example.com/image.jpg"
         />
       </div>
 
-      <section class="mb-6">
-        <div v-if="!isEditing">{{ recipe?.description }}</div>
-        <div v-else>
-          <UTextarea v-model="draft.description" :rows="4" />
+      <!-- Recipe Meta Info -->
+      <div
+        class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg"
+      >
+        <div class="text-center">
+          <div class="font-semibold text-gray-900">
+            {{ isEditMode ? editForm.prep_time : recipe.prep_time || 0 }}
+            <span v-if="isEditMode">
+              <input
+                v-model.number="editForm.prep_time"
+                type="number"
+                min="0"
+                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+              />
+            </span>
+            min
+          </div>
+          <div class="text-sm text-gray-600">Prep Time</div>
         </div>
-      </section>
+
+        <div class="text-center">
+          <div class="font-semibold text-gray-900">
+            {{ isEditMode ? editForm.cook_time : recipe.cook_time || 0 }}
+            <span v-if="isEditMode">
+              <input
+                v-model.number="editForm.cook_time"
+                type="number"
+                min="0"
+                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+              />
+            </span>
+            min
+          </div>
+          <div class="text-sm text-gray-600">Cook Time</div>
+        </div>
+
+        <div class="text-center">
+          <div class="font-semibold text-gray-900">{{ totalTime }} min</div>
+          <div class="text-sm text-gray-600">Total Time</div>
+        </div>
+
+        <div class="text-center">
+          <div class="font-semibold text-gray-900">
+            {{ isEditMode ? editForm.servings : recipe.servings || 1 }}
+            <span v-if="isEditMode">
+              <input
+                v-model.number="editForm.servings"
+                type="number"
+                min="1"
+                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+              />
+            </span>
+          </div>
+          <div class="text-sm text-gray-600">Servings</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="space-y-2">
+        <h2 class="text-xl font-semibold text-gray-900">Description</h2>
+        <p v-if="!isEditMode" class="text-gray-700 leading-relaxed">
+          {{ recipe.description || 'No description available.' }}
+        </p>
+        <textarea
+          v-else
+          v-model="editForm.description"
+          rows="3"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter recipe description"
+        ></textarea>
+      </div>
+
+      <!-- Tags -->
+      <div class="space-y-2">
+        <h2 class="text-xl font-semibold text-gray-900">Tags</h2>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(tag, index) in isEditMode
+              ? editForm.tags
+              : recipe.tags || []"
+            :key="index"
+            class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1"
+          >
+            {{ tag }}
+            <button
+              v-if="isEditMode"
+              @click="removeTag(index)"
+              class="ml-1 text-blue-600 hover:text-blue-800"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+
+        <!-- Add Tag in Edit Mode -->
+        <div v-if="isEditMode" class="flex gap-2 mt-2">
+          <input
+            v-model="newTag"
+            @keyup.enter="addTag"
+            type="text"
+            class="flex-1 px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Add a tag"
+          />
+          <button
+            @click="addTag"
+            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+          >
+            Add
+          </button>
+        </div>
+      </div>
 
       <!-- Ingredients -->
-      <section class="mb-6">
-        <h2 class="text-xl font-semibold mb-2">Ingredients</h2>
-        <ul v-if="!isEditing">
-          <li v-for="item in recipe?.ingredients" :key="item.name">
-            - {{ item.name }}
-            <span class="">{{ item.quantity }} {{ item.measurement }}</span>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-900">Ingredients</h2>
+          <button
+            v-if="isEditMode"
+            @click="addIngredient"
+            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+          >
+            Add Ingredient
+          </button>
+        </div>
+
+        <ul class="space-y-2">
+          <li
+            v-for="(ingredient, index) in isEditMode
+              ? editForm.ingredients
+              : recipe.ingredients || []"
+            :key="index"
+            class="flex items-center gap-3"
+          >
+            <span
+              v-if="!isEditMode"
+              class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"
+            ></span>
+            <span v-if="!isEditMode" class="text-gray-700">{{
+              ingredient
+            }}</span>
+
+            <template v-else>
+              <input
+                v-model="editForm.ingredients[index]"
+                type="text"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter ingredient"
+              />
+              <button
+                @click="removeIngredient(index)"
+                class="text-red-600 hover:text-red-800 px-2"
+              >
+                Remove
+              </button>
+            </template>
           </li>
         </ul>
-        <div v-else>
-          <div
-            v-for="(item, i) in draft.ingredients"
-            :key="i"
-            class="flex gap-2 mb-2"
-          >
-            <UInput v-model="item.quantity" placeholder="1 cup" class="w-1/3" />
-            <UInput v-model="item.name" placeholder="flour" class="w-2/3" />
-            <UInput
-              v-model="item.measurement"
-              placeholder="flour"
-              class="w-2/3"
-            />
-          </div>
-          <UButton
-            label="Add Ingredient"
-            @click="
-              draft.ingredients.push({
-                name: '',
-                quantity: '',
-                measurement: ''
-              })
-            "
-            size="xs"
-          />
+
+        <div
+          v-if="
+            !isEditMode &&
+            (!recipe.ingredients || recipe.ingredients.length === 0)
+          "
+          class="text-gray-500 italic"
+        >
+          No ingredients listed.
         </div>
-      </section>
+      </div>
 
       <!-- Instructions -->
-      <section>
-        <h2 class="text-xl font-semibold mb-2">Instructions</h2>
-        <ol v-if="!isEditing" class="list-decimal ml-6">
-          <li v-for="(step, i) in recipe?.steps" :key="i">{{ step }}</li>
-        </ol>
-        <div v-else>
-          <div v-for="(step, i) in draft.instructions" :key="i" class="mb-2">
-            <UTextarea v-model="draft.instructions[i]" :rows="2" />
-          </div>
-          <UButton
-            label="Add Step"
-            @click="draft.instructions.push('')"
-            size="xs"
-          />
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-900">Instructions</h2>
+          <button
+            v-if="isEditMode"
+            @click="addInstruction"
+            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+          >
+            Add Step
+          </button>
         </div>
-      </section>
+
+        <ol class="space-y-3">
+          <li
+            v-for="(instruction, index) in isEditMode
+              ? editForm.steps
+              : recipe.steps || []"
+            :key="index"
+            class="flex gap-4"
+          >
+            <span
+              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center"
+            >
+              {{ index + 1 }}
+            </span>
+
+            <span v-if="!isEditMode" class="text-gray-700 flex-1">{{
+              instruction
+            }}</span>
+
+            <div v-else class="flex-1 flex gap-2">
+              <textarea
+                v-model="editForm.steps[index]"
+                rows="2"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter instruction step"
+              ></textarea>
+              <button
+                @click="removeInstruction(index)"
+                class="text-red-600 hover:text-red-800 px-2"
+              >
+                Remove
+              </button>
+            </div>
+          </li>
+        </ol>
+
+        <div
+          v-if="!isEditMode && (!recipe.steps || recipe.steps.length === 0)"
+          class="text-gray-500 italic"
+        >
+          No instructions provided.
+        </div>
+      </div>
+
+      <!-- Recipe Stats -->
+      <div
+        class="flex items-center justify-between py-4 border-t border-gray-200"
+      >
+        <div class="flex gap-6 text-sm text-gray-600">
+          <span>{{ recipe.counter?.likes || 0 }} likes</span>
+          <span>{{ recipe.counter?.comments || 0 }} comments</span>
+          <span>{{ recipe.counter?.saves || 0 }} saves</span>
+        </div>
+
+        <div class="flex gap-2">
+          <!-- Add action buttons here (like, save, share, etc.) -->
+          <button
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+          >
+            Like
+          </button>
+          <button
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+          >
+            Save
+          </button>
+        </div>
+      </div>
     </div>
-    <div
-      v-else
-      class="flex flex-col items-center justify-center min-h-[40vh] mb-4 text-xl font-bold"
-    >
-      Recipe does not exist or is not available.
+
+    <!-- Recipe Not Found -->
+    <div v-else class="text-center py-12">
+      <div class="text-gray-500 text-lg font-medium mb-2">Recipe not found</div>
+      <NuxtLink to="/" class="text-blue-600 hover:underline">
+        Go back to home
+      </NuxtLink>
     </div>
   </div>
 </template>
+
+<style scoped>
+  @import '@/assets/styles/main.css';
+  .btn {
+    @apply px-4 py-2 rounded font-medium transition-colors duration-200;
+  }
+</style>

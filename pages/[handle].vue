@@ -317,9 +317,9 @@
           </div>
 
           <!-- Load more trigger (visible but subtle) -->
-          <!-- <div v-else class="text-center text-gray-400 text-sm">
+          <div v-else class="text-center text-gray-400 text-sm">
             Scroll down for more recipes...
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
