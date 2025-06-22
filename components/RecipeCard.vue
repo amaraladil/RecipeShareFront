@@ -8,11 +8,18 @@
         class="w-full h-48 object-cover"
       />
 
-      <UIcon
-        v-if="recipe.is_saved"
-        name="ic:outline-bookmark"
-        class="size-5 absolute top-1 right-1"
-      />
+      <div class="absolute mt-1 top-2 right-1 flex gap-1">
+        <UIcon
+          v-if="recipe.is_saved"
+          name="ic:outline-bookmark"
+          class="size-5"
+        />
+        <UIcon
+          v-if="recipe.is_liked"
+          name="ic:outline-favorite"
+          class="size-5 text-red-600"
+        />
+      </div>
     </div>
     <div class="p-4">
       <!-- <h2 class="text-xl font-semibold">{{ recipe.title }}</h2> -->

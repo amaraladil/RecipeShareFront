@@ -560,7 +560,7 @@
         <div class="flex gap-6 text-sm text-gray-600">
           <span>{{ recipe.counter?.likes || 0 }} likes</span>
           <span>{{ recipe.counter?.comments || 0 }} comments</span>
-          <span>{{ recipe.counter?.saves || 0 }} saves</span>
+          <span>{{ recipe.counter?.views || 0 }} saves</span>
         </div>
 
         <div class="flex gap-2">

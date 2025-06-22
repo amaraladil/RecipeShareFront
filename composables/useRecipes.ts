@@ -98,7 +98,7 @@ export function useRecipes(handle: string, isOwner: boolean) {
       }
 
       const skip = reset ? 0 : liked.value.length
-      const response = await fetchApi(`/recipes/liked/${handle}`, {
+      const response = await fetchApi(`/recipes/liked/`, {
         method: 'GET',
         params: {
           skip,
