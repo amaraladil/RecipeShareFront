@@ -324,7 +324,15 @@
               alt="Author"
               class="w-8 h-8 rounded-full"
             />
-            <span>by @{{ recipe.author?.display_name || 'Unknown' }}</span>
+            <span
+              >by
+              <NuxtLink
+                :to="`/@${recipe.author?.display_name}`"
+                class="text-blue-600 hover:underline cursor-pointer"
+              >
+                @{{ recipe.author?.display_name || 'Unknown' }}
+              </NuxtLink>
+            </span>
             <span>•</span>
             <span class="gap-3 flex items-center">
               <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>

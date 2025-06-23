@@ -173,7 +173,7 @@
   }))
 
   // Expose environment to template
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = false //process.env.NODE_ENV === 'development'
 
   if (profile.value) {
     useSeoMeta({

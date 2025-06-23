@@ -9,13 +9,6 @@
       @mouseenter="handleSidebarHover(true)"
       @mouseleave="handleSidebarHover(false)"
     >
-      <!-- Mobile backdrop -->
-      <div
-        v-if="sidebarExpanded && isMobile"
-        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
-        @click="sidebarExpanded = false"
-      ></div>
-
       <div class="flex flex-col h-full p-3">
         <!-- Header with hamburger -->
         <div class="flex items-center mb-6">
@@ -39,7 +32,7 @@
             <h1
               class="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap"
             >
-              RecipeShare
+              ShareTheMenu
             </h1>
           </div>
         </div>
@@ -234,6 +227,12 @@
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto">
+      <!-- Mobile backdrop -->
+      <div
+        v-if="sidebarExpanded && isMobile"
+        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        @click="sidebarExpanded = false"
+      ></div>
       <NuxtPage />
     </main>
 
