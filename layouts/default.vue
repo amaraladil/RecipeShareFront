@@ -168,7 +168,7 @@
               <NuxtLink
                 v-if="profile"
                 :to="`/@${profile.display_name}`"
-                class="flex items-center w-full px-1 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                class="flex items-center w-full px-0.5 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <img
                   :src="profile.avatar_url"
@@ -230,7 +230,7 @@
       <!-- Mobile backdrop -->
       <div
         v-if="sidebarExpanded && isMobile"
-        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        class="fixed inset-0 bg-black/30 z-30 lg:hidden"
         @click="sidebarExpanded = false"
       ></div>
       <NuxtPage />

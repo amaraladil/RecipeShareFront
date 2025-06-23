@@ -299,7 +299,7 @@
           <!-- View Mode Title -->
           <h1
             v-if="!isEditMode"
-            class="text-3xl md:text-4xl font-bold text-gray-900 mb-2"
+            class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white/80 mb-2"
           >
             {{ recipe.title }}
           </h1>
@@ -318,7 +318,7 @@
           </div>
 
           <!-- Author Info -->
-          <div class="flex items-center gap-3 text-gray-600">
+          <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
             <img
               :src="recipe.author?.avatar_url || '/default-avatar.jpg'"
               alt="Author"
@@ -501,8 +501,13 @@
 
       <!-- Description -->
       <div class="space-y-2">
-        <h2 class="text-xl font-semibold text-gray-900">Description</h2>
-        <p v-if="!isEditMode" class="text-gray-700 leading-relaxed">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
+          Description
+        </h2>
+        <p
+          v-if="!isEditMode"
+          class="text-gray-700 dark:text-gray-300 leading-relaxed"
+        >
           {{ recipe.description || 'No description available.' }}
         </p>
         <textarea
@@ -516,7 +521,9 @@
 
       <!-- Tags -->
       <div class="space-y-2">
-        <h2 class="text-xl font-semibold text-gray-900">Tags</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
+          Tags
+        </h2>
         <div class="flex flex-wrap gap-2">
           <span
             v-for="(tag, index) in isEditMode
@@ -557,7 +564,9 @@
       <!-- Ingredients -->
       <div class="space-y-3">
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-gray-900">Ingredients</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
+            Ingredients
+          </h2>
           <button
             v-if="isEditMode"
             @click="addIngredient"
@@ -579,7 +588,7 @@
               v-if="!isEditMode"
               class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"
             ></span>
-            <span v-if="!isEditMode" class="text-gray-700">{{
+            <span v-if="!isEditMode" class="text-gray-700 dark:text-gray-300">{{
               ingredient
             }}</span>
 
@@ -614,7 +623,9 @@
       <!-- Instructions -->
       <div class="space-y-3">
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-gray-900">Instructions</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
+            Instructions
+          </h2>
           <button
             v-if="isEditMode"
             @click="addInstruction"
@@ -638,9 +649,11 @@
               {{ index + 1 }}
             </span>
 
-            <span v-if="!isEditMode" class="text-gray-700 flex-1">{{
-              instruction
-            }}</span>
+            <span
+              v-if="!isEditMode"
+              class="text-gray-700 dark:text-gray-300 flex-1"
+              >{{ instruction }}</span
+            >
 
             <div v-else class="flex-1 flex gap-2">
               <textarea
