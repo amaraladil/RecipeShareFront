@@ -1,95 +1,218 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Sidebar -->
-    <aside class="w-50 bg-white dark:bg-black dark:text-white border-r p-4">
-      <template v-if="!userLoading">
-        <div class="text-xl font-bold mb-4">RecipeShare</div>
-        <nav class="flex flex-col gap-2">
-          <NuxtLink to="/" class="hover:underline">Home</NuxtLink>
-          <NuxtLink to="/explore" class="hover:underline">Explore</NuxtLink>
-          <UButton
-            icon="typcn:home-outline"
-            size="xl"
-            color="neutral"
-            variant="solid"
-            href="/"
-            >Home</UButton
+    <aside
+      :class="[
+        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out relative z-40',
+        sidebarExpanded ? 'w-64' : 'w-16'
+      ]"
+      @mouseenter="handleSidebarHover(true)"
+      @mouseleave="handleSidebarHover(false)"
+    >
+      <!-- Mobile backdrop -->
+      <div
+        v-if="sidebarExpanded && isMobile"
+        class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+        @click="sidebarExpanded = false"
+      ></div>
+
+      <div class="flex flex-col h-full p-3">
+        <!-- Header with hamburger -->
+        <div class="flex items-center justify-between mb-6">
+          <div
+            :class="[
+              'flex items-center transition-opacity duration-200',
+              sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+            ]"
           >
-          <UButton
-            icon="teenyicons:compass-outline"
-            size="xl"
-            color="neutral"
-            variant="solid"
-            href="/@user4328175"
-            >Explore</UButton
+            <h1
+              class="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap"
+            >
+              RecipeShare
+            </h1>
+          </div>
+          <button
+            @click="toggleSidebar"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-          <UButton
-            icon="ri:edit-line"
-            size="xl"
-            color="neutral"
-            variant="solid"
-            href="/@user5371307"
-            a
-            >write</UButton
-          >
-          <UChip
-            :text="5"
-            icon="i-lucide-mail"
-            position="bottom-right"
-            size="3xl"
-            inset
-          >
-            <UAvatar
-              src="https://github.com/benjamincanac.png"
-              class="w-32 h-32"
+            <Icon
+              name="heroicons:bars-3"
+              class="w-5 h-5 text-gray-600 dark:text-gray-300"
             />
-          </UChip>
+          </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-2">
           <template v-if="!userLoading">
+            <!-- Home -->
             <NuxtLink
+              to="/"
+              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            >
+              <Icon name="heroicons:home" class="w-5 h-5 flex-shrink-0" />
+              <span
+                :class="[
+                  'ml-3 transition-opacity duration-200',
+                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                ]"
+              >
+                Home
+              </span>
+            </NuxtLink>
+
+            <!-- Explore -->
+            <NuxtLink
+              to="/explore"
+              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            >
+              <Icon name="heroicons:compass" class="w-5 h-5 flex-shrink-0" />
+              <span
+                :class="[
+                  'ml-3 transition-opacity duration-200',
+                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                ]"
+              >
+                Explore
+              </span>
+            </NuxtLink>
+
+            <!-- Write -->
+            <NuxtLink
+              to="/write"
+              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            >
+              <Icon
+                name="heroicons:pencil-square"
+                class="w-5 h-5 flex-shrink-0"
+              />
+              <span
+                :class="[
+                  'ml-3 transition-opacity duration-200',
+                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                ]"
+              >
+                Write
+              </span>
+            </NuxtLink>
+
+            <!-- Messages with notification -->
+            <div class="relative">
+              <NuxtLink
+                to="/messages"
+                class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              >
+                <div class="relative">
+                  <Icon
+                    name="heroicons:chat-bubble-left-right"
+                    class="w-5 h-5 flex-shrink-0"
+                  />
+                  <span
+                    class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center"
+                  >
+                    5
+                  </span>
+                </div>
+                <span
+                  :class="[
+                    'ml-3 transition-opacity duration-200',
+                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  ]"
+                >
+                  Messages
+                </span>
+              </NuxtLink>
+            </div>
+          </template>
+
+          <!-- Loading skeleton -->
+          <div v-else class="space-y-2">
+            <div
+              v-for="n in 4"
+              :key="n"
+              class="h-11 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+            ></div>
+          </div>
+        </nav>
+
+        <!-- User section -->
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+          <template v-if="!userLoading">
+            <!-- Login button -->
+            <button
               v-if="!user"
               @click="openLogin"
-              class="text-blue-600 cursor-pointer"
-              >Login</NuxtLink
+              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
             >
-            <template v-else>
-              <UButton
-                v-if="profile"
-                :avatar="{ src: `${profile.avatar_url}` }"
-                :to="`/@${profile.display_name}`"
-                size="xl"
-                color="neutral"
-                variant="solid"
-                >Profile</UButton
+              <Icon
+                name="heroicons:arrow-right-on-rectangle"
+                class="w-5 h-5 flex-shrink-0"
+              />
+              <span
+                :class="[
+                  'ml-3 transition-opacity duration-200',
+                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                ]"
               >
+                Login
+              </span>
+            </button>
+
+            <!-- User profile -->
+            <template v-else>
+              <NuxtLink
+                v-if="profile"
+                :to="`/@${profile.display_name}`"
+                class="flex items-center w-full px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <img
+                  :src="profile.avatar_url"
+                  :alt="profile.display_name"
+                  class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
+                <div
+                  :class="[
+                    'ml-3 transition-opacity duration-200',
+                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  ]"
+                >
+                  <p class="text-sm font-medium truncate">
+                    {{ profile.display_name }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    View Profile
+                  </p>
+                </div>
+              </NuxtLink>
+
+              <!-- Logout button -->
               <button
                 @click="logout"
-                class="rounded-md bg-red-600 px-4 py-2 font-bold leading-none text-white"
+                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                Logout
+                <Icon
+                  name="heroicons:arrow-left-on-rectangle"
+                  class="w-5 h-5 flex-shrink-0"
+                />
+                <span
+                  :class="[
+                    'ml-3 transition-opacity duration-200',
+                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  ]"
+                >
+                  Logout
+                </span>
               </button>
             </template>
           </template>
-        </nav>
-      </template>
-      <div v-else class="flex flex-col gap-2">
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
-        <USkeleton class="h-10" />
+
+          <!-- Loading skeleton for user section -->
+          <div v-else class="space-y-2">
+            <div
+              class="h-11 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+            ></div>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -98,25 +221,69 @@
       <NuxtPage />
     </main>
 
+    <!-- Auth Modal -->
     <AuthModal v-if="authVisible" @close="closeAuthModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
   import AuthModal from '../components/AuthModal.vue'
   import { useSupabaseUser } from '~/composables/useSupabaseUser'
-  const profile = useProfileState()
 
+  interface Profile {
+    display_name: string
+    avatar_url: string
+    // add other properties as needed
+  }
+
+  const profile = useProfileState() as Ref<Profile | null>
   const { user, fetchUser } = useSupabaseUser()
   const { $supabase } = useNuxtApp()
-  // console.log('Supabase Client on defaultvue: ', $supabase)
 
+  // Sidebar state
+  const sidebarExpanded = ref(false)
+  const isMobile = ref(false)
   const userLoading = ref(true)
   const authVisible = ref(false)
+
+  // Check if mobile
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth < 1024
+    if (!isMobile.value) {
+      sidebarExpanded.value = false
+    }
+  }
+
+  // Sidebar controls
+  const toggleSidebar = () => {
+    sidebarExpanded.value = !sidebarExpanded.value
+  }
+
+  const handleSidebarHover = (isHovering: boolean) => {
+    if (!isMobile.value && !sidebarExpanded.value) {
+      sidebarExpanded.value = isHovering
+    }
+  }
+
+  // Auth functions
   const closeAuthModal = () => (authVisible.value = false)
 
+  const openLogin = () => {
+    authVisible.value = true
+  }
+
+  const logout = async () => {
+    await $supabase.auth.signOut()
+    authVisible.value = false
+    user.value = null
+    location.reload()
+  }
+
   onMounted(async () => {
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
     // Wait for Supabase to load session
     await fetchUser()
 
@@ -127,14 +294,7 @@
     userLoading.value = false
   })
 
-  const openLogin = () => {
-    authVisible.value = true
-  }
-
-  const logout = async () => {
-    await $supabase.auth.signOut()
-    authVisible.value = false
-    user.value = null
-    location.reload() // Reload to update user state
-  }
+  onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile)
+  })
 </script>

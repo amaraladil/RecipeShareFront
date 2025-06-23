@@ -1,88 +1,272 @@
 <template>
-  <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 w-[90%] max-w-sm relative">
-      <button @click="$emit('close')" class="absolute top-2 right-2 text-gray-500">&times;</button>
-      <h2 class="text-xl font-bold mb-4">{{ isLogin ? 'Login' : 'Register' }}</h2>
-
+  <div
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md relative animate-in fade-in zoom-in duration-200"
+    >
+      <!-- Close button -->
       <button
-    class="flex items-center bg-white border border-gray-300 rounded-lg shadow-md max-w-xs px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-    <svg class="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="-0.5 0 48 48" version="1.1">
-
-        <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g id="Color-" transform="translate(-401.000000, -860.000000)">
-                <g id="Google" transform="translate(401.000000, 860.000000)">
-                    <path
-                        d="M9.82727273,24 C9.82727273,22.4757333 10.0804318,21.0144 10.5322727,19.6437333 L2.62345455,13.6042667 C1.08206818,16.7338667 0.213636364,20.2602667 0.213636364,24 C0.213636364,27.7365333 1.081,31.2608 2.62025,34.3882667 L10.5247955,28.3370667 C10.0772273,26.9728 9.82727273,25.5168 9.82727273,24"
-                        id="Fill-1" fill="#FBBC05"> </path>
-                    <path
-                        d="M23.7136364,10.1333333 C27.025,10.1333333 30.0159091,11.3066667 32.3659091,13.2266667 L39.2022727,6.4 C35.0363636,2.77333333 29.6954545,0.533333333 23.7136364,0.533333333 C14.4268636,0.533333333 6.44540909,5.84426667 2.62345455,13.6042667 L10.5322727,19.6437333 C12.3545909,14.112 17.5491591,10.1333333 23.7136364,10.1333333"
-                        id="Fill-2" fill="#EB4335"> </path>
-                    <path
-                        d="M23.7136364,37.8666667 C17.5491591,37.8666667 12.3545909,33.888 10.5322727,28.3562667 L2.62345455,34.3946667 C6.44540909,42.1557333 14.4268636,47.4666667 23.7136364,47.4666667 C29.4455,47.4666667 34.9177955,45.4314667 39.0249545,41.6181333 L31.5177727,35.8144 C29.3995682,37.1488 26.7323182,37.8666667 23.7136364,37.8666667"
-                        id="Fill-3" fill="#34A853"> </path>
-                    <path
-                        d="M46.1454545,24 C46.1454545,22.6133333 45.9318182,21.12 45.6113636,19.7333333 L23.7136364,19.7333333 L23.7136364,28.8 L36.3181818,28.8 C35.6879545,31.8912 33.9724545,34.2677333 31.5177727,35.8144 L39.0249545,41.6181333 C43.3393409,37.6138667 46.1454545,31.6490667 46.1454545,24"
-                        id="Fill-4" fill="#4285F4"> </path>
-                </g>
-            </g>
-        </g>
-    </svg>
-    <span>Continue with Google</span>
-</button>
-
-      <button @click="signInWithProvider('google')" class="px-4 py-2 border flex gap-2 border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-300 hover:shadow transition duration-150">
-        <img class="w-6 h-6" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo">
-        <span>Continue with Google</span>
-      </button>
-      <button @click="signInWithProvider('apple')" class="btn w-full mb-4">Continue with Apple</button>
-
-      <div v-if="error" class="text-red-500 mb-4">{{ error }}</div>
-
-      <input v-model="email" placeholder="Email" class="input mb-2" type="email" />
-      <input v-model="password" placeholder="Password" class="input mb-4" type="password" />
-
-      <button @click="handleSubmit" class="btn w-full">
-        {{ isLogin ? 'Login' : 'Register' }}
+        @click="$emit('close')"
+        class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      >
+        <Icon
+          name="heroicons:x-mark"
+          class="w-5 h-5 text-gray-500 dark:text-gray-400"
+        />
       </button>
 
-      <p class="text-sm text-center mt-4">
-        {{ isLogin ? "Don't have an account?" : 'Already registered?' }}
-        <span @click="toggle" class="text-blue-600 cursor-pointer underline ml-1">
-          {{ isLogin ? 'Register' : 'Login' }}
-        </span>
-      </p>
+      <div class="p-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            {{ isLogin ? 'Welcome back' : 'Create account' }}
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">
+            {{ isLogin ? 'Sign in to your account' : 'Join RecipeShare today' }}
+          </p>
+        </div>
+
+        <!-- Social Login Buttons -->
+        <div class="space-y-3 mb-6">
+          <!-- Google Button -->
+          <button
+            @click="signInWithProvider('google')"
+            :disabled="loading"
+            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            Continue with Google
+          </button>
+
+          <!-- Apple Button -->
+          <button
+            @click="signInWithProvider('apple')"
+            :disabled="loading"
+            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Icon name="simple-icons:apple" class="w-5 h-5 mr-3" />
+            Continue with Apple
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative mb-6">
+          <div class="absolute inset-0 flex items-center">
+            <div
+              class="w-full border-t border-gray-300 dark:border-gray-600"
+            ></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span
+              class="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+            >
+              Or continue with email
+            </span>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div
+          v-if="error"
+          class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+        >
+          <p class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        </div>
+
+        <!-- Form -->
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <!-- Email Input -->
+          <div>
+            <label
+              for="email"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Email address
+            </label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              required
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <!-- Password Input -->
+          <div>
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Password
+            </label>
+            <div class="relative">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <Icon
+                  :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'"
+                  class="w-5 h-5"
+                />
+              </button>
+            </div>
+            <p
+              v-if="!isLogin"
+              class="mt-1 text-xs text-gray-500 dark:text-gray-400"
+            >
+              Must be at least 6 characters
+            </p>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            <div
+              v-if="loading"
+              class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+            ></div>
+            {{ isLogin ? 'Sign in' : 'Create account' }}
+          </button>
+        </form>
+
+        <!-- Toggle Login/Register -->
+        <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+          {{ isLogin ? "Don't have an account?" : 'Already have an account?' }}
+          <button
+            @click="toggle"
+            class="text-blue-600 hover:text-blue-700 font-medium ml-1 hover:underline"
+          >
+            {{ isLogin ? 'Sign up' : 'Sign in' }}
+          </button>
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { $supabase } = useNuxtApp()
-const emits = defineEmits(['close'])
+  const { $supabase } = useNuxtApp()
+  const emits = defineEmits(['close'])
 
+  const isLogin = ref(true)
+  const email = ref('')
+  const password = ref('')
+  const error = ref('')
+  const loading = ref(false)
+  const showPassword = ref(false)
 
-const isLogin = ref(true)
-const email = ref('')
-const password = ref('')
-const error = ref('')
-
-const toggle = () => {
-  isLogin.value = !isLogin.value
-}
-
-const handleSubmit = async () => {
-  const method = isLogin.value ? 'signInWithPassword' : 'signUp'
-  const { error: err } = await $supabase.auth[method]({ email: email.value, password: password.value })
-  if (err) {
-    error.value = err.message
-  } else {
-    emits('close')
-    location.reload()
+  const toggle = () => {
+    isLogin.value = !isLogin.value
+    error.value = '' // Clear any existing errors
   }
-}
 
-const signInWithProvider = async (provider: 'google' | 'apple') => {
-  const { error } = await $supabase.auth.signInWithOAuth({ provider })
-  if (error) alert(error.message)
-}
+  const handleSubmit = async () => {
+    if (loading.value) return
+
+    loading.value = true
+    error.value = ''
+
+    try {
+      const method = isLogin.value ? 'signInWithPassword' : 'signUp'
+      const { error: err } = await $supabase.auth[method]({
+        email: email.value.trim(),
+        password: password.value
+      })
+
+      if (err) {
+        error.value = err.message
+      } else {
+        emits('close')
+        if (!isLogin.value) {
+          // For signup, show a success message or redirect
+          // Auto login happens via Supabase auth state change
+        }
+        location.reload()
+      }
+    } catch (err) {
+      error.value = 'An unexpected error occurred. Please try again.'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const signInWithProvider = async (provider: 'google' | 'apple') => {
+    if (loading.value) return
+
+    loading.value = true
+    error.value = ''
+
+    try {
+      const { error: authError } = await $supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (authError) {
+        error.value = authError.message
+      }
+    } catch (err) {
+      error.value = 'Failed to authenticate with provider. Please try again.'
+    } finally {
+      loading.value = false
+    }
+  }
 </script>
+
+<style scoped>
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      transform: scale(0.95);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .animate-in {
+    animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
+  }
+</style>
