@@ -18,11 +18,22 @@
 
       <div class="flex flex-col h-full p-3">
         <!-- Header with hamburger -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center mb-6">
+          <button
+            @click="toggleSidebar"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+          >
+            <Icon
+              name="heroicons:bars-3"
+              class="w-5 h-5 text-gray-600 dark:text-gray-300"
+            />
+          </button>
           <div
             :class="[
-              'flex items-center transition-opacity duration-200',
-              sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+              'flex items-center ml-2 transition-all duration-200',
+              sidebarExpanded
+                ? 'opacity-100 w-auto'
+                : 'opacity-0 w-0 overflow-hidden'
             ]"
           >
             <h1
@@ -31,15 +42,6 @@
               RecipeShare
             </h1>
           </div>
-          <button
-            @click="toggleSidebar"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Icon
-              name="heroicons:bars-3"
-              class="w-5 h-5 text-gray-600 dark:text-gray-300"
-            />
-          </button>
         </div>
 
         <!-- Navigation -->
@@ -53,8 +55,10 @@
               <Icon name="heroicons:home" class="w-5 h-5 flex-shrink-0" />
               <span
                 :class="[
-                  'ml-3 transition-opacity duration-200',
-                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  'ml-3 transition-all duration-200',
+                  sidebarExpanded
+                    ? 'opacity-100 w-auto'
+                    : 'opacity-0 w-0 overflow-hidden'
                 ]"
               >
                 Home
@@ -69,8 +73,10 @@
               <Icon name="heroicons:compass" class="w-5 h-5 flex-shrink-0" />
               <span
                 :class="[
-                  'ml-3 transition-opacity duration-200',
-                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  'ml-3 transition-all duration-200',
+                  sidebarExpanded
+                    ? 'opacity-100 w-auto'
+                    : 'opacity-0 w-0 overflow-hidden'
                 ]"
               >
                 Explore
@@ -88,8 +94,10 @@
               />
               <span
                 :class="[
-                  'ml-3 transition-opacity duration-200',
-                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  'ml-3 transition-all duration-200',
+                  sidebarExpanded
+                    ? 'opacity-100 w-auto'
+                    : 'opacity-0 w-0 overflow-hidden'
                 ]"
               >
                 Write
@@ -115,8 +123,10 @@
                 </div>
                 <span
                   :class="[
-                    'ml-3 transition-opacity duration-200',
-                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                    'ml-3 transition-all duration-200',
+                    sidebarExpanded
+                      ? 'opacity-100 w-auto'
+                      : 'opacity-0 w-0 overflow-hidden'
                   ]"
                 >
                   Messages
@@ -142,7 +152,7 @@
             <button
               v-if="!user"
               @click="openLogin"
-              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
             >
               <Icon
                 name="heroicons:arrow-right-on-rectangle"
@@ -150,8 +160,10 @@
               />
               <span
                 :class="[
-                  'ml-3 transition-opacity duration-200',
-                  sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                  'ml-3 transition-all duration-200',
+                  sidebarExpanded
+                    ? 'opacity-100 w-auto'
+                    : 'opacity-0 w-0 overflow-hidden'
                 ]"
               >
                 Login
@@ -163,17 +175,19 @@
               <NuxtLink
                 v-if="profile"
                 :to="`/@${profile.display_name}`"
-                class="flex items-center w-full px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                class="flex items-center w-full px-1 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <img
                   :src="profile.avatar_url"
                   :alt="profile.display_name"
-                  class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  class="w-8 h-8 z-10 rounded-full object-cover flex-shrink-0"
                 />
                 <div
                   :class="[
-                    'ml-3 transition-opacity duration-200',
-                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                    'ml-3 min-w-0 transition-all duration-200',
+                    sidebarExpanded
+                      ? 'opacity-100 w-auto'
+                      : 'opacity-0 w-0 overflow-hidden'
                   ]"
                 >
                   <p class="text-sm font-medium truncate">
@@ -188,7 +202,7 @@
               <!-- Logout button -->
               <button
                 @click="logout"
-                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group"
               >
                 <Icon
                   name="heroicons:arrow-left-on-rectangle"
@@ -196,8 +210,10 @@
                 />
                 <span
                   :class="[
-                    'ml-3 transition-opacity duration-200',
-                    sidebarExpanded ? 'opacity-100' : 'opacity-0 lg:opacity-0'
+                    'ml-3 transition-all duration-200',
+                    sidebarExpanded
+                      ? 'opacity-100 w-auto'
+                      : 'opacity-0 w-0 overflow-hidden'
                   ]"
                 >
                   Logout
