@@ -180,6 +180,72 @@
     }
   }
 
+  const likeRecipeToggle = async () => {
+    if (!user.value) {
+      alert('You must be logged in to like a recipe.')
+      return
+    }
+
+    try {
+      if (recipe.value.is_liked) {
+        recipe.value.is_liked = false
+        const response = await fetchApi(`/recipes/${recipe.value.id}/like`, {
+          method: 'DELETE'
+        })
+        if (response) {
+          recipe.value.counter.likes -= 1
+        }
+      } else {
+        recipe.value.is_liked = true
+        const response = await fetchApi(`/recipes/${recipe.value.id}/like`, {
+          method: 'POST'
+        })
+        if (response) {
+          recipe.value.counter.likes += 1
+        }
+      }
+    } catch (err) {
+      recipe.value.is_liked = !recipe.value.is_liked // Revert the like state when error occurs
+      console.error('Error toggling like:', err)
+      error.value = recipe.value.is_liked
+        ? 'Failed to unlike recipe'
+        : 'Failed to like recipe'
+    }
+  }
+
+  const saveRecipeToggle = async () => {
+    if (!user.value) {
+      alert('You must be logged in to save a recipe.')
+      return
+    }
+
+    try {
+      if (recipe.value.is_saved) {
+        recipe.value.is_saved = false
+        const response = await fetchApi(`/recipes/${recipe.value.id}/save`, {
+          method: 'DELETE'
+        })
+        if (response) {
+          recipe.value.counter.views -= 1
+        }
+      } else {
+        recipe.value.is_saved = true
+        const response = await fetchApi(`/recipes/${recipe.value.id}/save`, {
+          method: 'POST'
+        })
+        if (response) {
+          recipe.value.counter.views += 1
+        }
+      }
+    } catch (err) {
+      recipe.value.is_saved = !recipe.value.is_saved // Revert the like state when error occurs
+      console.error('Error toggling like:', err)
+      error.value = recipe.value.is_saved
+        ? 'Failed to unlike recipe'
+        : 'Failed to like recipe'
+    }
+  }
+
   // Initialize
   onMounted(() => {
     fetchRecipe()
@@ -260,9 +326,11 @@
             />
             <span>by @{{ recipe.author?.display_name || 'Unknown' }}</span>
             <span>•</span>
-            <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
-            <span v-if="recipe.updatedAt">
-              (Updated: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
+            <span class="gap-3 flex items-center">
+              <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
+              <span v-if="recipe.updatedAt">
+                (Updated: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
+              </span>
             </span>
           </div>
         </div>
@@ -304,32 +372,37 @@
             </button>
           </div>
           <div v-else class="row-span-1 h-10"></div>
-          <div class="row-span-1 flex justify-end items-end gap-2">
+          <div
+            v-if="!isOwner"
+            class="row-span-1 flex justify-end items-end gap-2"
+          >
             <UIcon
               v-if="recipe.is_saved"
               name="ic:outline-bookmark"
-              @click="recipe.is_saved = !recipe.is_saved"
+              @click="saveRecipeToggle"
               class="size-7 text-gray-900/90 cursor-pointer"
             />
             <UIcon
               v-else
               name="ic:outline-bookmark-border"
-              @click="recipe.is_saved = !recipe.is_saved"
+              @click="saveRecipeToggle"
               class="size-7 text-gray-600 cursor-pointer"
             />
-
-            <UIcon
-              v-if="recipe.is_liked"
-              name="ic:outline-favorite"
-              @click="recipe.is_liked = !recipe.is_liked"
-              class="size-7 text-red-600 cursor-pointer"
-            />
-            <UIcon
-              v-else
-              name="ic:outline-favorite-border"
-              @click="recipe.is_liked = !recipe.is_liked"
-              class="size-7 text-gray-600 cursor-pointer"
-            />
+            <div class="flex items-center gap-1">
+              <UIcon
+                v-if="recipe.is_liked"
+                name="ic:outline-favorite"
+                @click="likeRecipeToggle"
+                class="size-7 text-red-600 cursor-pointer"
+              />
+              <UIcon
+                v-else
+                name="ic:outline-favorite-border"
+                @click="likeRecipeToggle"
+                class="size-7 text-gray-600 cursor-pointer"
+              />
+              <span class="pr-2">{{ recipe.counter?.likes || 0 }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -594,20 +667,6 @@
           <span>{{ recipe.counter?.likes || 0 }} likes</span>
           <span>{{ recipe.counter?.comments || 0 }} comments</span>
           <span>{{ recipe.counter?.views || 0 }} saves</span>
-        </div>
-
-        <div class="flex gap-2">
-          <!-- Add action buttons here (like, save, share, etc.) -->
-          <button
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-          >
-            Like
-          </button>
-          <button
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-          >
-            Save
-          </button>
         </div>
       </div>
     </div>
