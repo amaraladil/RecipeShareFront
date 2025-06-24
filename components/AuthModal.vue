@@ -106,9 +106,21 @@
               v-model="email"
               type="email"
               required
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              :class="[
+                'w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                emailError
+                  ? 'border-red-300 dark:border-red-600'
+                  : 'border-gray-300 dark:border-gray-600'
+              ]"
               placeholder="Enter your email"
+              @blur="validateEmailField"
             />
+            <p
+              v-if="emailError"
+              class="mt-1 text-sm text-red-600 dark:text-red-400"
+            >
+              {{ emailError }}
+            </p>
           </div>
 
           <!-- Password Input -->
@@ -125,8 +137,14 @@
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                :class="[
+                  'w-full px-4 py-3 pr-12 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                  passwordError
+                    ? 'border-red-300 dark:border-red-600'
+                    : 'border-gray-300 dark:border-gray-600'
+                ]"
                 placeholder="Enter your password"
+                @blur="validatePasswordField"
               />
               <button
                 type="button"
@@ -140,10 +158,16 @@
               </button>
             </div>
             <p
-              v-if="!isLogin"
+              v-if="passwordError"
+              class="mt-1 text-sm text-red-600 dark:text-red-400"
+            >
+              {{ passwordError }}
+            </p>
+            <p
+              v-else-if="!isLogin"
               class="mt-1 text-xs text-gray-500 dark:text-gray-400"
             >
-              Must be at least 6 characters
+              Must be at least 6 characters with letters and numbers
             </p>
           </div>
 
@@ -178,6 +202,7 @@
 
 <script setup lang="ts">
   const { $supabase } = useNuxtApp()
+  const { validateEmail, validatePassword } = useValidation()
   const emits = defineEmits(['close'])
 
   const isLogin = ref(true)
@@ -187,16 +212,53 @@
   const loading = ref(false)
   const showPassword = ref(false)
 
+  // Field-specific errors
+  const emailError = ref('')
+  const passwordError = ref('')
+
   const toggle = () => {
     isLogin.value = !isLogin.value
-    error.value = '' // Clear any existing errors
+    clearErrors()
+  }
+
+  const clearErrors = () => {
+    error.value = ''
+    emailError.value = ''
+    passwordError.value = ''
+  }
+
+  // Real-time validation
+  const validateEmailField = () => {
+    const validation = validateEmail(email.value.trim())
+    emailError.value = validation.error || ''
+    return validation.isValid
+  }
+
+  const validatePasswordField = () => {
+    const validation = validatePassword(password.value, !isLogin.value)
+    passwordError.value = validation.error || ''
+    return validation.isValid
+  }
+
+  // Validate form before submission
+  const validateForm = () => {
+    const isEmailValid = validateEmailField()
+    const isPasswordValid = validatePasswordField()
+
+    return isEmailValid && isPasswordValid
   }
 
   const handleSubmit = async () => {
     if (loading.value) return
 
+    clearErrors()
+
+    // Validate form
+    if (!validateForm()) {
+      return
+    }
+
     loading.value = true
-    error.value = ''
 
     try {
       const method = isLogin.value ? 'signInWithPassword' : 'signUp'
@@ -229,15 +291,15 @@
     error.value = ''
 
     try {
-      const { error: authError } = await $supabase.auth.signInWithOAuth({
+      const { error: providerError } = await $supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
 
-      if (authError) {
-        error.value = authError.message
+      if (providerError) {
+        error.value = providerError.message
       }
     } catch (err) {
       error.value = 'Failed to authenticate with provider. Please try again.'
@@ -245,6 +307,17 @@
       loading.value = false
     }
   }
+
+  // Clear field errors when user starts typing
+  watch(email, () => {
+    if (emailError.value) emailError.value = ''
+    if (error.value) error.value = ''
+  })
+
+  watch(password, () => {
+    if (passwordError.value) passwordError.value = ''
+    if (error.value) error.value = ''
+  })
 </script>
 
 <style scoped>
