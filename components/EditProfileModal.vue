@@ -226,7 +226,6 @@
 
 <script setup lang="ts">
   import { ref, watch, reactive, computed } from 'vue'
-  import { useApi } from '~/composables/useApi'
 
   const { validateUsername, validateNickName, validateBio, validateUrl } =
     useValidation()

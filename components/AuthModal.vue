@@ -23,7 +23,7 @@
             {{ isLogin ? 'Welcome back' : 'Create account' }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            {{ isLogin ? 'Sign in to your account' : 'Join RecipeShare today' }}
+            {{ isLogin ? 'Sign in to your account' : `Join ${appName} today` }}
           </p>
         </div>
 
@@ -201,6 +201,7 @@
 </template>
 
 <script setup lang="ts">
+  const { appName } = useAppSettings()
   const { $supabase } = useNuxtApp()
   const { validateEmail, validatePassword } = useValidation()
   const emits = defineEmits(['close'])

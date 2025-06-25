@@ -32,7 +32,7 @@
             <h1
               class="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap"
             >
-              ShareTheMenu
+              {{ appName }}
             </h1>
           </div>
         </div>
@@ -244,7 +244,6 @@
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted } from 'vue'
   import AuthModal from '../components/AuthModal.vue'
-  import { useSupabaseUser } from '~/composables/useSupabaseUser'
 
   interface Profile {
     display_name: string
@@ -255,6 +254,7 @@
   const profile = useProfileState() as Ref<Profile | null>
   const { user, fetchUser } = useSupabaseUser()
   const { $supabase } = useNuxtApp()
+  const { appName } = useAppSettings()
 
   // Sidebar state
   const sidebarExpanded = ref(false)

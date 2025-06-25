@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import { useApi } from '@/composables/useApi'
-  import { useSupabaseUser } from '@/composables/useSupabaseUser'
   import { pageTitle } from '~/utils/meta'
 
   const route = useRoute()

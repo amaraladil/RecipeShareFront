@@ -1,9 +1,6 @@
 <script setup lang="ts">
-  import { useRecipes } from '@/composables/useRecipes'
   import { pageTitle } from '~/utils/meta'
-  import { useSupabaseUser } from '~/composables/useSupabaseUser'
   import EditProfileModal from '~/components/EditProfileModal.vue'
-  import EditProfileModal2 from '~/components/EditProfile2Modal.vue'
 
   const config = useRuntimeConfig()
   const route = useRoute()
@@ -220,13 +217,6 @@
           <button v-if="isOwnProfile" class="btn" @click="openModal">
             Edit Profile
           </button>
-          <!-- <EditProfileModal2
-            v-if="isOwnProfile && profile"
-            :show="showModal"
-            :user="profile"
-            @close="closeModal"
-            @updated="refreshProfile"
-          /> -->
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
           <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
           <div class="text-gray-500 whitespace-pre-line">{{ profile.bio }}</div>
