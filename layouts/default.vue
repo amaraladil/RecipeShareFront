@@ -145,7 +145,7 @@
             <button
               v-if="!user"
               @click="openLogin"
-              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group cursor-pointer"
             >
               <Icon
                 name="heroicons:arrow-right-on-rectangle"
@@ -195,7 +195,7 @@
               <!-- Logout button -->
               <button
                 @click="logout"
-                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group"
+                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group cursor-pointer"
               >
                 <Icon
                   name="heroicons:arrow-left-on-rectangle"

@@ -214,19 +214,19 @@
         <img
           :src="profile.avatar_url"
           alt="Profile picture"
-          class="w-53 h-53 rounded-full object-cover border"
+          class="sm:w-53 w-48 sm:h-53 h-48 rounded-full object-cover border"
         />
         <div>
           <button v-if="isOwnProfile" class="btn" @click="openModal">
             Edit Profile
           </button>
-          <EditProfileModal2
+          <!-- <EditProfileModal2
             v-if="isOwnProfile && profile"
             :show="showModal"
             :user="profile"
             @close="closeModal"
             @updated="refreshProfile"
-          />
+          /> -->
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
           <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
           <div class="text-gray-500 whitespace-pre-line">{{ profile.bio }}</div>
