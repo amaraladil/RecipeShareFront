@@ -8,7 +8,7 @@
       <!-- Close button -->
       <button
         @click="$emit('close')"
-        class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <Icon
           name="heroicons:x-mark"
@@ -33,7 +33,7 @@
           <button
             @click="signInWithProvider('google')"
             :disabled="loading"
-            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -60,7 +60,7 @@
           <button
             @click="signInWithProvider('apple')"
             :disabled="loading"
-            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Icon name="simple-icons:apple" class="w-5 h-5 mr-3" />
             Continue with Apple
@@ -149,7 +149,7 @@
               <button
                 type="button"
                 @click="showPassword = !showPassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer"
               >
                 <Icon
                   :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'"
@@ -175,7 +175,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:cursor-not-allowed flex items-center justify-center"
+            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
           >
             <div
               v-if="loading"
@@ -190,7 +190,7 @@
           {{ isLogin ? "Don't have an account?" : 'Already have an account?' }}
           <button
             @click="toggle"
-            class="text-blue-600 hover:text-blue-700 font-medium ml-1 hover:underline"
+            class="text-blue-600 hover:text-blue-700 font-medium ml-1 hover:underline cursor-pointer"
           >
             {{ isLogin ? 'Sign up' : 'Sign in' }}
           </button>
