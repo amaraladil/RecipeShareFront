@@ -14,7 +14,7 @@
         <div class="flex items-center mb-6">
           <button
             @click="toggleSidebar"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 cursor-pointer"
           >
             <Icon
               name="heroicons:bars-3"

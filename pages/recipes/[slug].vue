@@ -283,7 +283,7 @@
       <div class="text-red-600 text-lg font-medium mb-2">{{ error }}</div>
       <button
         @click="fetchRecipe"
-        class="btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        class="btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
       >
         Try Again
       </button>
@@ -347,7 +347,7 @@
             <button
               v-if="!isEditMode"
               @click="toggleEditMode"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer"
             >
               Edit Recipe
             </button>
@@ -356,14 +356,14 @@
               <button
                 @click="saveRecipe"
                 :disabled="isSaving"
-                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
               </button>
               <button
                 @click="toggleEditMode"
                 :disabled="isSaving"
-                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50"
+                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -372,7 +372,7 @@
             <button
               v-if="!isEditMode"
               @click="deleteRecipe"
-              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
             >
               Delete
             </button>
@@ -552,7 +552,7 @@
           />
           <button
             @click="addTag"
-            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 cursor-pointer"
           >
             Add
           </button>
@@ -568,7 +568,7 @@
           <button
             v-if="isEditMode"
             @click="addIngredient"
-            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 cursor-pointer"
           >
             Add Ingredient
           </button>
@@ -599,7 +599,7 @@
               />
               <button
                 @click="removeIngredient(index)"
-                class="text-red-600 hover:text-red-800 px-2"
+                class="text-red-600 hover:text-red-800 px-2 cursor-pointer"
               >
                 Remove
               </button>
@@ -627,7 +627,7 @@
           <button
             v-if="isEditMode"
             @click="addInstruction"
-            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 cursor-pointer"
           >
             Add Step
           </button>
@@ -662,7 +662,7 @@
               ></textarea>
               <button
                 @click="removeInstruction(index)"
-                class="text-red-600 hover:text-red-800 px-2"
+                class="text-red-600 hover:text-red-800 px-2 cursor-pointer"
               >
                 Remove
               </button>
