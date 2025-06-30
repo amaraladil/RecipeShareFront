@@ -14,3 +14,5 @@ export const MESSAGES = {
   usernameTaken: 'That username is already taken.',
   profileUpdated: 'Profile updated successfully!'
 }
+
+export const CACHE_PROFILE_DURATION = 60 * 1000 // 1 min

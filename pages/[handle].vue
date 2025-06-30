@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
   import EditProfileModal from '~/components/EditProfileModal.vue'
+  import { CACHE_PROFILE_DURATION } from '~/constants'
 
   const config = useRuntimeConfig()
   const route = useRoute()
@@ -45,7 +46,8 @@
         if (!data) return null
 
         const expired = data.fetchTime
-          ? new Date(data.fetchTime) < new Date(Date.now() - 30 * 1000)
+          ? new Date(data.fetchTime) <
+            new Date(Date.now() - CACHE_PROFILE_DURATION)
           : false
 
         if (expired) {
