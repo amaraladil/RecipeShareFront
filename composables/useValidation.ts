@@ -1,7 +1,9 @@
 import {
   PROFILE_BIO_MAX_LENGTH,
   PROFILE_USERNAME_MAX_LENGTH,
-  PROFILE_NAME_MAX_LENGTH
+  PROFILE_NAME_MAX_LENGTH,
+  PROFILE_PASSWORD_MIN_LENGTH,
+  PROFILE_BIO_MAX_LINES
 } from '~/constants'
 
 // composables/useValidation.ts
@@ -32,7 +34,7 @@ export const useValidation = () => {
     }
 
     if (isSignup) {
-      if (password.length < 6) {
+      if (password.length < PROFILE_PASSWORD_MIN_LENGTH) {
         return {
           isValid: false,
           error: 'Password must be at least 6 characters long'
@@ -66,8 +68,11 @@ export const useValidation = () => {
       }
     }
 
-    if (username.length > 30) {
-      return { isValid: false, error: 'Username cannot exceed 30 characters' }
+    if (username.length > PROFILE_USERNAME_MAX_LENGTH) {
+      return {
+        isValid: false,
+        error: `Username cannot exceed ${PROFILE_USERNAME_MAX_LENGTH} characters`
+      }
     }
 
     // Only allow letters, numbers, underscores, and periods
@@ -149,25 +154,14 @@ export const useValidation = () => {
     }
 
     // Check for maximum 4 lines
-    if (bio && bio.split('\n').length > 4) {
-      return { isValid: false, error: 'Bio cannot exceed 4 lines' }
+    if (bio && bio.split('\n').length > PROFILE_BIO_MAX_LINES) {
+      return {
+        isValid: false,
+        error: `Bio cannot exceed ${PROFILE_BIO_MAX_LINES} lines`
+      }
     }
 
     return { isValid: true }
-  }
-
-  // URL validation
-  const validateUrl = (url: string): { isValid: boolean; error?: string } => {
-    if (!url) {
-      return { isValid: true } // URL is optional
-    }
-
-    try {
-      new URL(url)
-      return { isValid: true }
-    } catch {
-      return { isValid: false, error: 'Please enter a valid URL' }
-    }
   }
 
   return {
@@ -175,7 +169,6 @@ export const useValidation = () => {
     validatePassword,
     validateUsername,
     validateNickName,
-    validateBio,
-    validateUrl
+    validateBio
   }
 }

@@ -15,7 +15,7 @@
         </h2>
         <button
           @click="close"
-          class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          class="p-2 w-9 h-9 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
         >
           <Icon
             name="heroicons:x-mark"
@@ -24,8 +24,65 @@
         </button>
       </div>
 
+      <!-- Avatar Section - Top Center -->
+      <div
+        class="flex justify-center py-6 border-b border-gray-100 dark:border-gray-700"
+      >
+        <div class="relative">
+          <div
+            @click="triggerFileInput"
+            class="relative w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden cursor-pointer group hover:opacity-80 transition-opacity"
+          >
+            <img
+              v-if="avatarPreview || form.avatar_url"
+              :src="avatarPreview || form.avatar_url"
+              alt="Avatar preview"
+              class="w-full h-full object-cover"
+            />
+            <div v-else class="w-full h-full flex items-center justify-center">
+              <Icon name="heroicons:user" class="w-8 h-8 text-gray-400" />
+            </div>
+
+            <!-- Overlay on hover -->
+            <div
+              class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            >
+              <Icon name="heroicons:camera" class="w-6 h-6 text-white" />
+            </div>
+          </div>
+
+          <!-- Loading indicator for compression -->
+          <div
+            v-if="compressing"
+            class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
+          >
+            <div
+              class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/*"
+          @change="handleFileSelect"
+          class="hidden"
+        />
+      </div>
+
+      <div class="text-center pb-4">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Click to change avatar
+        </p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          JPG, PNG, or WebP. Max 5MB.
+        </p>
+      </div>
+
       <!-- Form Content -->
-      <div class="overflow-y-auto max-h-[calc(90vh-140px)]">
+      <div class="overflow-y-auto max-h-[calc(90vh-300px)]">
         <form @submit.prevent="save" class="p-6 space-y-6">
           <!-- General Error -->
           <div
@@ -118,7 +175,6 @@
               id="bio"
               v-model="form.bio"
               rows="4"
-              maxlength="160"
               :class="[
                 'w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none',
                 errors.bio
@@ -137,61 +193,8 @@
                 {{ errors.bio }}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-400 ml-auto">
-                {{ form.bio.length }}/160 characters
+                {{ form.bio.length }}/{{ PROFILE_BIO_MAX_LENGTH }} characters
               </p>
-            </div>
-          </div>
-
-          <!-- Avatar URL Field -->
-          <div class="space-y-2">
-            <label
-              for="avatar_url"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Avatar URL
-            </label>
-            <div class="flex space-x-3">
-              <div class="flex-1">
-                <input
-                  id="avatar_url"
-                  v-model="form.avatar_url"
-                  type="url"
-                  :class="[
-                    'w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
-                    errors.avatar_url
-                      ? 'border-red-300 dark:border-red-600'
-                      : 'border-gray-300 dark:border-gray-600'
-                  ]"
-                  placeholder="https://example.com/avatar.jpg"
-                  @blur="validateField('avatar_url')"
-                />
-                <p
-                  v-if="errors.avatar_url"
-                  class="mt-1 text-sm text-red-600 dark:text-red-400"
-                >
-                  {{ errors.avatar_url }}
-                </p>
-              </div>
-              <div class="flex-shrink-0">
-                <div
-                  class="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden"
-                >
-                  <img
-                    v-if="form.avatar_url"
-                    :src="form.avatar_url"
-                    alt="Avatar preview"
-                    class="w-full h-full object-cover"
-                    @error="avatarError = true"
-                    @load="avatarError = false"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full flex items-center justify-center"
-                  >
-                    <Icon name="heroicons:user" class="w-6 h-6 text-gray-400" />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </form>
@@ -204,14 +207,14 @@
         <button
           type="button"
           @click="close"
-          class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          class="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
         >
           Cancel
         </button>
         <button
           @click="save"
           :disabled="!isFormValid || saving"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed flex items-center"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors disabled:cursor-not-allowed flex items-center cursor-pointer"
         >
           <div
             v-if="saving"
@@ -226,9 +229,9 @@
 
 <script setup lang="ts">
   import { ref, watch, reactive, computed } from 'vue'
+  import { PROFILE_BIO_MAX_LINES, PROFILE_BIO_MAX_LENGTH } from '~/constants'
 
-  const { validateUsername, validateNickName, validateBio, validateUrl } =
-    useValidation()
+  const { validateUsername, validateNickName, validateBio } = useValidation()
 
   const props = defineProps({
     show: Boolean,
@@ -254,8 +257,13 @@
   const api = useApi()
   const generalError = ref('')
   const saving = ref(false)
-  const avatarError = ref(false)
   const original = ref({})
+
+  // Avatar-related refs
+  const fileInput = ref<HTMLInputElement>()
+  const avatarPreview = ref('')
+  const avatarFile = ref<File | null>(null)
+  const compressing = ref(false)
 
   // Watch for user prop changes
   watch(
@@ -269,10 +277,119 @@
           avatar_url: val.avatar_url || ''
         })
         original.value = { ...val }
+        // Reset avatar preview when user changes
+        avatarPreview.value = ''
+        avatarFile.value = null
       }
     },
     { immediate: true }
   )
+
+  // Image compression function
+  const compressImage = (
+    file: File,
+    maxWidth = 400,
+    quality = 0.8
+  ): Promise<Blob> => {
+    return new Promise<Blob>((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      const img = new Image()
+
+      img.onload = () => {
+        // Calculate new dimensions maintaining aspect ratio
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Image compression failed'))
+            }
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image for compression'))
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  // File input handlers
+  const triggerFileInput = () => {
+    fileInput.value?.click()
+  }
+
+  const handleFileSelect = async (event: Event) => {
+    const file = (event.target as HTMLInputElement).files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      generalError.value = 'Please select a valid image file'
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      generalError.value = 'Image size must be less than 5MB'
+      return
+    }
+
+    compressing.value = true
+
+    try {
+      // Compress the image
+      const compressedBlob = await compressImage(file)
+      const compressedFile = new File([compressedBlob!], file.name, {
+        type: 'image/jpeg',
+        lastModified: Date.now()
+      })
+
+      // Create preview URL
+      avatarPreview.value = URL.createObjectURL(compressedFile)
+      avatarFile.value = compressedFile
+
+      // Clear any previous errors
+      generalError.value = ''
+      errors.avatar_url = ''
+    } catch (error) {
+      console.error('Error compressing image:', error)
+      generalError.value = 'Failed to process image. Please try again.'
+    } finally {
+      compressing.value = false
+    }
+  }
+
+  // Upload avatar function
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!avatarFile.value) return null
+
+    const formData = new FormData()
+    formData.append('avatar', avatarFile.value)
+
+    try {
+      const response = await api('/upload/avatar', {
+        method: 'POST',
+        body: formData
+      })
+
+      return response.url
+    } catch (error) {
+      console.error('Failed to upload avatar:', error)
+      throw new Error('Failed to upload avatar')
+    }
+  }
 
   // Validation functions
   const validateField = (field: keyof typeof form) => {
@@ -299,11 +416,6 @@
         validation = { isValid: result.isValid, error: result.error ?? '' }
         break
       }
-      case 'avatar_url': {
-        const result = validateUrl(form.avatar_url)
-        validation = { isValid: result.isValid, error: result.error ?? '' }
-        break
-      }
     }
 
     errors[field] = validation.error || ''
@@ -312,8 +424,10 @@
 
   const validateAllFields = () => {
     let isValid = true
-    Object.keys(form).forEach((field) => {
-      if (!validateField(field as keyof typeof form)) {
+    const fieldsToValidate = ['display_name', 'nick_name', 'bio'] as const
+
+    fieldsToValidate.forEach((field) => {
+      if (!validateField(field)) {
         isValid = false
       }
     })
@@ -330,16 +444,24 @@
   })
 
   const hasChanges = computed(() => {
-    return Object.keys(form).some((key) => {
+    const formHasChanges = Object.keys(form).some((key) => {
       const formValue = form[key as keyof typeof form]
       const originalValue = original.value[key as keyof typeof original.value]
       return formValue !== originalValue
     })
+
+    return formHasChanges || avatarFile.value !== null
   })
 
   // Event handlers
   const close = () => {
     clearErrors()
+    // Clean up preview URL
+    if (avatarPreview.value) {
+      URL.revokeObjectURL(avatarPreview.value)
+      avatarPreview.value = ''
+    }
+    avatarFile.value = null
     emits('close')
   }
 
@@ -352,7 +474,7 @@
 
   const limitLines = (event: KeyboardEvent) => {
     const currentLines = form.bio.split('\n').length
-    if (currentLines >= 4 && event.key === 'Enter') {
+    if (currentLines >= PROFILE_BIO_MAX_LINES && event.key === 'Enter') {
       event.preventDefault()
     }
   }
@@ -387,8 +509,10 @@
     }
 
     const updatedFields = getUpdatedFields()
+    const hasFieldChanges = Object.keys(updatedFields).length > 0
+    const hasAvatarChange = avatarFile.value !== null
 
-    if (Object.keys(updatedFields).length === 0) {
+    if (!hasFieldChanges && !hasAvatarChange) {
       generalError.value = 'No changes were made'
       return
     }
@@ -396,10 +520,21 @@
     saving.value = true
 
     try {
-      await api(`/users/${props.user?.id}`, {
-        method: 'PATCH',
-        body: updatedFields
-      })
+      // Upload avatar first if there's a new one
+      if (hasAvatarChange) {
+        const avatarUrl = await uploadAvatar()
+        if (avatarUrl) {
+          updatedFields.avatar_url = avatarUrl
+        }
+      }
+
+      // Update profile with all changes
+      if (Object.keys(updatedFields).length > 0) {
+        await api(`/users/${props.user?.id}`, {
+          method: 'PATCH',
+          body: updatedFields
+        })
+      }
 
       emits('updated')
 
