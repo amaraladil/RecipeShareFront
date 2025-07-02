@@ -542,6 +542,7 @@
         // Update profile state
         interface ProfileState {
           display_name: string
+          avatar_url: string
           [key: string]: any
         }
         const profileState = useProfileState() as { value: ProfileState | null }
@@ -550,6 +551,19 @@
           profileState.value.display_name = updatedFields.display_name
         }
         navigateTo(`/@${updatedFields.display_name}`)
+      }
+
+      if (updatedFields.avatar_url) {
+        interface ProfileState {
+          display_name: string
+          avatar_url: string
+          [key: string]: any
+        }
+        const profileState = useProfileState() as { value: ProfileState | null }
+
+        if (profileState.value) {
+          profileState.value.avatar_url = updatedFields.avatar_url
+        }
       }
 
       close()
