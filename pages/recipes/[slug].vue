@@ -386,13 +386,13 @@
               v-if="recipe.is_saved"
               name="ic:outline-bookmark"
               @click="saveRecipeToggle"
-              class="size-7 text-gray-900/90 cursor-pointer"
+              class="size-7 text-gray-900/90 dark:text-gray-300 cursor-pointer"
             />
             <UIcon
               v-else
               name="ic:outline-bookmark-border"
               @click="saveRecipeToggle"
-              class="size-7 text-gray-600 cursor-pointer"
+              class="size-7 text-gray-600 dark:text-gray-300 cursor-pointer"
             />
             <div class="flex items-center gap-1">
               <UIcon
@@ -405,7 +405,7 @@
                 v-else
                 name="ic:outline-favorite-border"
                 @click="likeRecipeToggle"
-                class="size-7 text-gray-600 cursor-pointer"
+                class="size-7 text-gray-600 dark:text-gray-300 cursor-pointer"
               />
               <span class="pr-2">{{ recipe.counter?.likes || 0 }}</span>
             </div>
