@@ -59,8 +59,17 @@
     }
   )
 
-  const refreshProfile = async () => {
-    profile.value = await fetchProfile(true)
+  const refreshProfile = async (updatedUserData?: any) => {
+    if (updatedUserData) {
+      // Use the fresh data from the server
+      profile.value = {
+        ...updatedUserData,
+        fetchTime: new Date()
+      } as Profile
+    } else {
+      // Fallback to fetching from the server
+      profile.value = await fetchProfile(true)
+    }
   }
 
   const isOwnProfile = computed(() => {

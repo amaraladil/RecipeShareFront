@@ -238,7 +238,10 @@
     user: Object
   })
 
-  const emits = defineEmits(['close', 'updated'])
+  const emits = defineEmits<{
+    close: []
+    updated: [updatedUserData?: any]
+  }>()
 
   const form = reactive({
     display_name: '',
@@ -528,42 +531,36 @@
         }
       }
 
-      // Update profile with all changes
+      // Update profile with all changes and get the updated user data
+      let updatedUserData = null
       if (Object.keys(updatedFields).length > 0) {
-        await api(`/users/${props.user?.id}`, {
+        const response = await api(`/users/${props.user?.id}`, {
           method: 'PATCH',
           body: updatedFields
         })
+
+        // Extract the user data from the response
+        updatedUserData = response.data
       }
 
-      emits('updated')
+      // Emit the updated event with the fresh user data
+      emits('updated', updatedUserData)
 
-      if (updatedFields.display_name) {
-        // Update profile state
-        interface ProfileState {
-          display_name: string
-          avatar_url: string
-          [key: string]: any
-        }
-        const profileState = useProfileState() as { value: ProfileState | null }
+      // Update profile state
+      interface ProfileState {
+        display_name: string
+        avatar_url: string
+        [key: string]: any
+      }
+      const profileState = useProfileState() as { value: ProfileState | null }
 
-        if (profileState.value) {
-          profileState.value.display_name = updatedFields.display_name
-        }
+      if (profileState.value && updatedFields.display_name) {
+        profileState.value.display_name = updatedFields.display_name
         navigateTo(`/@${updatedFields.display_name}`)
       }
 
-      if (updatedFields.avatar_url) {
-        interface ProfileState {
-          display_name: string
-          avatar_url: string
-          [key: string]: any
-        }
-        const profileState = useProfileState() as { value: ProfileState | null }
-
-        if (profileState.value) {
-          profileState.value.avatar_url = updatedFields.avatar_url
-        }
+      if (profileState.value && updatedFields.avatar_url) {
+        profileState.value.avatar_url = updatedFields.avatar_url
       }
 
       close()
