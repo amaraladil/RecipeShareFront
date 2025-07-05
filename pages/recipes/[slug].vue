@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
+  import { UnitLabels } from '~/utils/units'
 
   const route = useRoute()
   const router = useRouter()
@@ -334,7 +335,7 @@
             <span>•</span>
             <span class="gap-3 flex items-center">
               <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
-              <span v-if="recipe.updatedAt">
+              <span v-if="recipe.updatedAt != recipe.createdAt">
                 (Updated: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
               </span>
             </span>
@@ -586,9 +587,14 @@
               v-if="!isEditMode"
               class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"
             ></span>
-            <span v-if="!isEditMode" class="text-gray-700 dark:text-gray-300">{{
-              ingredient
-            }}</span>
+            <span
+              v-if="!isEditMode"
+              class="text-gray-700 dark:text-gray-300 flex gap-1"
+            >
+              <span class="flex-1">{{ ingredient.name }}</span>
+              <span>{{ ingredient.amount }}</span>
+              <span>{{ UnitLabels[ingredient.unit] }}</span>
+            </span>
 
             <template v-else>
               <input
