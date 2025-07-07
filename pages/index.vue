@@ -1,43 +1,30 @@
 <script setup lang="ts">
-import { pageTitle } from '~/utils/meta'
-console.log('Index Page Loaded')
-const fetchApi = useApi()
-interface Recipe {
-  id: string
-  // add other properties as needed, e.g. title: string
-}
+  import { pageTitle } from '~/utils/meta'
+  console.log('Index Page Loaded')
+  const fetchApi = useApi()
+  interface Recipe {
+    id: string
+    // add other properties as needed, e.g. title: string
+  }
 
-const recipes = ref<Recipe[]>([])
+  const recipes = ref<Recipe[]>([])
 
-onMounted(async () => {
-  recipes.value = await fetchApi('/recipes/', { server: true })
-})
+  onMounted(async () => {
+    recipes.value = await fetchApi('/recipes/', { server: true })
+  })
 
-useSeoMeta({
-  title: pageTitle('Recent Recipes'),
-  description: 'Discover the latest recipes shared by our community.',
-  ogTitle: pageTitle('Recent Recipes'),
-  ogDescription: 'Explore the newest recipes from our users.',
-  ogImage: '/images/og-image.jpg',
-  ogUrl: useRuntimeConfig().public.baseUrl + '/',
-  twitterTitle: pageTitle('Recent Recipes'),
-  twitterDescription: 'Check out the latest recipes shared by our community.',
-  twitterImage: '/images/twitter-image.jpg',
-  twitterCard: 'summary_large_image'
-})
-
-useHead({
-  htmlAttrs: {
-    lang: 'en'
-  },
-  link: [
-    {
-      rel: 'icon',
-      type: 'image/png',
-      href: '/favicon.png'
-    }
-  ]
-})
+  useSeoMeta({
+    title: pageTitle('Recent Recipes'),
+    description: 'Discover the latest recipes shared by our community.',
+    ogTitle: pageTitle('Recent Recipes'),
+    ogDescription: 'Explore the newest recipes from our users.',
+    ogImage: '/images/og-image.jpg',
+    ogUrl: useRuntimeConfig().public.baseUrl + '/',
+    twitterTitle: pageTitle('Recent Recipes'),
+    twitterDescription: 'Check out the latest recipes shared by our community.',
+    twitterImage: '/images/twitter-image.jpg',
+    twitterCard: 'summary_large_image'
+  })
 </script>
 
 <template>

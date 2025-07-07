@@ -4,8 +4,8 @@ export const UnitLabels: Record<number, string> = {
   2: 'liter',
 
   // Volume - Imperial
-  3: 'teaspoon',
-  4: 'tablespoon',
+  3: 'tsp',
+  4: 't',
   5: 'fluid ounce',
   6: 'cup',
   7: 'pint',
@@ -13,34 +13,34 @@ export const UnitLabels: Record<number, string> = {
   9: 'gallon',
 
   // Weight - Metric
-  10: 'gram',
-  11: 'kilogram',
-  27: 'milligram',
+  10: 'g',
+  11: 'kg',
+  12: 'mg',
 
   // Weight - Imperial
-  12: 'ounce',
-  13: 'pound',
+  13: 'ounce',
+  14: 'pound',
 
   // Count/Piece
-  14: 'piece',
-  15: 'each',
-  16: 'dozen',
-  28: 'bunch',
-  29: 'head',
-  30: 'fillet',
+  15: 'pcs',
+  16: 'each',
+  17: 'dozen',
+  18: 'bunch',
+  19: 'head',
+  20: 'fillet',
 
   // Other common cooking units
-  17: 'pinch',
-  18: 'dash',
-  19: 'clove',
-  20: 'slice',
-  21: 'stick',
-  22: 'package',
-  23: 'can',
-  24: 'bottle',
-  25: 'bag',
+  21: 'pinch',
+  22: 'dash',
+  23: 'clove',
+  24: 'slice',
+  25: 'stick',
+  26: 'package',
+  27: 'can',
+  28: 'bottle',
+  29: 'bag',
+  30: 'drop',
   31: 'bar',
   32: 'roll',
-  33: 'sheet',
-  26: 'drop'
+  33: 'sheet'
 }

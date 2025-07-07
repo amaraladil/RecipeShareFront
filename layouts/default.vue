@@ -29,6 +29,7 @@
                 : 'opacity-0 w-0 overflow-hidden'
             ]"
           >
+            <img class="w-8 h-8" src="/LogoRecipeShare.png" />
             <h1
               class="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap"
             >
@@ -311,5 +312,18 @@
 
   onUnmounted(() => {
     window.removeEventListener('resize', checkMobile)
+  })
+
+  useHead({
+    htmlAttrs: {
+      lang: 'en'
+    },
+    link: [
+      {
+        rel: 'icon',
+        type: 'image/png',
+        href: '/LogoRecipeShare.png'
+      }
+    ]
   })
 </script>
