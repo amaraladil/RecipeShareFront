@@ -12,7 +12,7 @@
         <UIcon
           v-if="recipe.is_saved"
           name="ic:outline-bookmark"
-          class="size-5"
+          class="size-5 text-gray-900/90 dark:text-gray-300"
         />
         <UIcon
           v-if="recipe.is_liked"

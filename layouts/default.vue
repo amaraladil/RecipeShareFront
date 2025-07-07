@@ -4,7 +4,7 @@
     <aside
       :class="[
         'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out relative z-40',
-        sidebarExpanded ? 'w-64' : 'w-16'
+        sidebarExpanded ? 'w-64' : 'w-[73px]'
       ]"
       @mouseenter="handleSidebarHover(true)"
       @mouseleave="handleSidebarHover(false)"
@@ -168,7 +168,7 @@
               <NuxtLink
                 v-if="profile"
                 :to="`/@${profile.display_name}`"
-                class="flex items-center w-full px-0.5 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                class="flex items-center w-full px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <img
                   :src="profile.avatar_url"
