@@ -189,11 +189,11 @@
       description: ` @${profile.value?.display_name} - Explore their recipes and culinary creations.`,
       ogTitle: pageTitle(`@${handle} - Profile`),
       ogDescription: ` @${profile.value?.display_name} - Explore their recipes and culinary creations.`,
-      ogImage: '[og:image]',
+      ogImage: '/LogoRecipeShare.png',
       ogUrl: config.public.baseUrl + route.path,
       twitterTitle: pageTitle(`@${handle} - Profile`),
       twitterDescription: `@${profile.value?.display_name} - Explore their recipes and culinary creations.`,
-      twitterImage: '[twitter:image]',
+      twitterImage: '/LogoRecipeShare.png',
       twitterCard: 'summary'
     })
   } else {
@@ -202,12 +202,12 @@
       description: 'Find and share your favorite recipes with our community.',
       ogTitle: pageTitle(`Discover Recipes here`),
       ogDescription: 'Find and share your favorite recipes with our community.',
-      ogImage: '[og:image]',
+      ogImage: '/LogoRecipeShare.png',
       ogUrl: config.public.baseUrl + route.path,
       twitterTitle: pageTitle(`Discover Recipes here`),
       twitterDescription:
         'Find and share your favorite recipes with our community.',
-      twitterImage: '[twitter:image]',
+      twitterImage: '/LogoRecipeShare.png',
       twitterCard: 'summary_large_image'
     })
   }
