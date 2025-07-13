@@ -381,7 +381,9 @@
         // Fetch author info for each comment
         const commentsWithAuthors = await Promise.all(
           response.map(async (comment: Comment) => {
-            const authorResponse = await fetchApi(`/users/${comment.createdBy}`)
+            const authorResponse = await fetchApi(
+              `/users/id/${comment.createdBy}`
+            )
             return {
               ...comment,
               author: authorResponse,
@@ -430,7 +432,7 @@
 
       if (response) {
         // Add new comment to the beginning of the list
-        const authorResponse = await fetchApi(`/users/${response.createdBy}`)
+        const authorResponse = await fetchApi(`/users/id/${response.createdBy}`)
         const newCommentWithAuthor = {
           ...response,
           author: authorResponse,
@@ -483,7 +485,7 @@
 
       if (response) {
         // Add reply to the comment
-        const authorResponse = await fetchApi(`/users/${response.createdBy}`)
+        const authorResponse = await fetchApi(`/users/id/${response.createdBy}`)
         const newReply = {
           ...response,
           author: authorResponse
@@ -528,7 +530,9 @@
       if (response) {
         const repliesWithAuthors = await Promise.all(
           response.map(async (reply: Reply) => {
-            const authorResponse = await fetchApi(`/users/${reply.createdBy}`)
+            const authorResponse = await fetchApi(
+              `/users/id/${reply.createdBy}`
+            )
             return {
               ...reply,
               author: authorResponse
@@ -558,7 +562,9 @@
       if (response) {
         const repliesWithAuthors = await Promise.all(
           response.map(async (reply: Reply) => {
-            const authorResponse = await fetchApi(`/users/${reply.createdBy}`)
+            const authorResponse = await fetchApi(
+              `/users/id/${reply.createdBy}`
+            )
             return {
               ...reply,
               author: authorResponse
