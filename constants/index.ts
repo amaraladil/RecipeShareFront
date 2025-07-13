@@ -5,6 +5,9 @@ export const PROFILE_USERNAME_MAX_LENGTH = 24
 export const PROFILE_NAME_MAX_LENGTH = 30
 export const PROFILE_PASSWORD_MIN_LENGTH = 6
 
+export const COMMENT_MIN_LENGTH = 1
+export const COMMENT_MAX_LENGTH = 160
+
 export const DEFAULT_AVATAR_URL = '/images/default-avatar.png'
 
 export const ROLES = {

@@ -137,6 +137,9 @@
                   class="w-6 h-6 rounded-full flex-shrink-0"
                 />
                 <div class="flex-1">
+                  <div v-if="replyToUser" class="text-sm text-gray-600 mb-1">
+                    Replying to @{{ replyToUser.display_name }}
+                  </div>
                   <textarea
                     v-model="replyContent"
                     placeholder="Write a reply..."
@@ -200,6 +203,9 @@
                   </div>
 
                   <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">
+                    <span v-if="reply.replyToUser" class="text-blue-600">
+                      @{{ reply.replyToUser.display_name }}
+                    </span>
                     {{ reply.content }}
                   </p>
 
@@ -223,6 +229,14 @@
                         class="w-3 h-3"
                       />
                       {{ reply.likeCount }}
+                    </button>
+
+                    <button
+                      v-if="user"
+                      @click="startReplyToReply(comment, reply)"
+                      class="text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      Reply
                     </button>
 
                     <button
@@ -282,6 +296,12 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 
+  interface User {
+    id: string
+    display_name: string
+    avatar_url: string
+  }
+
   interface Comment {
     id: string
     recipeId: string
@@ -291,11 +311,7 @@
     likeCount: number
     replyCount: number
     isLikedByUser: boolean
-    author?: {
-      id: string
-      display_name: string
-      avatar_url: string
-    }
+    author?: User
     showReplies?: boolean
     replies?: Reply[]
   }
@@ -308,12 +324,10 @@
     createdAt: string
     likeCount: number
     parentId: string
+    replyToId?: string
     isLikedByUser: boolean
-    author?: {
-      id: string
-      display_name: string
-      avatar_url: string
-    }
+    author?: User
+    replyToUser?: User
   }
 
   interface Profile {
@@ -330,6 +344,8 @@
   const profile = useProfileState() as Ref<Profile | null>
   const fetchApi = useApi()
 
+  import { COMMENT_MIN_LENGTH, COMMENT_MAX_LENGTH } from '~/constants'
+
   // State
   const comments = ref<Comment[]>([])
   const loading = ref(false)
@@ -341,13 +357,15 @@
   // New comment
   const newComment = ref('')
   const isSubmitting = ref(false)
-  const maxCommentLength = 1000
+  const maxCommentLength = COMMENT_MAX_LENGTH
 
   // Replies
   const replyingTo = ref<string | null>(null)
   const replyContent = ref('')
   const isSubmittingReply = ref(false)
   const loadingReplies = ref<Record<string, boolean>>({})
+  const replyToUser = ref<User | null>(null)
+  const currentReplyToId = ref<string | null>(null)
 
   // Intersection Observer
   const scrollTarget = ref<HTMLElement>()
@@ -384,9 +402,14 @@
       )
 
       if (response) {
+        // Filter out deleted comments
+        const activeComments = response.filter(
+          (comment: Comment) => comment.content !== '[deleted]'
+        )
+
         // Fetch author info for each comment
         const commentsWithAuthors = await Promise.all(
-          response.map(async (comment: Comment) => {
+          activeComments.map(async (comment: Comment) => {
             const authorResponse = await fetchApi(
               `/users/id/${comment.createdBy}`
             )
@@ -461,6 +484,22 @@
   const startReply = (comment: Comment) => {
     replyingTo.value = comment.id
     replyContent.value = ''
+    replyToUser.value = null
+    currentReplyToId.value = null
+    nextTick(() => {
+      // Focus on the textarea
+      const textarea = document.querySelector(
+        `textarea[placeholder="Write a reply..."]`
+      ) as HTMLTextAreaElement
+      if (textarea) textarea.focus()
+    })
+  }
+
+  const startReplyToReply = (comment: Comment, reply: Reply) => {
+    replyingTo.value = comment.id
+    replyContent.value = ''
+    replyToUser.value = reply.author || null
+    currentReplyToId.value = reply.id
     nextTick(() => {
       // Focus on the textarea
       const textarea = document.querySelector(
@@ -473,6 +512,8 @@
   const cancelReply = () => {
     replyingTo.value = null
     replyContent.value = ''
+    replyToUser.value = null
+    currentReplyToId.value = null
   }
 
   const submitReply = async (comment: Comment) => {
@@ -485,7 +526,8 @@
         body: JSON.stringify({
           recipeId: props.recipeId,
           content: replyContent.value.trim(),
-          parentId: comment.id
+          parentId: comment.id,
+          replyToId: currentReplyToId.value || comment.id
         })
       })
 
@@ -494,7 +536,8 @@
         const authorResponse = await fetchApi(`/users/id/${response.createdBy}`)
         const newReply = {
           ...response,
-          author: authorResponse
+          author: authorResponse,
+          replyToUser: replyToUser.value
         }
 
         if (!comment.replies) {
@@ -534,14 +577,34 @@
       )
 
       if (response) {
+        // Filter out deleted replies
+        const activeReplies = response.filter(
+          (reply: Reply) => reply.content !== '[deleted]'
+        )
+
         const repliesWithAuthors = await Promise.all(
-          response.map(async (reply: Reply) => {
+          activeReplies.map(async (reply: Reply) => {
             const authorResponse = await fetchApi(
               `/users/id/${reply.createdBy}`
             )
+
+            let replyToUser = null
+            if (reply.replyToId && reply.replyToId !== comment.id) {
+              // This is a reply to another reply, get the original reply author
+              const originalReply = response.find(
+                (r: Reply) => r.id === reply.replyToId
+              )
+              if (originalReply) {
+                replyToUser = await fetchApi(
+                  `/users/id/${originalReply.createdBy}`
+                )
+              }
+            }
+
             return {
               ...reply,
-              author: authorResponse
+              author: authorResponse,
+              replyToUser
             }
           })
         )
@@ -566,14 +629,34 @@
       )
 
       if (response) {
+        // Filter out deleted replies
+        const activeReplies = response.filter(
+          (reply: Reply) => reply.content !== '[deleted]'
+        )
+
         const repliesWithAuthors = await Promise.all(
-          response.map(async (reply: Reply) => {
+          activeReplies.map(async (reply: Reply) => {
             const authorResponse = await fetchApi(
               `/users/id/${reply.createdBy}`
             )
+
+            let replyToUser = null
+            if (reply.replyToId && reply.replyToId !== comment.id) {
+              // This is a reply to another reply, get the original reply author
+              const originalReply = response.find(
+                (r: Reply) => r.id === reply.replyToId
+              )
+              if (originalReply) {
+                replyToUser = await fetchApi(
+                  `/users/id/${originalReply.createdBy}`
+                )
+              }
+            }
+
             return {
               ...reply,
-              author: authorResponse
+              author: authorResponse,
+              replyToUser
             }
           })
         )
@@ -589,7 +672,7 @@
 
   // Like/unlike comment
   const toggleLike = async (comment: Comment) => {
-    if (!user.value) return
+    if (!user.value || user.value.id === comment.createdBy) return
 
     const wasLiked = comment.isLikedByUser
     const originalCount = comment.likeCount
@@ -694,3 +777,11 @@
     }
   })
 </script>
+
+<style scoped>
+  @import '@/assets/styles/main.css';
+
+  button {
+    @apply cursor-pointer;
+  }
+</style>
