@@ -5,7 +5,7 @@ export const UnitLabels: Record<number, string> = {
 
   // Volume - Imperial
   3: 'tsp',
-  4: 't',
+  4: 'Tbsp',
   5: 'fluid ounce',
   6: 'cup',
   7: 'pint',

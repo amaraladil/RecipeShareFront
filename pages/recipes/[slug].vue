@@ -17,6 +17,10 @@
   const isSaving = ref(false)
   const error = ref('')
 
+  // Comments visibility
+  const showComments = ref(false)
+  const commentsSection = ref<HTMLElement>()
+
   // Edit form data
   const editForm = ref({
     title: '',
@@ -76,6 +80,20 @@
       error.value = 'Failed to load recipe'
     } finally {
       isLoading.value = false
+    }
+  }
+
+  // Toggle comments visibility
+  const toggleComments = () => {
+    showComments.value = !showComments.value
+    if (showComments.value) {
+      // Scroll to comments section after it loads
+      nextTick(() => {
+        commentsSection.value?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      })
     }
   }
 
@@ -684,15 +702,59 @@
         </div>
       </div>
 
-      <!-- Recipe Stats -->
+      <!-- Recipe Stats & Comments Toggle -->
       <div
         class="flex items-center justify-between py-4 border-t border-gray-200"
       >
         <div class="flex gap-6 text-sm text-gray-600">
           <span>{{ recipe.counter?.likes || 0 }} likes</span>
-          <span>{{ recipe.counter?.comments || 0 }} comments</span>
+          <button
+            @click="toggleComments"
+            class="text-blue-600 hover:text-blue-700 hover:underline transition-colors cursor-pointer"
+          >
+            {{ recipe.counter?.comments || 0 }} comments
+          </button>
           <span>{{ recipe.counter?.views || 0 }} saves</span>
         </div>
+
+        <button
+          v-if="!showComments"
+          @click="toggleComments"
+          class="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+        >
+          <UIcon name="ic:outline-comment" class="w-5 h-5" />
+          View Comments
+        </button>
+
+        <button
+          v-else
+          @click="toggleComments"
+          class="flex items-center gap-2 text-gray-600 hover:text-gray-700 transition-colors cursor-pointer"
+        >
+          <UIcon name="ic:outline-expand-less" class="w-5 h-5" />
+          Hide Comments
+        </button>
+      </div>
+
+      <!-- Comments Section (Lazy Loaded) -->
+      <div
+        v-if="showComments"
+        ref="commentsSection"
+        class="transition-all duration-300 ease-in-out"
+      >
+        <Suspense>
+          <template #default>
+            <LazyRecipeComments :recipe-id="recipe.id" />
+          </template>
+          <template #fallback>
+            <div class="flex justify-center items-center py-8">
+              <div
+                class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+              ></div>
+              <span class="ml-3 text-gray-600">Loading comments...</span>
+            </div>
+          </template>
+        </Suspense>
       </div>
     </div>
 
