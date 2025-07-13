@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-8 border-t border-gray-200 pt-8">
+  <div class="">
     <div class="mb-6">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white/80 mb-4">
         Comments ({{ totalComments }})
@@ -64,9 +64,13 @@
           />
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
-              <span class="font-medium text-gray-900 dark:text-white">
-                {{ comment.author?.display_name || 'Anonymous' }}
-              </span>
+              <NuxtLink
+                v-if="comment.author"
+                :to="`/@${comment.author.display_name}`"
+                class="font-medium text-gray-900 dark:text-white hover:underline"
+              >
+                @{{ comment.author?.display_name || 'Anonymous' }}
+              </NuxtLink>
               <span class="text-sm text-gray-500">
                 {{ formatDate(comment.createdAt) }}
               </span>
@@ -192,11 +196,13 @@
                 />
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <span
-                      class="font-medium text-gray-900 dark:text-white text-sm"
+                    <NuxtLink
+                      v-if="reply.author"
+                      :to="`/@${reply.author.display_name}`"
+                      class="font-medium text-sm text-gray-900 dark:text-white hover:underline"
                     >
-                      {{ reply.author?.display_name || 'Anonymous' }}
-                    </span>
+                      @{{ reply.author?.display_name || 'Anonymous' }}
+                    </NuxtLink>
                     <span class="text-xs text-gray-500">
                       {{ formatDate(reply.createdAt) }}
                     </span>

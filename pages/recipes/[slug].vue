@@ -17,9 +17,10 @@
   const isSaving = ref(false)
   const error = ref('')
 
-  // Comments visibility
-  const showComments = ref(false)
+  // Comments loading
+  const shouldLoadComments = ref(false)
   const commentsSection = ref<HTMLElement>()
+  const commentsTrigger = ref<HTMLElement>()
 
   // Edit form data
   const editForm = ref({
@@ -48,6 +49,32 @@
     }
     return (recipe.value?.prep_time || 0) + (recipe.value?.cook_time || 0)
   })
+
+  // Intersection Observer for lazy loading comments
+  const setupCommentsObserver = () => {
+    if (!commentsTrigger.value) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !shouldLoadComments.value) {
+            shouldLoadComments.value = true
+            observer.disconnect()
+          }
+        })
+      },
+      {
+        rootMargin: '100px' // Load comments when trigger is 100px from viewport
+      }
+    )
+
+    observer.observe(commentsTrigger.value)
+
+    // Cleanup observer on component unmount
+    onUnmounted(() => {
+      observer.disconnect()
+    })
+  }
 
   // Fetch recipe data
   const fetchRecipe = async () => {
@@ -80,20 +107,6 @@
       error.value = 'Failed to load recipe'
     } finally {
       isLoading.value = false
-    }
-  }
-
-  // Toggle comments visibility
-  const toggleComments = () => {
-    showComments.value = !showComments.value
-    if (showComments.value) {
-      // Scroll to comments section after it loads
-      nextTick(() => {
-        commentsSection.value?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-      })
     }
   }
 
@@ -264,8 +277,12 @@
   }
 
   // Initialize
-  onMounted(() => {
-    fetchRecipe()
+  onMounted(async () => {
+    await fetchRecipe()
+    // Only set up observer after recipe is loaded
+    nextTick(() => {
+      setupCommentsObserver()
+    })
   })
 
   // SEO Meta
@@ -702,43 +719,15 @@
         </div>
       </div>
 
-      <!-- Recipe Stats & Comments Toggle -->
-      <div
-        class="flex items-center justify-between py-4 border-t border-gray-200"
-      >
-        <div class="flex gap-6 text-sm text-gray-600">
-          <span>{{ recipe.counter?.likes || 0 }} likes</span>
-          <button
-            @click="toggleComments"
-            class="text-blue-600 hover:text-blue-700 hover:underline transition-colors cursor-pointer"
-          >
-            {{ recipe.counter?.comments || 0 }} comments
-          </button>
-          <span>{{ recipe.counter?.views || 0 }} saves</span>
-        </div>
-
-        <button
-          v-if="!showComments"
-          @click="toggleComments"
-          class="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
-        >
-          <UIcon name="ic:outline-comment" class="w-5 h-5" />
-          View Comments
-        </button>
-
-        <button
-          v-else
-          @click="toggleComments"
-          class="flex items-center gap-2 text-gray-600 hover:text-gray-700 transition-colors cursor-pointer"
-        >
-          <UIcon name="ic:outline-expand-less" class="w-5 h-5" />
-          Hide Comments
-        </button>
+      <!-- Add some spacing before comments trigger -->
+      <div class="py-4">
+        <!-- Comments Trigger (Invisible element to trigger loading) -->
+        <div ref="commentsTrigger" class="h-1"></div>
       </div>
 
-      <!-- Comments Section (Lazy Loaded) -->
+      <!-- Comments Section (Auto-loaded when scrolled into view) -->
       <div
-        v-if="showComments"
+        v-if="shouldLoadComments"
         ref="commentsSection"
         class="transition-all duration-300 ease-in-out"
       >
