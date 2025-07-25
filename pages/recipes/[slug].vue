@@ -216,6 +216,10 @@
       return
     }
 
+    if (isOwner.value) {
+      return // Don't allow saving own recipe
+    }
+
     try {
       if (recipe.value.is_liked) {
         recipe.value.is_liked = false
@@ -247,6 +251,10 @@
     if (!user.value) {
       alert('You must be logged in to save a recipe.')
       return
+    }
+
+    if (isOwner.value) {
+      return // Don't allow saving own recipe
     }
 
     try {
@@ -414,34 +422,37 @@
             </button>
           </div>
           <div v-else class="row-span-1 h-10"></div>
-          <div
-            v-if="!isOwner"
-            class="row-span-1 flex justify-end items-end gap-2"
-          >
+          <div class="row-span-1 flex justify-end items-end gap-2">
             <UIcon
-              v-if="recipe.is_saved"
-              name="ic:outline-bookmark"
+              :name="
+                recipe.is_saved
+                  ? 'ic:outline-bookmark'
+                  : 'ic:outline-bookmark-border'
+              "
               @click="saveRecipeToggle"
-              class="size-7 text-gray-900/90 dark:text-gray-300 cursor-pointer"
-            />
-            <UIcon
-              v-else
-              name="ic:outline-bookmark-border"
-              @click="saveRecipeToggle"
-              class="size-7 text-gray-600 dark:text-gray-300 cursor-pointer"
+              :class="[
+                'size-7',
+                recipe.is_saved
+                  ? 'text-blue-600'
+                  : 'text-gray-600 dark:text-gray-300',
+                !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
+              ]"
             />
             <div class="flex items-center gap-1">
               <UIcon
-                v-if="recipe.is_liked"
-                name="ic:outline-favorite"
+                :name="
+                  recipe.is_liked
+                    ? 'ic:outline-favorite'
+                    : 'ic:outline-favorite-border'
+                "
                 @click="likeRecipeToggle"
-                class="size-7 text-red-600 cursor-pointer"
-              />
-              <UIcon
-                v-else
-                name="ic:outline-favorite-border"
-                @click="likeRecipeToggle"
-                class="size-7 text-gray-600 dark:text-gray-300 cursor-pointer"
+                :class="[
+                  'size-7',
+                  recipe.is_liked
+                    ? 'text-red-600'
+                    : 'text-gray-600 dark:text-gray-300',
+                  !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
+                ]"
               />
               <span class="pr-2">{{ recipe.counter?.likes || 0 }}</span>
             </div>
