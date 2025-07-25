@@ -245,12 +245,7 @@
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted } from 'vue'
   import AuthModal from '../components/AuthModal.vue'
-
-  interface Profile {
-    display_name: string
-    avatar_url: string
-    // add other properties as needed
-  }
+  import type { Profile } from '~/types/profile'
 
   const profile = useProfileState() as Ref<Profile | null>
   const { user, fetchUser } = useSupabaseUser()

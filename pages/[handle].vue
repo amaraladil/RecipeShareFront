@@ -2,6 +2,7 @@
   import { pageTitle } from '~/utils/meta'
   import EditProfileModal from '~/components/EditProfileModal.vue'
   import { CACHE_PROFILE_DURATION } from '~/constants'
+  import type { Profile } from '~/types/profile'
 
   const config = useRuntimeConfig()
   const route = useRoute()
@@ -12,17 +13,6 @@
   const showModal = ref(false)
   const openModal = () => (showModal.value = true)
   const closeModal = () => (showModal.value = false)
-
-  // Use baseURL for SSR and client
-  interface Profile {
-    id: string
-    avatar_url: string
-    display_name: string
-    nick_name: string
-    bio: string
-    fetchTime?: Date
-    // add other properties as needed
-  }
 
   const nuxtApp = useNuxtApp()
   const {

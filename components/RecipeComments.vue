@@ -301,46 +301,8 @@
 
 <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-
-  interface User {
-    id: string
-    display_name: string
-    avatar_url: string
-  }
-
-  interface Comment {
-    id: string
-    recipeId: string
-    content: string
-    createdBy: string
-    createdAt: string
-    likeCount: number
-    replyCount: number
-    isLikedByUser: boolean
-    author?: User
-    showReplies?: boolean
-    replies?: Reply[]
-  }
-
-  interface Reply {
-    id: string
-    recipeId: string
-    content: string
-    createdBy: string
-    createdAt: string
-    likeCount: number
-    parentId: string
-    replyToId?: string
-    isLikedByUser: boolean
-    author?: User
-    replyToUser?: User
-  }
-
-  interface Profile {
-    display_name: string
-    avatar_url: string
-    // add other properties as needed
-  }
+  import type { Profile } from '~/types/profile'
+  import type { User, Comment, Reply } from '~/types/comment'
 
   const props = defineProps<{
     recipeId: string
