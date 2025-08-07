@@ -292,9 +292,9 @@
   const compressImage = (
     file: File,
     maxWidth = 400,
-    quality = 0.8
-  ): Promise<Blob> => {
-    return new Promise<Blob>((resolve, reject) => {
+    targetSizeKB = 10
+  ): Promise<{ blob: Blob; format: string }> => {
+    return new Promise<{ blob: Blob; format: string }>((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
       const img = new Image()
@@ -305,19 +305,31 @@
         canvas.width = img.width * ratio
         canvas.height = img.height * ratio
 
-        // Draw and compress
+        // Draw image
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob)
-            } else {
-              reject(new Error('Image compression failed'))
-            }
-          },
-          'image/jpeg',
-          quality
-        )
+
+        // Determine if image has transparency
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const hasTransparency = checkForTransparency(imageData)
+
+        // Choose format based on transparency and original format
+        let outputFormat = 'image/jpeg'
+        let fileExtension = 'jpg'
+
+        if (hasTransparency || file.type === 'image/png') {
+          outputFormat = 'image/png'
+          fileExtension = 'png'
+        } else if (file.type === 'image/webp') {
+          outputFormat = 'image/webp'
+          fileExtension = 'webp'
+        }
+
+        // Compress with iterative quality adjustment to meet size target
+        compressWithSizeLimit(canvas, outputFormat, targetSizeKB * 1024)
+          .then((blob) => {
+            resolve({ blob, format: fileExtension })
+          })
+          .catch(reject)
       }
 
       img.onerror = () => {
@@ -325,6 +337,60 @@
       }
 
       img.src = URL.createObjectURL(file)
+    })
+  }
+
+  // Helper function to check if image has transparency
+  const checkForTransparency = (imageData: ImageData): boolean => {
+    const data = imageData.data
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] < 255) {
+        return true
+      }
+    }
+    return false
+  }
+
+  // Helper function to compress with size limit
+  const compressWithSizeLimit = (
+    canvas: HTMLCanvasElement,
+    format: string,
+    targetSize: number
+  ): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      let quality = 0.9
+      let attempts = 0
+      const maxAttempts = 10
+
+      const tryCompress = () => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Compression failed'))
+              return
+            }
+
+            // If size is acceptable or we've tried enough times, resolve
+            if (
+              blob.size <= targetSize ||
+              attempts >= maxAttempts ||
+              quality <= 0.1
+            ) {
+              resolve(blob)
+              return
+            }
+
+            // Reduce quality and try again
+            attempts++
+            quality -= 0.1
+            tryCompress()
+          },
+          format,
+          format === 'image/jpeg' ? quality : undefined // Quality only applies to JPEG
+        )
+      }
+
+      tryCompress()
     })
   }
 
@@ -343,7 +409,7 @@
       return
     }
 
-    // Validate file size (5MB max)
+    // Validate file size (5MB max for initial upload)
     if (file.size > 5 * 1024 * 1024) {
       generalError.value = 'Image size must be less than 5MB'
       return
@@ -352,10 +418,12 @@
     compressing.value = true
 
     try {
-      // Compress the image
-      const compressedBlob = await compressImage(file)
-      const compressedFile = new File([compressedBlob!], file.name, {
-        type: 'image/jpeg',
+      // Compress the image with transparency support and 10KB limit
+      const { blob, format } = await compressImage(file, 400, 10)
+
+      // Create file with appropriate extension
+      const compressedFile = new File([blob], `avatar.${format}`, {
+        type: blob.type,
         lastModified: Date.now()
       })
 
@@ -366,6 +434,12 @@
       // Clear any previous errors
       generalError.value = ''
       errors.avatar_url = ''
+
+      console.log(
+        `Image compressed to ${(blob.size / 1024).toFixed(
+          2
+        )}KB as ${format.toUpperCase()}`
+      )
     } catch (error) {
       console.error('Error compressing image:', error)
       generalError.value = 'Failed to process image. Please try again.'
