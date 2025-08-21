@@ -8,6 +8,7 @@ export interface Comment {
   id: string
   recipeId: string
   content: string
+  status: number
   createdBy: string
   createdAt: string
   likeCount: number
@@ -22,6 +23,7 @@ export interface Reply {
   id: string
   recipeId: string
   content: string
+  status: number
   createdBy: string
   createdAt: string
   likeCount: number

@@ -372,7 +372,7 @@
       if (response) {
         // Filter out deleted comments
         const activeComments = response.filter(
-          (comment: Comment) => comment.content !== '[deleted]'
+          (comment: Comment) => comment.status !== 3
         )
 
         // Fetch author info for each comment
@@ -547,7 +547,7 @@
       if (response) {
         // Filter out deleted replies
         const activeReplies = response.filter(
-          (reply: Reply) => reply.content !== '[deleted]'
+          (reply: Reply) => reply.status !== 3
         )
 
         const repliesWithAuthors = await Promise.all(
@@ -599,7 +599,7 @@
       if (response) {
         // Filter out deleted replies
         const activeReplies = response.filter(
-          (reply: Reply) => reply.content !== '[deleted]'
+          (reply: Reply) => reply.status === 3
         )
 
         const repliesWithAuthors = await Promise.all(
