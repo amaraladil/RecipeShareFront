@@ -599,7 +599,7 @@
       if (response) {
         // Filter out deleted replies
         const activeReplies = response.filter(
-          (reply: Reply) => reply.status === 3
+          (reply: Reply) => reply.status !== 3
         )
 
         const repliesWithAuthors = await Promise.all(
