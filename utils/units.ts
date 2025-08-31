@@ -13,9 +13,9 @@ export const UnitLabels: Record<number, string> = {
   9: 'gallon',
 
   // Weight - Metric
-  10: 'g',
-  11: 'kg',
-  12: 'mg',
+  10: 'mg',
+  11: 'g',
+  12: 'kg',
 
   // Weight - Imperial
   13: 'ounce',
