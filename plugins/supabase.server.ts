@@ -16,33 +16,35 @@ export default defineNuxtPlugin((nuxtApp) => {
         get: (key) => cookies[key],
         set: (key, value, options) =>
           setCookie(event, key, value, {
-            ...options,
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            path: '/'
+            path: '/',
+            ...options
           }),
         remove: (key, options) => deleteCookie(event, key, options)
       }
     }
   )
 
-  // Refresh session if expiring soon (on every request)
+  // Check session validity and refresh if needed
   nuxtApp.hook('app:rendered', async () => {
     const {
-      data: { session }
+      data: { session },
+      error
     } = await supabase.auth.getSession()
 
     if (session?.expires_at && session.refresh_token) {
       const now = Math.floor(Date.now() / 1000)
-      const expiresSoon = session.expires_at - now < 60 * 60 // 60 minutes
+      const expiresSoon = session.expires_at - now < 36000
 
       if (expiresSoon) {
-        await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token
-        })
+        await supabase.auth.refreshSession()
       }
+    }
+
+    if (error || !session) {
+      await supabase.auth.signOut()
     }
   })
 
