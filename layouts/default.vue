@@ -145,7 +145,7 @@
             <!-- Login button -->
             <button
               v-if="!user"
-              @click="openLogin"
+              @click="isOpenAuth = true"
               class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group cursor-pointer"
             >
               <Icon
@@ -238,13 +238,14 @@
     </main>
 
     <!-- Auth Modal -->
-    <AuthModal v-if="authVisible" @close="closeAuthModal" />
+    <AuthModal v-if="isOpenAuth" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted } from 'vue'
   import AuthModal from '../components/AuthModal.vue'
+  const { isOpenAuth, closeAuth } = useAuthModal()
   import type { Profile } from '~/types/profile'
 
   const profile = useProfileState() as Ref<Profile | null>
@@ -256,7 +257,7 @@
   const sidebarExpanded = ref(false)
   const isMobile = ref(false)
   const userLoading = ref(true)
-  const authVisible = ref(false)
+  // const authVisible = ref(false)
 
   // Check if mobile
   const checkMobile = () => {
@@ -277,16 +278,8 @@
     }
   }
 
-  // Auth functions
-  const closeAuthModal = () => (authVisible.value = false)
-
-  const openLogin = () => {
-    authVisible.value = true
-  }
-
   const logout = async () => {
     await $supabase.auth.signOut()
-    authVisible.value = false
     user.value = null
     location.reload()
   }

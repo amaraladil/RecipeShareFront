@@ -44,7 +44,9 @@
       <!-- Login prompt -->
       <div v-else class="mb-6 p-4 bg-gray-50 rounded-lg text-center">
         <p class="text-gray-600 mb-2">Please log in to leave a comment</p>
-        <button class="text-blue-600 hover:underline">Log in</button>
+        <button @click="openAuth" class="text-blue-600 hover:underline">
+          Log in
+        </button>
       </div>
     </div>
 
@@ -303,6 +305,7 @@
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
   import type { Profile } from '~/types/profile'
   import type { User, Comment, Reply } from '~/types/comment'
+  const { openAuth } = useAuthModal()
 
   const props = defineProps<{
     recipeId: string

@@ -7,7 +7,7 @@
     >
       <!-- Close button -->
       <button
-        @click="$emit('close')"
+        @click="closeAuth"
         class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <Icon
@@ -204,7 +204,7 @@
   const { appName } = useAppSettings()
   const { $supabase } = useNuxtApp()
   const { validateEmail, validatePassword } = useValidation()
-  const emits = defineEmits(['close'])
+  const { closeAuth } = useAuthModal()
 
   const isLogin = ref(true)
   const email = ref('')
@@ -271,7 +271,8 @@
       if (err) {
         error.value = err.message
       } else {
-        emits('close')
+        closeAuth()
+        // emits('close')
         if (!isLogin.value) {
           // For signup, show a success message or redirect
           // Auto login happens via Supabase auth state change

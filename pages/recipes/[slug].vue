@@ -7,6 +7,7 @@
   const config = useRuntimeConfig()
   const { user } = useSupabaseUser()
   const fetchApi = useApi()
+  const { openAuth } = useAuthModal()
 
   const slug = route.params.slug as string
 
@@ -212,7 +213,7 @@
 
   const likeRecipeToggle = async () => {
     if (!user.value) {
-      alert('You must be logged in to like a recipe.')
+      openAuth()
       return
     }
 
@@ -249,7 +250,7 @@
 
   const saveRecipeToggle = async () => {
     if (!user.value) {
-      alert('You must be logged in to save a recipe.')
+      openAuth()
       return
     }
 
