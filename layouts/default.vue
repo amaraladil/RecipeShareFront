@@ -245,7 +245,7 @@
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted } from 'vue'
   import AuthModal from '../components/AuthModal.vue'
-  const { isOpenAuth, closeAuth } = useAuthModal()
+  const { isOpenAuth } = useAuthModal()
   import type { Profile } from '~/types/profile'
 
   const profile = useProfileState() as Ref<Profile | null>
@@ -257,7 +257,6 @@
   const sidebarExpanded = ref(false)
   const isMobile = ref(false)
   const userLoading = ref(true)
-  // const authVisible = ref(false)
 
   // Check if mobile
   const checkMobile = () => {
@@ -288,7 +287,6 @@
     checkMobile()
     window.addEventListener('resize', checkMobile)
 
-    // Wait for Supabase to load session
     await fetchUser()
 
     if (user.value && !profile.value) {

@@ -20,7 +20,7 @@
         <!-- Header -->
         <div class="text-center mb-8">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {{ isLogin ? 'Welcome back' : 'Create account' }}
+            {{ isLogin ? 'Welcome' : 'Create account' }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
             {{ isLogin ? 'Sign in to your account' : `Join ${appName} today` }}
@@ -272,7 +272,6 @@
         error.value = err.message
       } else {
         closeAuth()
-        // emits('close')
         if (!isLogin.value) {
           // For signup, show a success message or redirect
           // Auto login happens via Supabase auth state change
