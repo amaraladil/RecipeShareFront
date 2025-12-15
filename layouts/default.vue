@@ -254,9 +254,11 @@
   const { user, fetchUser } = useSupabaseUser()
   const { $supabase } = useNuxtApp()
   const { appName } = useAppSettings()
-  const { success, error, warning, info } = useNotification()
-  // warning('Your session will expire in 5 minutes')
-  // info('New features have been added! Check them out.')
+  const { success, error, warning, info, removeAll, clearNonInfo } =
+    useNotification()
+  removeAll()
+  warning('Your session will expire in 5 minutes')
+  info('New features have been added! Check them out.')
 
   // Sidebar state
   const sidebarExpanded = ref(false)

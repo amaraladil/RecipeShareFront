@@ -5,6 +5,7 @@ interface Notification {
   message: string
   duration: number
   createdAt: number
+  timeoutId?: NodeJS.Timeout
 }
 
 const notifications = ref<Notification[]>([])
@@ -17,34 +18,60 @@ export const useNotification = () => {
   ) => {
     const id = Math.random().toString(36).substring(7)
 
-    // Info messages stay up infinitely by default
+    // Info messages stay infinitely by default
     const finalDuration =
       duration !== undefined ? duration : type === 'info' ? 0 : 5000
 
-    notifications.value.push({
+    const notification: Notification = {
       id,
       type,
       message,
       duration: finalDuration,
       createdAt: Date.now()
-    })
+    }
 
+    notifications.value.push(notification)
+
+    // Set up auto-removal if duration > 0
     if (finalDuration > 0) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         remove(id)
       }, finalDuration)
+
+      // Store timeout ID so we can clear it if needed
+      const notif = notifications.value.find((n) => n.id === id)
+      if (notif) {
+        notif.timeoutId = timeoutId
+      }
     }
   }
 
   const remove = (id: string) => {
+    const notification = notifications.value.find((n) => n.id === id)
+
+    // Clear timeout if it exists
+    if (notification?.timeoutId) {
+      clearTimeout(notification.timeoutId)
+    }
+
+    // Remove from array
     notifications.value = notifications.value.filter((n) => n.id !== id)
+    console.log(notifications.value)
+  }
+
+  const clearNonInfo = () => {
+    notifications.value = notifications.value.filter((n) => n.type === 'info')
+  }
+
+  const removeAll = () => {
+    notifications.value = []
   }
 
   const success = (message: string, duration = 5000) => {
     show(message, 'success', duration)
   }
 
-  const error = (message: string, duration = 6000) => {
+  const error = (message: string, duration = 5000) => {
     show(message, 'error', duration)
   }
 
@@ -60,6 +87,8 @@ export const useNotification = () => {
     notifications: readonly(notifications),
     show,
     remove,
+    removeAll,
+    clearNonInfo,
     success,
     error,
     info,

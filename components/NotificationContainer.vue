@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed top-0 left-20 right-0 z-50 px-4 pt-4 space-y-2 pointer-events-none"
+    class="fixed top-0 left-0 right-0 z-50 px-4 pt-4 space-y-2 pointer-events-none"
   >
     <TransitionGroup name="notification">
       <div
@@ -33,20 +33,12 @@
         </button>
 
         <!-- Progress Bar -->
-        <div
+        <NotificationProgressBar
           v-if="notification.duration > 0"
-          class="absolute bottom-0 left-0 right-0 h-1 bg-black/10 dark:bg-white/10"
-        >
-          <div
-            :class="[
-              'h-full transition-all',
-              progressBarClasses[notification.type]
-            ]"
-            :style="{
-              animation: `shrink ${notification.duration}ms linear forwards`
-            }"
-          ></div>
-        </div>
+          :duration="notification.duration"
+          :type="notification.type"
+          :created-at="notification.createdAt"
+        />
       </div>
     </TransitionGroup>
   </div>
@@ -70,13 +62,6 @@
     error: 'text-red-600 dark:text-red-400',
     warning: 'text-yellow-600 dark:text-yellow-400',
     info: 'text-blue-600 dark:text-blue-400'
-  }
-
-  const progressBarClasses = {
-    success: 'bg-green-600 dark:bg-green-400',
-    error: 'bg-red-600 dark:bg-red-400',
-    warning: 'bg-yellow-600 dark:bg-yellow-400',
-    info: 'bg-blue-600 dark:bg-blue-400'
   }
 
   const notificationIcons = {
@@ -105,14 +90,5 @@
 
   .notification-move {
     transition: transform 0.3s ease;
-  }
-
-  @keyframes shrink {
-    from {
-      width: 100%;
-    }
-    to {
-      width: 0%;
-    }
   }
 </style>
