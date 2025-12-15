@@ -256,7 +256,7 @@
   const { appName } = useAppSettings()
   const { success, error, warning, info, removeAll, clearNonInfo } =
     useNotification()
-  removeAll()
+  // removeAll()
   warning('Your session will expire in 5 minutes')
   info('New features have been added! Check them out.')
   success('Recipe saved successfully!')

@@ -15,7 +15,7 @@ export function useRecipes(handle: string, isOwner: boolean) {
 
   // Dynamic items per page based on screen width
   const getItemsPerPage = () => {
-    if (process.client) {
+    if (import.meta.client) {
       const width = window.innerWidth
       if (width < 640) return 4 // Mobile: 1 column, show 4 rows
       if (width < 1024) return 6 // Tablet: 2 columns, show 3 rows
@@ -27,7 +27,7 @@ export function useRecipes(handle: string, isOwner: boolean) {
   const itemsPerPage = ref(getItemsPerPage())
 
   // Update items per page on window resize
-  if (process.client) {
+  if (import.meta.client) {
     const updateItemsPerPage = () => {
       itemsPerPage.value = getItemsPerPage()
     }

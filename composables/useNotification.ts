@@ -16,6 +16,8 @@ export const useNotification = () => {
     type: Notification['type'] = 'info',
     duration?: number
   ) => {
+    if (!import.meta.client) return
+
     const id = Math.random().toString(36).substring(7)
 
     // Info messages stay infinitely by default
