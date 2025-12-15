@@ -1,6 +1,9 @@
 <template>
   <div
-    class="fixed top-0 left-0 right-0 z-50 px-4 pt-4 space-y-2 pointer-events-none"
+    :class="[
+      'fixed top-0 left-0 right-0 pr-8 z-50 pt-4 space-y-2 pointer-events-none',
+      leftExpand ? 'pl-24 md:pl-72' : 'pl-24'
+    ]"
   >
     <TransitionGroup name="notification">
       <div
@@ -45,16 +48,22 @@
 </template>
 
 <script setup lang="ts">
+  defineProps({
+    leftExpand: {
+      type: Boolean,
+      required: true
+    }
+  })
   const { notifications, remove } = useNotification()
 
   const notificationClasses = {
     success:
-      'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200',
+      'bg-green-50 dark:bg-green-900/80 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200',
     error:
-      'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',
+      'bg-red-50 dark:bg-red-900/80 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200',
     warning:
-      'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200',
-    info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200'
+      'bg-yellow-50 dark:bg-yellow-900/80 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200',
+    info: 'bg-blue-50 dark:bg-blue-900/80 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200'
   }
 
   const iconClasses = {

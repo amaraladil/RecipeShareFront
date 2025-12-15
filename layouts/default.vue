@@ -240,7 +240,7 @@
     <!-- Auth Modal -->
     <AuthModal v-if="isOpenAuth" />
 
-    <NotificationContainer />
+    <NotificationContainer :leftExpand="sidebarExpanded" />
   </div>
 </template>
 
@@ -259,6 +259,8 @@
   removeAll()
   warning('Your session will expire in 5 minutes')
   info('New features have been added! Check them out.')
+  success('Recipe saved successfully!')
+  error('Critical error - please contact support', 10000)
 
   // Sidebar state
   const sidebarExpanded = ref(false)
