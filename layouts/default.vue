@@ -239,6 +239,8 @@
 
     <!-- Auth Modal -->
     <AuthModal v-if="isOpenAuth" />
+
+    <NotificationContainer />
   </div>
 </template>
 
@@ -252,6 +254,9 @@
   const { user, fetchUser } = useSupabaseUser()
   const { $supabase } = useNuxtApp()
   const { appName } = useAppSettings()
+  const { success, error, warning, info } = useNotification()
+  // warning('Your session will expire in 5 minutes')
+  // info('New features have been added! Check them out.')
 
   // Sidebar state
   const sidebarExpanded = ref(false)
