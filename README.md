@@ -1,32 +1,29 @@
-# Recipe App Frontend
+# 🌐 RecipeShare Frontend
 
-This is the frontend for a recipe sharing website built with [Nuxt 3](https://nuxt.com/).  
-It connects to a FastAPI backend (with MongoDB for recipes and comments) and uses Supabase for authentication, user management, and billing.
+## Overview
 
----
+The frontend consists of a **Nuxt 3 web app** and a **Flutter mobile app**, both consuming the same FastAPI backend.
+
+The goal is consistent business logic across platforms while allowing platform-specific UI and UX.
 
 ## Features
 
-- **User Authentication:** Login, logout, and registration via Supabase.
-- **Recipe Search & Explore:** Browse, search, and filter recipes.
-- **Recipe Management:** View, save, and like recipes.
-- **Comments & Replies:** Add comments and replies to recipes, like comments.
-- **User Profiles:** Manage saved recipes and personal info.
-- **Responsive UI:** Built with Tailwind CSS.
+- User authentication via Supabase
+- Recipe discovery, search, and filtering
+- Likes, comments, and threaded replies
+- User profiles and saved recipes
+- Subscription-aware UI
+- SEO-friendly recipe pages (Nuxt)
 
----
+## Web Stack (Nuxt 3)
 
-## Backend Stack
+- Nuxt 3 + Vue 3
+- Tailwind CSS / Nuxt UI
+- `useAsyncData` for SSR + SEO
+- API service abstraction layer
+- Auth-aware composables
 
-- **FastAPI:** API server for recipes, comments, and interactions.
-- **MongoDB:** Stores recipes, comments, and replies.
-- **Supabase:** Handles authentication, user profiles, and billing.
-
----
-
-## Setup
-
-Install dependencies:
+## Local Development
 
 ```bash
 # npm
@@ -41,8 +38,6 @@ yarn install
 # bun
 bun install
 ```
-
-## Development Server
 
 Start the development server on `http://localhost:3000`:
 
@@ -60,61 +55,37 @@ yarn dev
 bun run dev
 ```
 
----
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Preview the production build locally:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
----
-
 ## Configuration
 
-Set your API and Supabase credentials in `.env` or `nuxt.config.ts`:
-
 ```env
-NUXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NUXT_PUBLIC_SUPABASE_KEY=your-supabase-key
 NUXT_PUBLIC_API_BASE=http://localhost:8000/api
+NUXT_PUBLIC_SUPABASE_URL=
+NUXT_PUBLIC_SUPABASE_KEY=
 ```
 
----
+# 🏗️ System Architecture Diagram
 
-## Learn More
+```mermaid
+flowchart LR
+  Web[Nuxt 3 Web App] -->|REST| API@{ shape: processes, label: "Endpoints" }
+  Mobile[Flutter App] -->|REST| API
 
-- [Nuxt Documentation](https://nuxt.com/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [MongoDB Documentation](https://www.mongodb.com/docs/)
+  subgraph FastApi
+      API -->|Auth| Supabase@{ shape: tag-rect, label: "Supabase Auth" }
+      Supabase -->|Storage| Storage[(Supabase Storage)]
+      API-->Services@{ shape: procs, label: "Services"}
+      Services-->DB[(MongoDB)]
+      Services -->|Cache| Cache@{ shape: das, label: "Redis" }
+      subgraph "CloudFlare"
+            direction LR
+            Image-->Cloudflare@{ shape: cloud, label: "CloudFlare" }
+      end
+      Services-->Image
+      Services -->|Payments| Stripe[[Stripe]]
+  end
 
----
+
+
+
+
+```

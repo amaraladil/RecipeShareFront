@@ -695,7 +695,7 @@
             class="flex gap-4"
           >
             <span
-              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center"
+              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center cursor-default"
             >
               {{ index + 1 }}
             </span>

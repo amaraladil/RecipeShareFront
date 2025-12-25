@@ -58,7 +58,6 @@ export const useNotification = () => {
 
     // Remove from array
     notifications.value = notifications.value.filter((n) => n.id !== id)
-    console.log(notifications.value)
   }
 
   const clearNonInfo = () => {
