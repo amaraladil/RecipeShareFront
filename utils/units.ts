@@ -1,46 +1,41 @@
-export const UnitLabels: Record<number, string> = {
-  // Volume - Metric
-  1: 'ml',
-  2: 'liter',
-
-  // Volume - Imperial
-  3: 'tsp',
-  4: 'Tbsp',
-  5: 'fluid ounce',
-  6: 'cup',
-  7: 'pint',
-  8: 'quart',
-  9: 'gallon',
-
-  // Weight - Metric
-  10: 'mg',
-  11: 'g',
-  12: 'kg',
-
-  // Weight - Imperial
-  13: 'ounce',
-  14: 'pound',
-
-  // Count/Piece
-  15: 'pcs',
-  16: 'each',
-  17: 'dozen',
-  18: 'bunch',
-  19: 'head',
-  20: 'fillet',
-
-  // Other common cooking units
-  21: 'pinch',
-  22: 'dash',
-  23: 'clove',
-  24: 'slice',
-  25: 'stick',
-  26: 'package',
-  27: 'can',
-  28: 'bottle',
-  29: 'bag',
-  30: 'drop',
-  31: 'bar',
-  32: 'roll',
-  33: 'sheet'
+export const UnitGroups: Record<string, { id: number; label: string }[]> = {
+  'Volume Metric': [
+    { id: 1, label: 'mL' },
+    { id: 2, label: 'L' }
+  ],
+  'Volume Imperial': [
+    { id: 3, label: 'tsp' },
+    { id: 4, label: 'Tbsp' },
+    { id: 5, label: 'fluid ounce' },
+    { id: 6, label: 'cup' },
+    { id: 7, label: 'pint' },
+    { id: 8, label: 'quart' },
+    { id: 9, label: 'gallon' }
+  ],
+  'Weight Metric': [
+    { id: 10, label: 'mg' },
+    { id: 11, label: 'g' },
+    { id: 12, label: 'kg' }
+  ],
+  'Weight Imperial': [
+    { id: 13, label: 'ounce' },
+    { id: 14, label: 'pound' }
+  ],
+  Pieces: [
+    { id: 15, label: 'pcs' },
+    { id: 16, label: 'each' },
+    { id: 17, label: 'dozen' },
+    { id: 18, label: 'bunch' },
+    { id: 19, label: 'head' }
+  ],
+  Other: [
+    { id: 21, label: 'pinch' },
+    { id: 22, label: 'dash' },
+    { id: 23, label: 'clove' },
+    { id: 24, label: 'slice' },
+    { id: 25, label: 'stick' },
+    { id: 26, label: 'package' },
+    { id: 27, label: 'can' },
+    { id: 28, label: 'bottle' }
+  ]
 }

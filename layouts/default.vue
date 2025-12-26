@@ -10,36 +10,31 @@
       @mouseleave="handleSidebarHover(false)"
     >
       <div class="flex flex-col h-full p-3">
-        <!-- Header with hamburger -->
-        <div class="flex items-center mb-6">
+        <div :class="['flex items-center ml-2']">
+          <img class="w-8 h-8 mr-2" src="/LogoRecipeShare.png" />
+          <h1
+            :class="[
+              'text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-200 pb-2',
+              sidebarExpanded
+                ? 'opacity-100 w-auto'
+                : 'opacity-0 w-0 overflow-hidden'
+            ]"
+          >
+            {{ appName }}
+          </h1>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 space-y-2">
           <button
             @click="toggleSidebar"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 cursor-pointer"
+            class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 cursor-pointer"
           >
             <Icon
               name="heroicons:bars-3"
               class="w-5 h-5 text-gray-600 dark:text-gray-300"
             />
           </button>
-          <div
-            :class="[
-              'flex items-center ml-2 transition-all duration-200',
-              sidebarExpanded
-                ? 'opacity-100 w-auto'
-                : 'opacity-0 w-0 overflow-hidden'
-            ]"
-          >
-            <img class="w-8 h-8" src="/LogoRecipeShare.png" />
-            <h1
-              class="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap"
-            >
-              {{ appName }}
-            </h1>
-          </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 space-y-2">
           <template v-if="!userLoading">
             <!-- Home -->
             <NuxtLink
@@ -59,7 +54,6 @@
               </span>
             </NuxtLink>
 
-            <!-- Explore -->
             <NuxtLink
               to="/explore"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
@@ -77,9 +71,9 @@
               </span>
             </NuxtLink>
 
-            <!-- Write -->
             <NuxtLink
-              to="/write"
+              v-if="user"
+              to="/recipes/create"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <Icon
@@ -88,17 +82,16 @@
               />
               <span
                 :class="[
-                  'ml-3 transition-all duration-200',
+                  'ml-3 transition-all duration-200 whitespace-nowrap',
                   sidebarExpanded
-                    ? 'opacity-100 w-auto'
-                    : 'opacity-0 w-0 overflow-hidden'
+                    ? 'opacity-100 h-6 w-auto'
+                    : 'opacity-0 w-1 h-6 overflow-hidden'
                 ]"
               >
-                Write
+                Create Recipe
               </span>
             </NuxtLink>
 
-            <!-- Messages with notification -->
             <div class="relative">
               <NuxtLink
                 to="/messages"
@@ -129,7 +122,6 @@
             </div>
           </template>
 
-          <!-- Loading skeleton -->
           <div v-else class="space-y-2">
             <div
               v-for="n in 4"

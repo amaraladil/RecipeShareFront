@@ -1,13 +1,14 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
-  import { UnitLabels } from '~/utils/units'
+  import { UnitGroups } from '~/utils/units'
 
   const route = useRoute()
   const router = useRouter()
-  const config = useRuntimeConfig()
   const { user } = useSupabaseUser()
   const fetchApi = useApi()
   const { openAuth } = useAuthModal()
+  const { success, error, warning, info, removeAll, clearNonInfo } =
+    useNotification()
 
   const slug = route.params.slug as string
 
@@ -16,26 +17,29 @@
   const isLoading = ref(true)
   const isEditMode = ref(false)
   const isSaving = ref(false)
-  const error = ref('')
+  const errorMessage = ref('')
 
   // Comments loading
   const shouldLoadComments = ref(false)
   const commentsSection = ref<HTMLElement>()
   const commentsTrigger = ref<HTMLElement>()
 
-  // Edit form data
-  const editForm = ref({
-    title: '',
-    description: '',
-    ingredients: [] as string[],
-    steps: [] as string[],
-    prep_time: 0,
-    cook_time: 0,
-    servings: 1,
-    difficulty: 'Easy',
-    tags: [] as string[],
-    image: ''
-  })
+  // Use recipe form composable for edit mode
+  const {
+    form: editForm,
+    errors: validationErrors,
+    newTag,
+    totalTime: editTotalTime,
+    validateForm,
+    addIngredient,
+    removeIngredient,
+    addStep,
+    removeStep,
+    addTag,
+    removeTag,
+    resetForm,
+    getFormData
+  } = useRecipeForm()
 
   // Computed properties
   const isOwner = computed(() => {
@@ -46,7 +50,7 @@
 
   const totalTime = computed(() => {
     if (isEditMode.value) {
-      return editForm.value.prep_time + editForm.value.cook_time
+      return editTotalTime.value
     }
     return (recipe.value?.prep_time || 0) + (recipe.value?.cook_time || 0)
   })
@@ -65,13 +69,12 @@
         })
       },
       {
-        rootMargin: '100px' // Load comments when trigger is 100px from viewport
+        rootMargin: '100px'
       }
     )
 
     observer.observe(commentsTrigger.value)
 
-    // Cleanup observer on component unmount
     onUnmounted(() => {
       observer.disconnect()
     })
@@ -81,14 +84,14 @@
   const fetchRecipe = async () => {
     try {
       isLoading.value = true
-      error.value = ''
+      errorMessage.value = ''
 
       const response = await fetchApi(`/recipes/${slug}`, { method: 'GET' })
 
       if (response) {
         recipe.value = response
-        // Initialize edit form with recipe data
-        editForm.value = {
+        // Initialize edit form with recipe data using composable
+        resetForm({
           title: response.title || '',
           description: response.description || '',
           ingredients: [...(response.ingredients || [])],
@@ -96,16 +99,16 @@
           prep_time: response.prep_time || 0,
           cook_time: response.cook_time || 0,
           servings: response.servings || 1,
-          difficulty: response.difficulty || 'Easy',
           tags: [...(response.tags || [])],
-          image: response.image || ''
-        }
+          image: response.image || '',
+          status: response.status || 1
+        })
       } else {
         throw new Error('Recipe not found')
       }
     } catch (err) {
       console.error('Error fetching recipe:', err)
-      error.value = 'Failed to load recipe'
+      errorMessage.value = 'Failed to load recipe'
     } finally {
       isLoading.value = false
     }
@@ -116,7 +119,7 @@
     if (isEditMode.value) {
       // Reset form to original values when canceling edit
       if (recipe.value) {
-        editForm.value = {
+        resetForm({
           title: recipe.value.title || '',
           description: recipe.value.description || '',
           ingredients: [...(recipe.value.ingredients || [])],
@@ -124,10 +127,10 @@
           prep_time: recipe.value.prep_time || 0,
           cook_time: recipe.value.cook_time || 0,
           servings: recipe.value.servings || 1,
-          difficulty: recipe.value.difficulty || 'Easy',
           tags: [...(recipe.value.tags || [])],
-          image: recipe.value.image || ''
-        }
+          image: recipe.value.image || '',
+          status: recipe.value.status || 1
+        })
       }
     }
     isEditMode.value = !isEditMode.value
@@ -135,61 +138,33 @@
 
   // Save recipe changes
   const saveRecipe = async () => {
+    if (!validateForm()) {
+      // error('Please fix the validation errors', 10000)
+      return
+    }
+
     try {
       isSaving.value = true
-      error.value = ''
+      errorMessage.value = ''
+
+      const formData = getFormData()
 
       const response = await fetchApi(`/recipes/${slug}`, {
-        method: 'PUT',
-        body: JSON.stringify(editForm.value)
+        method: 'PATCH',
+        body: JSON.stringify(formData)
       })
 
       if (response) {
         recipe.value = response
         isEditMode.value = false
-        // Show success message (you can add a toast notification here)
         console.log('Recipe updated successfully')
       }
     } catch (err) {
       console.error('Error saving recipe:', err)
-      error.value = 'Failed to save recipe changes'
+      error('Failed to save recipe changes')
     } finally {
       isSaving.value = false
     }
-  }
-
-  // Add/remove ingredient
-  const addIngredient = () => {
-    editForm.value.ingredients.push('')
-  }
-
-  const removeIngredient = (index: number) => {
-    editForm.value.ingredients.splice(index, 1)
-  }
-
-  // Add/remove instruction
-  const addInstruction = () => {
-    editForm.value.steps.push('')
-  }
-
-  const removeInstruction = (index: number) => {
-    editForm.value.steps.splice(index, 1)
-  }
-
-  // Add/remove tag
-  const newTag = ref('')
-  const addTag = () => {
-    if (
-      newTag.value.trim() &&
-      !editForm.value.tags.includes(newTag.value.trim())
-    ) {
-      editForm.value.tags.push(newTag.value.trim())
-      newTag.value = ''
-    }
-  }
-
-  const removeTag = (index: number) => {
-    editForm.value.tags.splice(index, 1)
   }
 
   // Delete recipe
@@ -204,10 +179,10 @@
 
     try {
       await fetchApi(`/recipes/${slug}`, { method: 'DELETE' })
-      router.push('/') // Redirect to home or profile
+      router.push('/')
     } catch (err) {
       console.error('Error deleting recipe:', err)
-      error.value = 'Failed to delete recipe'
+      errorMessage.value = 'Failed to delete recipe'
     }
   }
 
@@ -218,7 +193,7 @@
     }
 
     if (isOwner.value) {
-      return // Don't allow saving own recipe
+      return
     }
 
     try {
@@ -240,9 +215,9 @@
         }
       }
     } catch (err) {
-      recipe.value.is_liked = !recipe.value.is_liked // Revert the like state when error occurs
+      recipe.value.is_liked = !recipe.value.is_liked
       console.error('Error toggling like:', err)
-      error.value = recipe.value.is_liked
+      errorMessage.value = recipe.value.is_liked
         ? 'Failed to unlike recipe'
         : 'Failed to like recipe'
     }
@@ -255,7 +230,7 @@
     }
 
     if (isOwner.value) {
-      return // Don't allow saving own recipe
+      return
     }
 
     try {
@@ -277,18 +252,17 @@
         }
       }
     } catch (err) {
-      recipe.value.is_saved = !recipe.value.is_saved // Revert the like state when error occurs
-      console.error('Error toggling like:', err)
-      error.value = recipe.value.is_saved
-        ? 'Failed to unlike recipe'
-        : 'Failed to like recipe'
+      recipe.value.is_saved = !recipe.value.is_saved
+      console.error('Error toggling save:', err)
+      errorMessage.value = recipe.value.is_saved
+        ? 'Failed to unsave recipe'
+        : 'Failed to save recipe'
     }
   }
 
   // Initialize
   onMounted(async () => {
     await fetchRecipe()
-    // Only set up observer after recipe is loaded
     nextTick(() => {
       setupCommentsObserver()
     })
@@ -324,8 +298,10 @@
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="text-center py-12">
-      <div class="text-red-600 text-lg font-medium mb-2">{{ error }}</div>
+    <div v-else-if="errorMessage" class="text-center py-12">
+      <div class="text-red-600 text-lg font-medium mb-2">
+        {{ errorMessage }}
+      </div>
       <button
         @click="fetchRecipe"
         class="btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
@@ -336,6 +312,26 @@
 
     <!-- Recipe Content -->
     <div v-else-if="recipe" class="space-y-6">
+      <!-- Validation Errors in Edit Mode -->
+      <div
+        v-if="isEditMode && validationErrors.length > 0"
+        class="p-4 bg-red-50 border border-red-200 rounded-lg"
+      >
+        <div class="flex items-start gap-2">
+          <UIcon name="ic:outline-error" class="size-5 text-red-600 mt-0.5" />
+          <div class="flex-1">
+            <h3 class="font-semibold text-red-900 mb-1">
+              Please fix the following errors:
+            </h3>
+            <ul class="list-disc list-inside text-red-700 text-sm space-y-1">
+              <li v-for="err in validationErrors" :key="err.field">
+                {{ err.message }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- Header with Edit Controls -->
       <div class="flex justify-between items-start gap-4">
         <div class="flex-1">
@@ -348,9 +344,10 @@
           </h1>
 
           <!-- Edit Mode Title -->
-          <div v-else class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Recipe Title</label
+          <div v-else class="mb-4 flex items-center gap-2">
+            <label
+              class="block text-sm dark:text-white/80 font-medium text-gray-700 mb-1"
+              >Title</label
             >
             <input
               v-model="editForm.title"
@@ -461,6 +458,22 @@
         </div>
       </div>
 
+      <!-- Status Selector (Edit Mode Only) -->
+      <div v-if="isEditMode && isOwner" class="space-y-2">
+        <label
+          class="block text-sm dark:text-white/80 font-medium text-gray-700"
+          >Recipe Status</label
+        >
+        <select
+          v-model.number="editForm.status"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option :value="1">Public</option>
+          <option :value="2">Private</option>
+          <option :value="3">Hidden</option>
+        </select>
+      </div>
+
       <!-- Recipe Image -->
       <div class="w-full h-64 md:h-96 rounded-lg overflow-hidden bg-gray-200">
         <img
@@ -494,32 +507,32 @@
       >
         <div class="text-center">
           <div class="font-semibold text-gray-900">
-            {{ isEditMode ? editForm.prep_time : recipe.prep_time || 0 }}
-            <span v-if="isEditMode">
+            <span v-if="!isEditMode">{{ recipe.prep_time || 0 }} min</span>
+            <span v-else>
               <input
                 v-model.number="editForm.prep_time"
                 type="number"
                 min="0"
-                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+                class="w-20 px-2 py-1 text-sm border rounded text-center"
               />
+              min
             </span>
-            min
           </div>
           <div class="text-sm text-gray-600">Prep Time</div>
         </div>
 
         <div class="text-center">
           <div class="font-semibold text-gray-900">
-            {{ isEditMode ? editForm.cook_time : recipe.cook_time || 0 }}
-            <span v-if="isEditMode">
+            <span v-if="!isEditMode">{{ recipe.cook_time || 0 }} min</span>
+            <span v-else>
               <input
                 v-model.number="editForm.cook_time"
                 type="number"
                 min="0"
-                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+                class="w-20 px-2 py-1 text-sm border rounded text-center"
               />
+              min
             </span>
-            min
           </div>
           <div class="text-sm text-gray-600">Cook Time</div>
         </div>
@@ -531,13 +544,13 @@
 
         <div class="text-center">
           <div class="font-semibold text-gray-900">
-            {{ isEditMode ? editForm.servings : recipe.servings || 1 }}
-            <span v-if="isEditMode">
+            <span v-if="!isEditMode">{{ recipe.servings || 1 }}</span>
+            <span v-else>
               <input
                 v-model.number="editForm.servings"
                 type="number"
                 min="1"
-                class="w-16 ml-1 px-1 py-1 text-sm border rounded"
+                class="w-20 px-2 py-1 text-sm border rounded text-center"
               />
             </span>
           </div>
@@ -576,13 +589,13 @@
               ? editForm.tags
               : recipe.tags || []"
             :key="index"
-            class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1"
+            class="px-3 py-1 bg-blue-100 cursor-default hover:bg-blue-200 text-blue-800 rounded-full text-sm flex items-center gap-1"
           >
             {{ tag }}
             <button
               v-if="isEditMode"
               @click="removeTag(index)"
-              class="ml-1 text-blue-600 hover:text-blue-800"
+              class="ml-1 text-blue-600 hover:text-blue-800 cursor-pointer"
             >
               ×
             </button>
@@ -628,33 +641,64 @@
               ? editForm.ingredients
               : recipe.ingredients || []"
             :key="index"
-            class="flex items-center gap-3"
+            class="flex items-start gap-3"
           >
-            <span
-              v-if="!isEditMode"
-              class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"
-            ></span>
-            <span
-              v-if="!isEditMode"
-              class="text-gray-700 dark:text-gray-300 flex gap-1"
-            >
-              <span class="flex-1">{{ ingredient.name }}</span>
-              <span>{{ ingredient.amount }}</span>
-              <span>{{ UnitLabels[ingredient.unit] }}</span>
-            </span>
+            <template v-if="!isEditMode">
+              <span
+                class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"
+              ></span>
+              <span
+                class="text-gray-700 dark:text-gray-300 flex gap-2 flex-wrap"
+              >
+                <span>{{ ingredient.name }}</span>
+                <span class="text-gray-500">-</span>
+                <span
+                  >{{ ingredient.amount }}
+                  {{ UnitGroups[ingredient.unit] }}</span
+                >
+              </span>
+            </template>
 
             <template v-else>
-              <input
-                v-model="editForm.ingredients[index]"
-                type="text"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter ingredient"
-              />
+              <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
+                <input
+                  v-model="editForm.ingredients[Number(index)].name"
+                  type="text"
+                  class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Ingredient name"
+                />
+                <input
+                  v-model.number="editForm.ingredients[Number(index)].amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Amount"
+                />
+                <select
+                  v-model.number="editForm.ingredients[Number(index)].unit"
+                  class="px-3 py-2 border border-gray-300 dark:hover:bg-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <optgroup
+                    v-for="(groupItems, groupName) in UnitGroups"
+                    :key="groupName"
+                    :label="groupName"
+                  >
+                    <option
+                      v-for="unit in groupItems"
+                      :key="unit.id"
+                      :value="unit.id"
+                    >
+                      {{ unit.label }}
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
               <button
                 @click="removeIngredient(index)"
-                class="text-red-600 hover:text-red-800 px-2 cursor-pointer"
+                class="text-red-600 hover:text-red-800 px-2 cursor-pointer mt-2"
               >
-                Remove
+                <UIcon name="ic:outline-delete" class="size-5" />
               </button>
             </template>
           </li>
@@ -679,7 +723,7 @@
           </h2>
           <button
             v-if="isEditMode"
-            @click="addInstruction"
+            @click="addStep"
             class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 cursor-pointer"
           >
             Add Step
@@ -695,7 +739,7 @@
             class="flex gap-4"
           >
             <span
-              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center cursor-default"
+              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center mt-1"
             >
               {{ index + 1 }}
             </span>
@@ -714,10 +758,10 @@
                 placeholder="Enter instruction step"
               ></textarea>
               <button
-                @click="removeInstruction(index)"
+                @click="removeStep(index)"
                 class="text-red-600 hover:text-red-800 px-2 cursor-pointer"
               >
-                Remove
+                <UIcon name="ic:outline-delete" class="size-5" />
               </button>
             </div>
           </li>
@@ -731,13 +775,11 @@
         </div>
       </div>
 
-      <!-- Add some spacing before comments trigger -->
+      <!-- Comments Section -->
       <div class="py-4">
-        <!-- Comments Trigger (Invisible element to trigger loading) -->
         <div ref="commentsTrigger" class="h-1"></div>
       </div>
 
-      <!-- Comments Section (Auto-loaded when scrolled into view) -->
       <div
         v-if="shouldLoadComments"
         ref="commentsSection"
