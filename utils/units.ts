@@ -39,3 +39,13 @@ export const UnitGroups: Record<string, { id: number; label: string }[]> = {
     { id: 28, label: 'bottle' }
   ]
 }
+
+// flattened lookup map for fast id -> label resolution
+export const UnitsById: Record<number, string> = Object.values(
+  UnitGroups
+).reduce((acc, group) => {
+  group.forEach((u) => {
+    acc[u.id] = u.label
+  })
+  return acc
+}, {} as Record<number, string>)

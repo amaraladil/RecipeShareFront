@@ -328,7 +328,9 @@
           {{ getFieldError('ingredients') }}
         </p>
 
-        <div class="space-y-2 divide-y divide-gray-200/80 md:divide-y-0">
+        <div
+          class="space-y-2 divide-y divide-gray-300/80 dark:divide-gray-200/80 md:divide-y-0"
+        >
           <div
             v-for="(ingredient, index) in form.ingredients"
             :key="index"
@@ -344,7 +346,7 @@
               <input
                 v-model.number="ingredient.amount"
                 type="number"
-                step="0.01"
+                step="0.1"
                 min="0"
                 class="px-3 py-2 col-span-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Amount"

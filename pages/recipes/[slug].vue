@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
-  import { UnitGroups } from '~/utils/units'
+  import { UnitGroups, UnitsById } from '~/utils/units'
 
   const route = useRoute()
   const router = useRouter()
@@ -347,7 +347,7 @@
           <div v-else class="mb-4 flex items-center gap-2">
             <label
               class="block text-sm dark:text-white/80 font-medium text-gray-700 mb-1"
-              >Title</label
+              >Title:</label
             >
             <input
               v-model="editForm.title"
@@ -470,7 +470,6 @@
         >
           <option :value="1">Public</option>
           <option :value="2">Private</option>
-          <option :value="3">Hidden</option>
         </select>
       </div>
 
@@ -635,13 +634,13 @@
           </button>
         </div>
 
-        <ul class="space-y-2">
+        <ul class="space-y-2 col-span-2 md:col-span-1">
           <li
             v-for="(ingredient, index) in isEditMode
               ? editForm.ingredients
               : recipe.ingredients || []"
             :key="index"
-            class="flex items-start gap-3"
+            :class="['flex items-start gap-3', isEditMode ? 'pb-4' : '']"
           >
             <template v-if="!isEditMode">
               <span
@@ -654,30 +653,30 @@
                 <span class="text-gray-500">-</span>
                 <span
                   >{{ ingredient.amount }}
-                  {{ UnitGroups[ingredient.unit] }}</span
+                  {{ UnitsById[ingredient.unit] }}</span
                 >
               </span>
             </template>
 
             <template v-else>
-              <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
+              <div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-2">
                 <input
                   v-model="editForm.ingredients[Number(index)].name"
                   type="text"
-                  class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 col-span-2 md:col-span-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Ingredient name"
                 />
                 <input
                   v-model.number="editForm.ingredients[Number(index)].amount"
                   type="number"
-                  step="0.01"
+                  step="0.1"
                   min="0"
-                  class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 col-span-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Amount"
                 />
                 <select
                   v-model.number="editForm.ingredients[Number(index)].unit"
-                  class="px-3 py-2 border border-gray-300 dark:hover:bg-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 col-span-1 border border-gray-300 dark:hover:bg-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <optgroup
                     v-for="(groupItems, groupName) in UnitGroups"
