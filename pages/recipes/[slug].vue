@@ -1,14 +1,11 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
-  import { UnitGroups, UnitsById } from '~/utils/units'
 
   const route = useRoute()
   const router = useRouter()
   const { user } = useSupabaseUser()
   const fetchApi = useApi()
   const { openAuth } = useAuthModal()
-  const { success, error, warning, info, removeAll, clearNonInfo } =
-    useNotification()
 
   const slug = route.params.slug as string
 
@@ -28,31 +25,25 @@
   const {
     form: editForm,
     errors: validationErrors,
-    newTag,
-    totalTime: editTotalTime,
-    validateForm,
     addIngredient,
     removeIngredient,
     addStep,
     removeStep,
     addTag,
     removeTag,
+    validateForm,
     resetForm,
     getFormData
   } = useRecipeForm()
+
+  // Use image upload composable for edit mode
+  const { imageFile, uploadImage, uploadError } = useImageUpload()
 
   // Computed properties
   const isOwner = computed(() => {
     return (
       user.value && recipe.value && user.value.id === recipe.value.author?.id
     )
-  })
-
-  const totalTime = computed(() => {
-    if (isEditMode.value) {
-      return editTotalTime.value
-    }
-    return (recipe.value?.prep_time || 0) + (recipe.value?.cook_time || 0)
   })
 
   // Intersection Observer for lazy loading comments
@@ -90,7 +81,6 @@
 
       if (response) {
         recipe.value = response
-        // Initialize edit form with recipe data using composable
         resetForm({
           title: response.title || '',
           description: response.description || '',
@@ -139,7 +129,6 @@
   // Save recipe changes
   const saveRecipe = async () => {
     if (!validateForm()) {
-      // error('Please fix the validation errors', 10000)
       return
     }
 
@@ -148,6 +137,14 @@
       errorMessage.value = ''
 
       const formData = getFormData()
+
+      // Upload new image if one was selected
+      if (imageFile.value) {
+        const imageUrl = await uploadImage('/upload/recipe')
+        if (imageUrl) {
+          formData.image = imageUrl
+        }
+      }
 
       const response = await fetchApi(`/recipes/${slug}`, {
         method: 'PATCH',
@@ -161,7 +158,7 @@
       }
     } catch (err) {
       console.error('Error saving recipe:', err)
-      error('Failed to save recipe changes')
+      errorMessage.value = 'Failed to save recipe changes'
     } finally {
       isSaving.value = false
     }
@@ -260,6 +257,43 @@
     }
   }
 
+  // Update ingredient
+  const updateIngredient = (index: number, ingredient: any) => {
+    editForm.value.ingredients[index] = ingredient
+  }
+
+  // Update step
+  const updateStep = (index: number, value: string) => {
+    editForm.value.steps[index] = value
+  }
+
+  // Add/remove for components
+  // const addIngredient = () => {
+  //   editForm.value.ingredients.push({ name: '', amount: 0, unit: 1 })
+  // }
+
+  // const removeIngredient = (index: number) => {
+  //   if (editForm.value.ingredients.length <= 1) return
+  //   editForm.value.ingredients.splice(index, 1)
+  // }
+
+  // const addStep = () => {
+  //   editForm.value.steps.push('')
+  // }
+
+  // const removeStep = (index: number) => {
+  //   if (editForm.value.steps.length <= 1) return
+  //   editForm.value.steps.splice(index, 1)
+  // }
+
+  // const addTag = (tag: string) => {
+  //   editForm.value.tags.push(tag)
+  // }
+
+  // const removeTag = (index: number) => {
+  //   editForm.value.tags.splice(index, 1)
+  // }
+
   // Initialize
   onMounted(async () => {
     await fetchRecipe()
@@ -314,16 +348,22 @@
     <div v-else-if="recipe" class="space-y-6">
       <!-- Validation Errors in Edit Mode -->
       <div
-        v-if="isEditMode && validationErrors.length > 0"
-        class="p-4 bg-red-50 border border-red-200 rounded-lg"
+        v-if="isEditMode && (validationErrors.length > 0 || uploadError)"
+        class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
       >
         <div class="flex items-start gap-2">
-          <UIcon name="ic:outline-error" class="size-5 text-red-600 mt-0.5" />
+          <UIcon
+            name="ic:outline-error"
+            class="size-5 text-red-600 dark:text-red-400 mt-0.5"
+          />
           <div class="flex-1">
-            <h3 class="font-semibold text-red-900 mb-1">
+            <h3 class="font-semibold text-red-900 dark:text-red-300 mb-1">
               Please fix the following errors:
             </h3>
-            <ul class="list-disc list-inside text-red-700 text-sm space-y-1">
+            <ul
+              class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1"
+            >
+              <li v-if="uploadError">{{ uploadError }}</li>
               <li v-for="err in validationErrors" :key="err.field">
                 {{ err.message }}
               </li>
@@ -346,13 +386,14 @@
           <!-- Edit Mode Title -->
           <div v-else class="mb-4 flex items-center gap-2">
             <label
-              class="block text-sm dark:text-white/80 font-medium text-gray-700 mb-1"
-              >Title:</label
+              class="block whitespace-nowrap text-sm dark:text-white/80 font-medium text-gray-700 mb-1"
             >
+              Recipe Title:
+            </label>
             <input
               v-model="editForm.title"
               type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter recipe title"
             />
           </div>
@@ -462,100 +503,42 @@
       <div v-if="isEditMode && isOwner" class="space-y-2">
         <label
           class="block text-sm dark:text-white/80 font-medium text-gray-700"
-          >Recipe Status</label
         >
+          Recipe Status
+        </label>
         <select
           v-model.number="editForm.status"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option :value="1">Public</option>
           <option :value="2">Private</option>
         </select>
       </div>
 
-      <!-- Recipe Image -->
-      <div class="w-full h-64 md:h-96 rounded-lg overflow-hidden bg-gray-200">
-        <img
-          v-if="isEditMode ? editForm.image : recipe.image"
-          :src="isEditMode ? editForm.image : recipe.image"
-          :alt="isEditMode ? editForm.title : recipe.title"
-          class="w-full h-full object-cover"
-        />
-        <div
-          v-else
-          class="w-full h-full flex items-center justify-center text-gray-400"
-        >
-          No image available
-        </div>
-      </div>
+      <!-- Recipe Image Component -->
+      <RecipeImageUpload
+        v-if="isEditMode"
+        v-model="editForm.image"
+        :editable="true"
+        :title="editForm.title"
+      />
+      <RecipeImageUpload
+        v-else
+        v-model="recipe.image"
+        :editable="false"
+        :title="recipe.title"
+      />
 
-      <!-- Edit Image URL -->
-      <div v-if="isEditMode" class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">Image URL</label>
-        <input
-          v-model="editForm.image"
-          type="url"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="https://example.com/image.jpg"
-        />
-      </div>
-
-      <!-- Recipe Meta Info -->
-      <div
-        class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg"
-      >
-        <div class="text-center">
-          <div class="font-semibold text-gray-900">
-            <span v-if="!isEditMode">{{ recipe.prep_time || 0 }} min</span>
-            <span v-else>
-              <input
-                v-model.number="editForm.prep_time"
-                type="number"
-                min="0"
-                class="w-20 px-2 py-1 text-sm border rounded text-center"
-              />
-              min
-            </span>
-          </div>
-          <div class="text-sm text-gray-600">Prep Time</div>
-        </div>
-
-        <div class="text-center">
-          <div class="font-semibold text-gray-900">
-            <span v-if="!isEditMode">{{ recipe.cook_time || 0 }} min</span>
-            <span v-else>
-              <input
-                v-model.number="editForm.cook_time"
-                type="number"
-                min="0"
-                class="w-20 px-2 py-1 text-sm border rounded text-center"
-              />
-              min
-            </span>
-          </div>
-          <div class="text-sm text-gray-600">Cook Time</div>
-        </div>
-
-        <div class="text-center">
-          <div class="font-semibold text-gray-900">{{ totalTime }} min</div>
-          <div class="text-sm text-gray-600">Total Time</div>
-        </div>
-
-        <div class="text-center">
-          <div class="font-semibold text-gray-900">
-            <span v-if="!isEditMode">{{ recipe.servings || 1 }}</span>
-            <span v-else>
-              <input
-                v-model.number="editForm.servings"
-                type="number"
-                min="1"
-                class="w-20 px-2 py-1 text-sm border rounded text-center"
-              />
-            </span>
-          </div>
-          <div class="text-sm text-gray-600">Servings</div>
-        </div>
-      </div>
+      <!-- Recipe Meta Fields Component -->
+      <RecipeMetaFields
+        :prep-time="isEditMode ? editForm.prep_time : recipe.prep_time"
+        :cook-time="isEditMode ? editForm.cook_time : recipe.cook_time"
+        :servings="isEditMode ? editForm.servings : recipe.servings"
+        :editable="isEditMode"
+        @update:prep-time="editForm.prep_time = $event"
+        @update:cook-time="editForm.cook_time = $event"
+        @update:servings="editForm.servings = $event"
+      />
 
       <!-- Description -->
       <div class="space-y-2">
@@ -572,207 +555,38 @@
           v-else
           v-model="editForm.description"
           rows="3"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter recipe description"
         ></textarea>
       </div>
 
-      <!-- Tags -->
-      <div class="space-y-2">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
-          Tags
-        </h2>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="(tag, index) in isEditMode
-              ? editForm.tags
-              : recipe.tags || []"
-            :key="index"
-            class="px-3 py-1 bg-blue-100 cursor-default hover:bg-blue-200 text-blue-800 rounded-full text-sm flex items-center gap-1"
-          >
-            {{ tag }}
-            <button
-              v-if="isEditMode"
-              @click="removeTag(index)"
-              class="ml-1 text-blue-600 hover:text-blue-800 cursor-pointer"
-            >
-              ×
-            </button>
-          </span>
-        </div>
+      <!-- Tags Component -->
+      <RecipeTagsInput
+        :tags="isEditMode ? editForm.tags : recipe.tags || []"
+        :editable="isEditMode"
+        @add="addTag"
+        @remove="removeTag"
+      />
 
-        <!-- Add Tag in Edit Mode -->
-        <div v-if="isEditMode" class="flex gap-2 mt-2">
-          <input
-            v-model="newTag"
-            @keyup.enter="addTag"
-            type="text"
-            class="flex-1 px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Add a tag"
-          />
-          <button
-            @click="addTag"
-            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 cursor-pointer"
-          >
-            Add
-          </button>
-        </div>
-      </div>
+      <!-- Ingredients Component -->
+      <RecipeIngredientsList
+        :ingredients="
+          isEditMode ? editForm.ingredients : recipe.ingredients || []
+        "
+        :editable="isEditMode"
+        @add="addIngredient"
+        @remove="removeIngredient"
+        @update="updateIngredient"
+      />
 
-      <!-- Ingredients -->
-      <div class="space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
-            Ingredients
-          </h2>
-          <button
-            v-if="isEditMode"
-            @click="addIngredient"
-            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 cursor-pointer"
-          >
-            Add Ingredient
-          </button>
-        </div>
-
-        <ul class="space-y-2 col-span-2 md:col-span-1">
-          <li
-            v-for="(ingredient, index) in isEditMode
-              ? editForm.ingredients
-              : recipe.ingredients || []"
-            :key="index"
-            :class="['flex items-start gap-3', isEditMode ? 'pb-4' : '']"
-          >
-            <template v-if="!isEditMode">
-              <span
-                class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"
-              ></span>
-              <span
-                class="text-gray-700 dark:text-gray-300 flex gap-2 flex-wrap"
-              >
-                <span>{{ ingredient.name }}</span>
-                <span class="text-gray-500">-</span>
-                <span
-                  >{{ ingredient.amount }}
-                  {{ UnitsById[ingredient.unit] }}</span
-                >
-              </span>
-            </template>
-
-            <template v-else>
-              <div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-2">
-                <input
-                  v-model="editForm.ingredients[Number(index)].name"
-                  type="text"
-                  class="px-3 py-2 col-span-2 md:col-span-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ingredient name"
-                />
-                <input
-                  v-model.number="editForm.ingredients[Number(index)].amount"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  class="px-3 py-2 col-span-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Amount"
-                />
-                <select
-                  v-model.number="editForm.ingredients[Number(index)].unit"
-                  class="px-3 py-2 col-span-1 border border-gray-300 dark:hover:bg-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <optgroup
-                    v-for="(groupItems, groupName) in UnitGroups"
-                    :key="groupName"
-                    :label="groupName"
-                  >
-                    <option
-                      v-for="unit in groupItems"
-                      :key="unit.id"
-                      :value="unit.id"
-                    >
-                      {{ unit.label }}
-                    </option>
-                  </optgroup>
-                </select>
-              </div>
-              <button
-                @click="removeIngredient(index)"
-                class="text-red-600 hover:text-red-800 px-2 cursor-pointer mt-2"
-              >
-                <UIcon name="ic:outline-delete" class="size-5" />
-              </button>
-            </template>
-          </li>
-        </ul>
-
-        <div
-          v-if="
-            !isEditMode &&
-            (!recipe.ingredients || recipe.ingredients.length === 0)
-          "
-          class="text-gray-500 italic"
-        >
-          No ingredients listed.
-        </div>
-      </div>
-
-      <!-- Instructions -->
-      <div class="space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white/80">
-            Instructions
-          </h2>
-          <button
-            v-if="isEditMode"
-            @click="addStep"
-            class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 cursor-pointer"
-          >
-            Add Step
-          </button>
-        </div>
-
-        <ol class="space-y-3">
-          <li
-            v-for="(instruction, index) in isEditMode
-              ? editForm.steps
-              : recipe.steps || []"
-            :key="index"
-            class="flex gap-4"
-          >
-            <span
-              class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center mt-1"
-            >
-              {{ index + 1 }}
-            </span>
-
-            <span
-              v-if="!isEditMode"
-              class="text-gray-700 dark:text-gray-300 flex-1"
-              >{{ instruction }}</span
-            >
-
-            <div v-else class="flex-1 flex gap-2">
-              <textarea
-                v-model="editForm.steps[index]"
-                rows="2"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter instruction step"
-              ></textarea>
-              <button
-                @click="removeStep(index)"
-                class="text-red-600 hover:text-red-800 px-2 cursor-pointer"
-              >
-                <UIcon name="ic:outline-delete" class="size-5" />
-              </button>
-            </div>
-          </li>
-        </ol>
-
-        <div
-          v-if="!isEditMode && (!recipe.steps || recipe.steps.length === 0)"
-          class="text-gray-500 italic"
-        >
-          No instructions provided.
-        </div>
-      </div>
+      <!-- Instructions Component -->
+      <RecipeStepsList
+        :steps="isEditMode ? editForm.steps : recipe.steps || []"
+        :editable="isEditMode"
+        @add="addStep"
+        @remove="removeStep"
+        @update="updateStep"
+      />
 
       <!-- Comments Section -->
       <div class="py-4">
