@@ -5,6 +5,7 @@ export async function fetchCurrentUserProfile() {
   const profileState = useProfileState()
   try {
     const data = await api('/users/me', { method: 'GET' })
+    console.log('Fetched user profile:', data)
     profileState.value = data
     return profileState.value
   } catch (e) {

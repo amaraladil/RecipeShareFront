@@ -358,7 +358,7 @@
     targetSize: number
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
-      let quality = 0.9
+      let quality = 1.0
       let attempts = 0
       const maxAttempts = 10
 
@@ -370,7 +370,6 @@
               return
             }
 
-            // If size is acceptable or we've tried enough times, resolve
             if (
               blob.size <= targetSize ||
               attempts >= maxAttempts ||
@@ -382,7 +381,7 @@
 
             // Reduce quality and try again
             attempts++
-            quality -= 0.1
+            quality -= 0.05
             tryCompress()
           },
           format,
@@ -419,7 +418,7 @@
 
     try {
       // Compress the image with transparency support and 10KB limit
-      const { blob, format } = await compressImage(file, 400, 10)
+      const { blob, format } = await compressImage(file, 400, 100)
 
       // Create file with appropriate extension
       const compressedFile = new File([blob], `avatar.${format}`, {

@@ -23,21 +23,22 @@
 
   // Use recipe form composable for edit mode
   const {
-    form: editForm,
+    form,
     errors: validationErrors,
+    validateForm,
+    resetForm,
+    getFormData,
     addIngredient,
     removeIngredient,
     addStep,
     removeStep,
     addTag,
-    removeTag,
-    validateForm,
-    resetForm,
-    getFormData
+    removeTag
   } = useRecipeForm()
 
-  // Use image upload composable for edit mode
-  const { imageFile, uploadImage, uploadError } = useImageUpload()
+  // Store selected image file for upload
+  const selectedImageFile = ref<File | null>(null)
+  const imageUploadError = ref('')
 
   // Computed properties
   const isOwner = computed(() => {
@@ -121,9 +122,19 @@
           image: recipe.value.image || '',
           status: recipe.value.status || 1
         })
+        // Clear selected image file
+        selectedImageFile.value = null
+        imageUploadError.value = ''
       }
     }
     isEditMode.value = !isEditMode.value
+  }
+
+  // Handle file selection in edit mode
+  const handleFileSelected = (file: File) => {
+    selectedImageFile.value = file
+    imageUploadError.value = ''
+    console.log('File selected for edit:', file)
   }
 
   // Save recipe changes
@@ -135,14 +146,29 @@
     try {
       isSaving.value = true
       errorMessage.value = ''
+      imageUploadError.value = ''
 
       const formData = getFormData()
 
       // Upload new image if one was selected
-      if (imageFile.value) {
-        const imageUrl = await uploadImage('/upload/recipe')
-        if (imageUrl) {
-          formData.image = imageUrl
+      if (selectedImageFile.value) {
+        const uploadFormData = new FormData()
+        uploadFormData.append('image', selectedImageFile.value)
+
+        try {
+          const uploadResponse = await fetchApi('/upload/recipe', {
+            method: 'POST',
+            body: uploadFormData
+          })
+
+          if (uploadResponse && uploadResponse.url) {
+            formData.image = uploadResponse.url
+          }
+        } catch (uploadErr) {
+          console.error('Error uploading image:', uploadErr)
+          imageUploadError.value = 'Failed to upload image'
+          errorMessage.value = 'Failed to upload image. Please try again.'
+          return
         }
       }
 
@@ -154,6 +180,7 @@
       if (response) {
         recipe.value = response
         isEditMode.value = false
+        selectedImageFile.value = null
         console.log('Recipe updated successfully')
       }
     } catch (err) {
@@ -259,40 +286,13 @@
 
   // Update ingredient
   const updateIngredient = (index: number, ingredient: any) => {
-    editForm.value.ingredients[index] = ingredient
+    form.value.ingredients[index] = ingredient
   }
 
   // Update step
   const updateStep = (index: number, value: string) => {
-    editForm.value.steps[index] = value
+    form.value.steps[index] = value
   }
-
-  // Add/remove for components
-  // const addIngredient = () => {
-  //   editForm.value.ingredients.push({ name: '', amount: 0, unit: 1 })
-  // }
-
-  // const removeIngredient = (index: number) => {
-  //   if (editForm.value.ingredients.length <= 1) return
-  //   editForm.value.ingredients.splice(index, 1)
-  // }
-
-  // const addStep = () => {
-  //   editForm.value.steps.push('')
-  // }
-
-  // const removeStep = (index: number) => {
-  //   if (editForm.value.steps.length <= 1) return
-  //   editForm.value.steps.splice(index, 1)
-  // }
-
-  // const addTag = (tag: string) => {
-  //   editForm.value.tags.push(tag)
-  // }
-
-  // const removeTag = (index: number) => {
-  //   editForm.value.tags.splice(index, 1)
-  // }
 
   // Initialize
   onMounted(async () => {
@@ -348,7 +348,7 @@
     <div v-else-if="recipe" class="space-y-6">
       <!-- Validation Errors in Edit Mode -->
       <div
-        v-if="isEditMode && (validationErrors.length > 0 || uploadError)"
+        v-if="isEditMode && (validationErrors.length > 0 || imageUploadError)"
         class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
       >
         <div class="flex items-start gap-2">
@@ -363,7 +363,7 @@
             <ul
               class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1"
             >
-              <li v-if="uploadError">{{ uploadError }}</li>
+              <li v-if="imageUploadError">{{ imageUploadError }}</li>
               <li v-for="err in validationErrors" :key="err.field">
                 {{ err.message }}
               </li>
@@ -391,7 +391,7 @@
               Recipe Title:
             </label>
             <input
-              v-model="editForm.title"
+              v-model="form.title"
               type="text"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter recipe title"
@@ -507,7 +507,7 @@
           Recipe Status
         </label>
         <select
-          v-model.number="editForm.status"
+          v-model.number="form.status"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option :value="1">Public</option>
@@ -518,9 +518,10 @@
       <!-- Recipe Image Component -->
       <RecipeImageUpload
         v-if="isEditMode"
-        v-model="editForm.image"
+        v-model="form.image"
         :editable="true"
-        :title="editForm.title"
+        :title="form.title"
+        @file-selected="handleFileSelected"
       />
       <RecipeImageUpload
         v-else
@@ -531,13 +532,13 @@
 
       <!-- Recipe Meta Fields Component -->
       <RecipeMetaFields
-        :prep-time="isEditMode ? editForm.prep_time : recipe.prep_time"
-        :cook-time="isEditMode ? editForm.cook_time : recipe.cook_time"
-        :servings="isEditMode ? editForm.servings : recipe.servings"
+        :prep-time="isEditMode ? form.prep_time : recipe.prep_time"
+        :cook-time="isEditMode ? form.cook_time : recipe.cook_time"
+        :servings="isEditMode ? form.servings : recipe.servings"
         :editable="isEditMode"
-        @update:prep-time="editForm.prep_time = $event"
-        @update:cook-time="editForm.cook_time = $event"
-        @update:servings="editForm.servings = $event"
+        @update:prep-time="form.prep_time = $event"
+        @update:cook-time="form.cook_time = $event"
+        @update:servings="form.servings = $event"
       />
 
       <!-- Description -->
@@ -553,7 +554,7 @@
         </p>
         <textarea
           v-else
-          v-model="editForm.description"
+          v-model="form.description"
           rows="3"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter recipe description"
@@ -562,7 +563,7 @@
 
       <!-- Tags Component -->
       <RecipeTagsInput
-        :tags="isEditMode ? editForm.tags : recipe.tags || []"
+        :tags="isEditMode ? form.tags : recipe.tags || []"
         :editable="isEditMode"
         @add="addTag"
         @remove="removeTag"
@@ -570,9 +571,7 @@
 
       <!-- Ingredients Component -->
       <RecipeIngredientsList
-        :ingredients="
-          isEditMode ? editForm.ingredients : recipe.ingredients || []
-        "
+        :ingredients="isEditMode ? form.ingredients : recipe.ingredients || []"
         :editable="isEditMode"
         @add="addIngredient"
         @remove="removeIngredient"
@@ -581,7 +580,7 @@
 
       <!-- Instructions Component -->
       <RecipeStepsList
-        :steps="isEditMode ? editForm.steps : recipe.steps || []"
+        :steps="isEditMode ? form.steps : recipe.steps || []"
         :editable="isEditMode"
         @add="addStep"
         @remove="removeStep"

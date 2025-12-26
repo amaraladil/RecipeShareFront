@@ -4,8 +4,6 @@ export function useApi<T = any>() {
   const config = useRuntimeConfig()
   const { $supabase } = useNuxtApp()
 
-  console.log('useApi initialized with base URL:', config.public.apiBase)
-
   return async (url: string, options: any = {}): Promise<T> => {
     console.log('Fetching API:', url, 'with options:', options)
     let accessToken: string | undefined

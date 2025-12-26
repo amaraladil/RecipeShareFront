@@ -20,10 +20,9 @@
     getFormData
   } = useRecipeForm()
 
-  const { imageFile, uploadImage, uploadError } = useImageUpload()
-
   const isSubmitting = ref(false)
   const submitError = ref('')
+  const selectedImageFile = ref<File | null>(null)
 
   // Add initial ingredient and step
   onMounted(() => {
@@ -36,7 +35,8 @@
   })
 
   const handleFileSelected = (file: File) => {
-    // File is already compressed and ready
+    // Store the compressed file for upload
+    selectedImageFile.value = file
     console.log('File selected:', file)
   }
 
@@ -44,7 +44,6 @@
     submitError.value = ''
 
     if (!validateForm()) {
-      submitError.value = 'Please fix the errors in the form'
       return
     }
 
@@ -52,13 +51,24 @@
       isSubmitting.value = true
       const formData = getFormData()
 
-      console.log('Image file before upload:', imageFile.value)
-
       // Upload image if one was selected
-      if (imageFile.value) {
-        const imageUrl = await uploadImage('/upload/recipe')
-        if (imageUrl) {
-          formData.image = imageUrl
+      if (selectedImageFile.value) {
+        const uploadFormData = new FormData()
+        uploadFormData.append('image', selectedImageFile.value)
+
+        try {
+          const uploadResponse = await fetchApi('/upload/recipe', {
+            method: 'POST',
+            body: uploadFormData
+          })
+
+          if (uploadResponse && uploadResponse.url) {
+            formData.image = uploadResponse.url
+          }
+        } catch (uploadErr) {
+          console.error('Error uploading image:', uploadErr)
+          submitError.value = 'Failed to upload image. Please try again.'
+          return
         }
       }
 
@@ -124,7 +134,7 @@
 
     <!-- Error Summary -->
     <div
-      v-if="hasErrors || submitError || uploadError"
+      v-if="hasErrors || submitError"
       class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
     >
       <div class="flex items-start gap-2">
@@ -140,7 +150,6 @@
             class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1"
           >
             <li v-if="submitError">{{ submitError }}</li>
-            <li v-if="uploadError">{{ uploadError }}</li>
             <li v-for="error in errors" :key="error.field">
               {{ error.message }}
             </li>

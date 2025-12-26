@@ -13,7 +13,7 @@ export const useImageUpload = () => {
     file: File,
     maxWidth = 1200,
     maxHeight = 800,
-    targetSizeKB = 500
+    targetSizeKB = 1000
   ): Promise<{ blob: Blob; format: string }> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
@@ -87,9 +87,11 @@ export const useImageUpload = () => {
     targetSize: number
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
-      let quality = 0.9
+      let quality = 1.0
       let attempts = 0
       const maxAttempts = 10
+
+      console.log(`Target size: ${targetSize}`)
 
       const tryCompress = () => {
         canvas.toBlob(
@@ -109,7 +111,8 @@ export const useImageUpload = () => {
             }
 
             attempts++
-            quality -= 0.1
+            quality -= 0.05
+            console.log(blob.size, quality)
             tryCompress()
           },
           format,
@@ -148,7 +151,7 @@ export const useImageUpload = () => {
 
     try {
       // Compress the image
-      const { blob, format } = await compressImage(file, 1200, 800, 10000)
+      const { blob, format } = await compressImage(file, 1920, 1080, 1024)
 
       // Create file with appropriate extension
       const compressedFile = new File([blob], `recipe.${format}`, {
