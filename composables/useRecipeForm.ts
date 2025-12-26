@@ -39,7 +39,7 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     servings: initialData?.servings || 1,
     tags: initialData?.tags || [],
     image: initialData?.image || '',
-    status: initialData?.status || -1 // Default to PUBLIC
+    status: initialData?.status || 1 // Default to PUBLIC
   })
 
   const errors = ref<ValidationError[]>([])
@@ -207,10 +207,15 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     form.value.steps.splice(index, 1)
   }
 
-  const addTag = () => {
-    if (newTag.value.trim() && !form.value.tags.includes(newTag.value.trim())) {
-      form.value.tags.push(newTag.value.trim())
-      newTag.value = ''
+  const addTag = (tag?: string) => {
+    const tagToAdd = tag !== undefined ? tag : newTag.value.trim()
+
+    if (tagToAdd && !form.value.tags.includes(tagToAdd)) {
+      form.value.tags.push(tagToAdd)
+      // Only clear internal state if we used it
+      if (tag === undefined) {
+        newTag.value = ''
+      }
     }
   }
 

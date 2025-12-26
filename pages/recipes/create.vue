@@ -17,6 +17,8 @@
     removeIngredient,
     addStep,
     removeStep,
+    addTag,
+    removeTag,
     getFormData
   } = useRecipeForm()
 
@@ -44,6 +46,7 @@
     submitError.value = ''
 
     if (!validateForm()) {
+      submitError.value = 'Please fix the errors in the form'
       return
     }
 
@@ -98,16 +101,6 @@
   // Update step
   const updateStep = (index: number, value: string) => {
     form.value.steps[index] = value
-  }
-
-  // Add tag
-  const addTag = (tag: string) => {
-    form.value.tags.push(tag)
-  }
-
-  // Remove tag
-  const removeTag = (index: number) => {
-    form.value.tags.splice(index, 1)
   }
 
   // SEO Meta
