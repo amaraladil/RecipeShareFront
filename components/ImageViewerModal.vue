@@ -33,8 +33,8 @@
 
 <template>
   <div
-    @click="handleBackdropClick"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 cursor-zoom-out"
+    @click="emit('close')"
+    class="fixed inset-0 z-50 h-full flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 cursor-zoom-out"
   >
     <!-- Close Button -->
     <button
@@ -46,6 +46,7 @@
 
     <!-- Image Title -->
     <div
+      @click="handleBackdropClick"
       v-if="title"
       class="absolute top-4 left-4 px-4 py-2 rounded-lg bg-black/50 backdrop-blur-sm"
     >
@@ -63,6 +64,7 @@
 
     <!-- Instructions -->
     <div
+      @click="emit('close')"
       class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-black/50 backdrop-blur-sm"
     >
       <p class="text-white text-sm">Click outside or press ESC to close</p>

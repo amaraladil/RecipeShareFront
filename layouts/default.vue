@@ -74,6 +74,7 @@
             <NuxtLink
               v-if="user"
               to="/recipes/create"
+              title="Create a new recipe"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <Icon
@@ -161,6 +162,7 @@
               <NuxtLink
                 v-if="profile"
                 :to="`/@${profile.display_name}`"
+                title="View Profile"
                 class="flex items-center w-full px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <img
@@ -252,7 +254,7 @@
   // warning('Your session will expire in 5 minutes')
   // info('New features have been added! Check them out.')
   // success('Recipe saved successfully!')
-  errorNotif('Critical error - please contact support', 10000)
+  // errorNotif('Critical error - please contact support', 10000)
 
   // Sidebar state
   const sidebarExpanded = ref(false)

@@ -11,6 +11,7 @@
 
   // Recipe data
   const recipe = ref<any>(null)
+  const recipe_id = ref<string | null>(null)
   const isLoading = ref(true)
   const isEditMode = ref(false)
   const isSaving = ref(false)
@@ -27,7 +28,6 @@
     errors: validationErrors,
     validateForm,
     resetForm,
-    getFormData,
     getUpdatedData,
     addIngredient,
     removeIngredient,
@@ -85,6 +85,7 @@
 
       if (response) {
         recipe.value = response
+        recipe_id.value = response.id
         resetForm({
           title: response.title || '',
           description: response.description || '',
@@ -154,6 +155,8 @@
       // Upload new image if one was selected
       if (selectedImageFile.value) {
         const uploadFormData = new FormData()
+        uploadFormData.append('recipe_id', String(recipe_id.value ?? ''))
+        uploadFormData.append('recipe_url', recipe.value.image)
         uploadFormData.append('image', selectedImageFile.value)
 
         try {
@@ -168,7 +171,6 @@
         } catch (uploadErr) {
           console.error('Error uploading image:', uploadErr)
           imageUploadError.value = 'Failed to upload image'
-          errorMessage.value = 'Failed to upload image. Please try again.'
           return
         }
       }
@@ -178,9 +180,6 @@
         errorNotif('No changes to save')
         return
       }
-      console.log('Updated fields to save:', updatedFields)
-      console.log('Original Recipe:', recipe.value)
-      return
 
       const response = await fetchApi(`/recipes/${slug}`, {
         method: 'PATCH',
@@ -409,13 +408,15 @@
           </div>
 
           <!-- Author Info -->
-          <div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+          <div
+            class="flex items-center gap-3 text-sm md:text-base text-gray-600 dark:text-gray-400"
+          >
             <img
               :src="recipe.author?.avatar_url || '/default-avatar.jpg'"
               alt="Author"
               class="w-8 h-8 rounded-full"
             />
-            <span
+            <span class="whitespace-nowrap"
               >by
               <NuxtLink
                 :to="`/@${recipe.author?.display_name}`"
@@ -427,8 +428,11 @@
             <span>•</span>
             <span class="gap-3 flex items-center">
               <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
-              <span v-if="recipe.updatedAt != recipe.createdAt">
-                (Updated: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
+              <span
+                class="whitespace-nowrap text-xs md:text-sm"
+                v-if="recipe.updatedAt != recipe.createdAt"
+              >
+                (Edit: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
               </span>
             </span>
           </div>
@@ -440,7 +444,7 @@
             <button
               v-if="!isEditMode"
               @click="toggleEditMode"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer"
+              class="bg-blue-600 text-white whitespace-nowrap px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer"
             >
               Edit Recipe
             </button>
@@ -449,7 +453,7 @@
               <button
                 @click="saveRecipe"
                 :disabled="isSaving"
-                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer"
+                class="bg-green-600 whitespace-nowrap text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
               </button>
