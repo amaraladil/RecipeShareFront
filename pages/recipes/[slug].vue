@@ -28,6 +28,7 @@
     validateForm,
     resetForm,
     getFormData,
+    getUpdatedData,
     addIngredient,
     removeIngredient,
     addStep,
@@ -35,6 +36,8 @@
     addTag,
     removeTag
   } = useRecipeForm()
+
+  const { errorNotif, success } = useNotification()
 
   // Store selected image file for upload
   const selectedImageFile = ref<File | null>(null)
@@ -148,8 +151,6 @@
       errorMessage.value = ''
       imageUploadError.value = ''
 
-      const formData = getFormData()
-
       // Upload new image if one was selected
       if (selectedImageFile.value) {
         const uploadFormData = new FormData()
@@ -162,7 +163,7 @@
           })
 
           if (uploadResponse && uploadResponse.url) {
-            formData.image = uploadResponse.url
+            form.value.image = uploadResponse.url
           }
         } catch (uploadErr) {
           console.error('Error uploading image:', uploadErr)
@@ -171,16 +172,25 @@
           return
         }
       }
+      const updatedFields = getUpdatedData(recipe.value)
+
+      if (!updatedFields || Object.keys(updatedFields).length === 0) {
+        errorNotif('No changes to save')
+        return
+      }
+      console.log('Updated fields to save:', updatedFields)
+      console.log('Original Recipe:', recipe.value)
+      return
 
       const response = await fetchApi(`/recipes/${slug}`, {
         method: 'PATCH',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(updatedFields)
       })
 
       if (response) {
         recipe.value = response
-        isEditMode.value = false
-        selectedImageFile.value = null
+        toggleEditMode()
+        success('Recipe updated successfully')
         console.log('Recipe updated successfully')
       }
     } catch (err) {

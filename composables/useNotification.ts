@@ -72,7 +72,7 @@ export const useNotification = () => {
     show(message, 'success', duration)
   }
 
-  const error = (message: string, duration = 5000) => {
+  const errorNotif = (message: string, duration = 5000) => {
     show(message, 'error', duration)
   }
 
@@ -91,7 +91,7 @@ export const useNotification = () => {
     removeAll,
     clearNonInfo,
     success,
-    error,
+    errorNotif,
     info,
     warning
   }

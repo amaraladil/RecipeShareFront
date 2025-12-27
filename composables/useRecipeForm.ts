@@ -39,17 +39,15 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     servings: initialData?.servings || 1,
     tags: initialData?.tags || [],
     image: initialData?.image || '',
-    status: initialData?.status || 1 // Default to PUBLIC
+    status: initialData?.status || 1
   })
 
   const errors = ref<ValidationError[]>([])
   const newTag = ref('')
 
-  // Computed
   const totalTime = computed(() => form.value.prep_time + form.value.cook_time)
   const hasErrors = computed(() => errors.value.length > 0)
 
-  // Validation functions
   const validateTitle = (): boolean => {
     if (!form.value.title || !form.value.title.trim()) {
       errors.value.push({
@@ -95,9 +93,8 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       return false
     }
 
-    // Filter out empty ingredients
     const nonEmptyIngredients = form.value.ingredients.filter(
-      (ing) => ing && (typeof ing === 'string' ? ing.trim() : ing.name?.trim())
+      (ing) => ing && ing.name.trim()
     )
 
     if (nonEmptyIngredients.length === 0) {
@@ -120,7 +117,6 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       return false
     }
 
-    // Filter out empty steps
     const nonEmptySteps = form.value.steps.filter((step) => step && step.trim())
 
     if (nonEmptySteps.length === 0) {
@@ -256,7 +252,7 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
   const getFormData = () => {
     // Clean up empty ingredients and steps
     const cleanedIngredients = form.value.ingredients.filter(
-      (ing) => ing && (typeof ing === 'string' ? ing.trim() : ing.name?.trim())
+      (ing) => ing && ing.name.trim()
     )
     const cleanedSteps = form.value.steps.filter((step) => step && step.trim())
 
@@ -267,6 +263,56 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       title: form.value.title.trim(),
       description: form.value.description.trim()
     }
+  }
+
+  const getUpdatedData = (originalData?: Partial<RecipeFormData> | null) => {
+    const current = getFormData()
+    if (!originalData) {
+      // No original provided — return full cleaned payload
+      return current
+    }
+
+    const updated: Partial<RecipeFormData> = {}
+
+    // compare primitives
+    const primitiveKeys: (keyof RecipeFormData)[] = [
+      'title',
+      'description',
+      'prep_time',
+      'cook_time',
+      'servings',
+      'image',
+      'status'
+    ]
+    primitiveKeys.forEach((k) => {
+      if ((current as any)[k] !== (originalData as any)[k]) {
+        ;(updated as any)[k] = (current as any)[k]
+      }
+    })
+
+    // compare arrays/objects by JSON stringify (normalized)
+    const normalize = (v: any) =>
+      v === undefined ? null : JSON.stringify(v, Object.keys(v || {}).sort())
+
+    // ingredients
+    const origIng = originalData.ingredients
+    if (normalize(current.ingredients) !== normalize(origIng)) {
+      updated.ingredients = current.ingredients
+    }
+
+    // steps
+    const origSteps = originalData.steps
+    if (normalize(current.steps) !== normalize(origSteps)) {
+      updated.steps = current.steps
+    }
+
+    // tags
+    const origTags = originalData.tags
+    if (normalize(current.tags) !== normalize(origTags)) {
+      updated.tags = current.tags
+    }
+
+    return updated
   }
 
   return {
@@ -292,6 +338,7 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     resetForm,
     getFieldError,
     clearErrors,
-    getFormData
+    getFormData,
+    getUpdatedData
   }
 }
