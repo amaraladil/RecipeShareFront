@@ -249,6 +249,11 @@
       }
     } catch (err) {
       recipe.value.is_liked = !recipe.value.is_liked
+      errorNotif(
+        recipe.value.is_liked
+          ? 'Failed to like recipe'
+          : 'Failed to unlike recipe'
+      )
       console.error('Error toggling like:', err)
       errorMessage.value = recipe.value.is_liked
         ? 'Failed to unlike recipe'
@@ -286,6 +291,11 @@
       }
     } catch (err) {
       recipe.value.is_saved = !recipe.value.is_saved
+      errorNotif(
+        recipe.value.is_saved
+          ? 'Failed to save recipe'
+          : 'Failed to unsave recipe'
+      )
       console.error('Error toggling save:', err)
       errorMessage.value = recipe.value.is_saved
         ? 'Failed to unsave recipe'
