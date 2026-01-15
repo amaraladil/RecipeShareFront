@@ -446,7 +446,7 @@
         newComment.value = ''
       }
     } catch (error) {
-      console.error('Error submitting comment:', error)
+      errorNotif('Something went wrong with submitting comment, try again.')
     } finally {
       isSubmitting.value = false
     }
@@ -522,7 +522,7 @@
         cancelReply()
       }
     } catch (error) {
-      console.error('Error submitting reply:', error)
+      errorNotif('Something went wrong with submitting reply, try again.')
     } finally {
       isSubmittingReply.value = false
     }
