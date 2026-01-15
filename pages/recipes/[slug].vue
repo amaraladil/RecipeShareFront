@@ -13,14 +13,12 @@
   // Recipe data
   const recipe = ref<any>(null)
   const recipe_id = ref<string | null>(null)
-  const isLoading = ref(true)
   const isEditMode = ref(false)
   const isSaving = ref(false)
   const errorMessage = ref('')
 
   // Comments loading
   const shouldLoadComments = ref(false)
-  const commentsSection = ref<HTMLElement>()
   const commentsTrigger = ref<HTMLElement>()
 
   // Use recipe form composable for edit mode
@@ -125,40 +123,6 @@
       image: recipeData.value.image || '',
       status: recipeData.value.status || 1
     })
-  }
-
-  // Fetch recipe data
-  const fetchRecipe = async () => {
-    try {
-      isLoading.value = true
-      errorMessage.value = ''
-
-      const response = await fetchApi(`/recipes/${slug}`, { method: 'GET' })
-
-      if (response) {
-        recipe.value = response
-        recipe_id.value = response.id
-        resetForm({
-          title: response.title || '',
-          description: response.description || '',
-          ingredients: [...(response.ingredients || [])],
-          steps: [...(response.steps || [])],
-          prep_time: response.prep_time || 0,
-          cook_time: response.cook_time || 0,
-          servings: response.servings || 1,
-          tags: [...(response.tags || [])],
-          image: response.image || '',
-          status: response.status || 1
-        })
-      } else {
-        throw new Error('Recipe not found')
-      }
-    } catch (err) {
-      console.error('Error fetching recipe:', err)
-      errorMessage.value = 'Failed to load recipe'
-    } finally {
-      isLoading.value = false
-    }
   }
 
   // Toggle edit mode
@@ -400,19 +364,6 @@
         class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
       ></div>
       <span class="ml-3 text-lg text-gray-600">Loading recipe...</span>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="errorMessage" class="text-center py-12">
-      <div class="text-red-600 text-lg font-medium mb-2">
-        {{ errorMessage }}
-      </div>
-      <button
-        @click="fetchRecipe"
-        class="btn bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
-      >
-        Try Again
-      </button>
     </div>
 
     <!-- Recipe Content -->
