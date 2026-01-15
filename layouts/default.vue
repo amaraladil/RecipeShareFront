@@ -248,12 +248,18 @@
   const { user, fetchUser } = useSupabaseUser()
   const { $supabase } = useNuxtApp()
   const { appName } = useAppSettings()
-  const { success, errorNotif, warning, info, removeAll, clearNonInfo } =
-    useNotification()
+  const {
+    successNotif,
+    errorNotif,
+    warningNotif,
+    infoNotif,
+    removeAll,
+    clearNonInfo
+  } = useNotification()
   // removeAll()
-  // warning('Your session will expire in 5 minutes')
-  // info('New features have been added! Check them out.')
-  // success('Recipe saved successfully!')
+  // warningNotif('Your session will expire in 5 minutes')
+  // infoNotif('New features have been added! Check them out.')
+  // successNotif('Recipe saved successfully!')
   // errorNotif('Critical error - please contact support', 10000)
 
   // Sidebar state

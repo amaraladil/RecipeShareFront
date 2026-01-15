@@ -68,7 +68,7 @@ export const useNotification = () => {
     notifications.value = []
   }
 
-  const success = (message: string, duration = 5000) => {
+  const successNotif = (message: string, duration = 5000) => {
     show(message, 'success', duration)
   }
 
@@ -76,11 +76,11 @@ export const useNotification = () => {
     show(message, 'error', duration)
   }
 
-  const info = (message: string, duration = 0) => {
+  const infoNotif = (message: string, duration = 0) => {
     show(message, 'info', duration)
   }
 
-  const warning = (message: string, duration = 5000) => {
+  const warningNotif = (message: string, duration = 5000) => {
     show(message, 'warning', duration)
   }
 
@@ -90,9 +90,9 @@ export const useNotification = () => {
     remove,
     removeAll,
     clearNonInfo,
-    success,
+    successNotif,
     errorNotif,
-    info,
-    warning
+    infoNotif,
+    warningNotif
   }
 }

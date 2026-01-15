@@ -305,6 +305,7 @@
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
   import type { Profile } from '~/types/profile'
   import type { User, Comment, Reply } from '~/types/comment'
+  const { errorNotif, successNotif } = useNotification()
   const { openAuth } = useAuthModal()
 
   const props = defineProps<{
@@ -691,13 +692,14 @@
 
     try {
       await fetchApi(`/comments/${comment.id}`, { method: 'DELETE' })
+      successNotif('Comment deleted successfully.')
       const index = comments.value.findIndex((c) => c.id === comment.id)
       if (index > -1) {
         comments.value.splice(index, 1)
         totalComments.value--
       }
     } catch (error) {
-      console.error('Error deleting comment:', error)
+      errorNotif('Something went wrong with deleting comment, try again.')
     }
   }
 
@@ -707,6 +709,7 @@
 
     try {
       await fetchApi(`/comments/${reply.id}`, { method: 'DELETE' })
+      successNotif('Reply deleted successfully.')
       if (comment.replies) {
         const index = comment.replies.findIndex((r) => r.id === reply.id)
         if (index > -1) {
@@ -715,7 +718,7 @@
         }
       }
     } catch (error) {
-      console.error('Error deleting reply:', error)
+      errorNotif('Something went wrong with deleting reply, try again.')
     }
   }
 

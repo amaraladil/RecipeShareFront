@@ -37,7 +37,7 @@
     removeTag
   } = useRecipeForm()
 
-  const { errorNotif, success } = useNotification()
+  const { errorNotif, successNotif } = useNotification()
 
   // Store selected image file for upload
   const selectedImageFile = ref<File | null>(null)
@@ -189,7 +189,7 @@
       if (response) {
         recipe.value = response
         toggleEditMode()
-        success('Recipe updated successfully')
+        successNotif('Recipe updated successfully')
         console.log('Recipe updated successfully')
       }
     } catch (err) {
