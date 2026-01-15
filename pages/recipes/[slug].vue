@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { CACHE_RECIPE_DURATION } from '~/constants'
   import { pageTitle } from '~/utils/meta'
 
   const route = useRoute()
@@ -72,6 +73,57 @@
 
     onUnmounted(() => {
       observer.disconnect()
+    })
+  }
+
+  const nuxtApp = useNuxtApp()
+  const { data: recipeData, pending } = await useAsyncData<any>(
+    `recipe-${slug}`,
+    () => fetchApi(`/recipes/${slug}`, { method: 'GET' }),
+    {
+      transform(input) {
+        if (!input) return null
+        return {
+          ...input,
+          fetchTime: new Date()
+        } as any
+      },
+      getCachedData(key) {
+        const data = nuxtApp.payload.data[key]
+
+        if (!data) return null
+
+        const expired = data.fetchTime
+          ? new Date(data.fetchTime) <
+            new Date(Date.now() - CACHE_RECIPE_DURATION)
+          : false
+
+        if (expired) {
+          return null // Cache expired, fetch new data
+        }
+
+        return data as any
+      },
+      immediate: true,
+      server: true,
+      lazy: false
+    }
+  )
+
+  if (recipeData.value) {
+    recipe.value = recipeData.value
+    recipe_id.value = recipeData.value.id
+    resetForm({
+      title: recipeData.value.title || '',
+      description: recipeData.value.description || '',
+      ingredients: [...(recipeData.value.ingredients || [])],
+      steps: [...(recipeData.value.steps || [])],
+      prep_time: recipeData.value.prep_time || 0,
+      cook_time: recipeData.value.cook_time || 0,
+      servings: recipeData.value.servings || 1,
+      tags: [...(recipeData.value.tags || [])],
+      image: recipeData.value.image || '',
+      status: recipeData.value.status || 1
     })
   }
 
@@ -189,6 +241,7 @@
       if (response) {
         recipe.value = response
         toggleEditMode()
+        clearNuxtData(`recipe-${slug}`)
         successNotif('Recipe updated successfully')
         console.log('Recipe updated successfully')
       }
@@ -315,7 +368,6 @@
 
   // Initialize
   onMounted(async () => {
-    await fetchRecipe()
     nextTick(() => {
       setupCommentsObserver()
     })
@@ -343,7 +395,7 @@
 <template>
   <div class="container mx-auto px-4 py-6 max-w-4xl">
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex justify-center items-center min-h-[50vh]">
+    <div v-if="pending" class="flex justify-center items-center min-h-[50vh]">
       <div
         class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
       ></div>

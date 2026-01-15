@@ -21,3 +21,4 @@ export const MESSAGES = {
 }
 
 export const CACHE_PROFILE_DURATION = 60 * 1000 // 1 min
+export const CACHE_RECIPE_DURATION = 10 * 60 * 1000 // 10 min
