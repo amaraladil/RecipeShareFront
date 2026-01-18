@@ -90,7 +90,8 @@
                   'flex items-center gap-1 transition-colors',
                   comment.isLikedByUser
                     ? 'text-red-600 hover:text-red-700'
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-gray-500 hover:text-gray-700',
+                  user?.id == comment.createdBy ? '!cursor-default' : ''
                 ]"
               >
                 <UIcon
@@ -192,9 +193,15 @@
                 class="flex gap-3"
               >
                 <img
-                  :src="reply.author?.avatar_url || '/default-avatar.jpg'"
-                  :alt="reply.author?.display_name"
+                  v-if="reply.author"
+                  :src="reply.author.avatar_url"
+                  :alt="reply.author.display_name"
                   class="w-6 h-6 rounded-full flex-shrink-0"
+                />
+                <Icon
+                  v-else
+                  name="stash:user-avatar"
+                  class="w-6 h-6 text-gray-500 dark:text-gray-400"
                 />
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
@@ -203,8 +210,14 @@
                       :to="`/@${reply.author.display_name}`"
                       class="font-medium text-sm text-gray-900 dark:text-white hover:underline"
                     >
-                      @{{ reply.author?.display_name || 'Anonymous' }}
+                      @{{ reply.author.display_name }}
                     </NuxtLink>
+                    <div
+                      v-else
+                      class="font-medium text-sm text-gray-900 dark:text-white"
+                    >
+                      Hidden User
+                    </div>
                     <span class="text-xs text-gray-500">
                       {{ formatDate(reply.createdAt) }}
                     </span>
@@ -218,14 +231,18 @@
                   </p>
 
                   <!-- Reply Actions -->
-                  <div class="flex items-center gap-3 text-xs">
+                  <div
+                    v-if="reply.author"
+                    class="flex items-center gap-3 text-xs"
+                  >
                     <button
                       @click="toggleReplyLike(reply)"
                       :class="[
                         'flex items-center gap-1 transition-colors',
                         reply.isLikedByUser
                           ? 'text-red-600 hover:text-red-700'
-                          : 'text-gray-500 hover:text-gray-700'
+                          : 'text-gray-500 hover:text-gray-700',
+                        user?.id == reply.createdBy ? '!cursor-default' : ''
                       ]"
                     >
                       <UIcon
@@ -255,6 +272,7 @@
                       Delete
                     </button>
                   </div>
+                  <div v-else class="h-4"></div>
                 </div>
               </div>
 
@@ -382,6 +400,12 @@
         // Fetch author info for each comment
         const commentsWithAuthors = await Promise.all(
           activeComments.map(async (comment: Comment) => {
+            if (comment.createdBy == '00000000-0000-0000-0000-000000000000') {
+              return {
+                ...comment,
+                author: null
+              }
+            }
             const authorResponse = await fetchApi(
               `/users/id/${comment.createdBy}`
             )
@@ -556,6 +580,12 @@
 
         const repliesWithAuthors = await Promise.all(
           activeReplies.map(async (reply: Reply) => {
+            if (reply.createdBy == '00000000-0000-0000-0000-000000000000') {
+              return {
+                ...reply,
+                author: null
+              }
+            }
             const authorResponse = await fetchApi(
               `/users/id/${reply.createdBy}`
             )
@@ -660,13 +690,13 @@
       // Revert on error
       comment.isLikedByUser = wasLiked
       comment.likeCount = originalCount
-      console.error('Error toggling like:', error)
+      errorNotif(`Failed to ${wasLiked ? 'unlike' : 'like'} comment.`)
     }
   }
 
   // Like/unlike reply
   const toggleReplyLike = async (reply: Reply) => {
-    if (!user.value) return
+    if (!user.value || user.value.id === reply.createdBy) return
 
     const wasLiked = reply.isLikedByUser
     const originalCount = reply.likeCount
@@ -682,7 +712,7 @@
       // Revert on error
       reply.isLikedByUser = wasLiked
       reply.likeCount = originalCount
-      console.error('Error toggling reply like:', error)
+      errorNotif(`Failed to ${wasLiked ? 'unlike' : 'like'} reply.`)
     }
   }
 
