@@ -33,15 +33,23 @@
             @click="triggerFileInput"
             class="relative w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden cursor-pointer group hover:opacity-80 transition-opacity"
           >
-            <img
+            <UserAvatar
+              :avatar-url="avatarPreview || form.avatar_url"
+              :alt="'Avatar preview'"
+              class="w-full h-full"
+            />
+            <!-- <img
               v-if="avatarPreview || form.avatar_url"
               :src="avatarPreview || form.avatar_url"
               alt="Avatar preview"
               class="w-full h-full object-cover"
             />
             <div v-else class="w-full h-full flex items-center justify-center">
-              <Icon name="heroicons:user" class="w-8 h-8 text-gray-400" />
-            </div>
+              <Icon
+                name="heroicons:user-circle"
+                class="w-full h-full text-gray-400"
+              />
+            </div> -->
 
             <!-- Overlay on hover -->
             <div

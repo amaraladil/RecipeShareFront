@@ -8,10 +8,10 @@
       <!-- Add Comment Form -->
       <div v-if="profile" class="mb-6">
         <div class="flex gap-3">
-          <img
-            :src="profile.avatar_url || '/default-avatar.jpg'"
+          <UserAvatar
+            :avatar-url="profile.avatar_url"
             :alt="profile.display_name"
-            class="w-8 h-8 rounded-full flex-shrink-0"
+            class="w-8 h-8"
           />
           <div class="flex-1">
             <textarea
@@ -59,10 +59,10 @@
       >
         <!-- Comment Content -->
         <div class="flex gap-3">
-          <img
-            :src="comment.author?.avatar_url || '/default-avatar.jpg'"
+          <UserAvatar
+            :avatar-url="comment.author?.avatar_url"
             :alt="comment.author?.display_name"
-            class="w-8 h-8 rounded-full flex-shrink-0"
+            class="w-8 h-8"
           />
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
@@ -138,10 +138,10 @@
               class="mt-3 pl-4 border-l-2 border-blue-500"
             >
               <div class="flex gap-2">
-                <img
-                  :src="profile?.avatar_url || '/default-avatar.jpg'"
+                <UserAvatar
+                  :avatar-url="profile?.avatar_url"
                   :alt="profile?.display_name"
-                  class="w-6 h-6 rounded-full flex-shrink-0"
+                  class="w-6 h-6"
                 />
                 <div class="flex-1">
                   <div v-if="replyToUser" class="text-sm text-gray-600 mb-1">
@@ -192,16 +192,10 @@
                 :key="reply.id"
                 class="flex gap-3"
               >
-                <img
-                  v-if="reply.author"
-                  :src="reply.author.avatar_url"
-                  :alt="reply.author.display_name"
-                  class="w-6 h-6 rounded-full flex-shrink-0"
-                />
-                <Icon
-                  v-else
-                  name="stash:user-avatar"
-                  class="w-6 h-6 text-gray-500 dark:text-gray-400"
+                <UserAvatar
+                  :avatar-url="reply.author?.avatar_url"
+                  :alt="reply.author?.display_name"
+                  class="w-6 h-6"
                 />
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">

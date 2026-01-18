@@ -424,11 +424,12 @@
           <div
             class="flex items-center gap-3 text-sm md:text-base text-gray-600 dark:text-gray-400"
           >
-            <img
-              :src="recipe.author?.avatar_url || '/default-avatar.jpg'"
-              alt="Author"
-              class="w-8 h-8 rounded-full"
+            <UserAvatar
+              :avatar-url="recipe.author.avatar_url"
+              :alt="recipe.author.display_name"
+              class="w-8 h-8"
             />
+
             <span class="whitespace-nowrap"
               >by
               <NuxtLink

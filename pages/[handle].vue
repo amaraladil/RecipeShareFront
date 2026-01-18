@@ -209,16 +209,10 @@
     <div v-else-if="profile">
       <!-- Profile Info -->
       <div class="flex items-center gap-4 mb-6">
-        <Icon
-          v-if="!profile.avatar_url"
-          name="stash:user-avatar"
-          class="sm:w-53 w-48 sm:h-53 h-48 text-gray-500 dark:text-gray-400"
-        />
-        <img
-          v-else
-          :src="profile.avatar_url"
-          alt="Profile picture"
-          class="sm:w-53 w-48 sm:h-53 h-48 rounded-full object-cover border"
+        <UserAvatar
+          :avatar-url="profile.avatar_url"
+          :alt="profile.display_name"
+          class="sm:w-53 w-48 sm:h-53 h-48"
         />
         <div>
           <button v-if="isOwnProfile" class="btn" @click="openModal">

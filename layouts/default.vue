@@ -165,10 +165,10 @@
                 title="View Profile"
                 class="flex items-center w-full px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
-                <img
-                  :src="profile.avatar_url"
+                <UserAvatar
+                  :avatar-url="profile.avatar_url"
                   :alt="profile.display_name"
-                  class="w-8 h-8 z-10 rounded-full object-cover flex-shrink-0"
+                  class="w-8 h-8 z-10"
                 />
                 <div
                   :class="[
