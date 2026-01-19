@@ -1,3 +1,5 @@
+const { appName } = useAppSettings()
+
 export function pageTitle(title: string) {
-  return `${title} | THE RECIPE BOOK`;
+  return `${title} | ${appName}`
 }
