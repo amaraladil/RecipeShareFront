@@ -227,6 +227,7 @@
   import { PROFILE_BIO_MAX_LINES, PROFILE_BIO_MAX_LENGTH } from '~/constants'
 
   const { validateUsername, validateNickName, validateBio } = useValidation()
+  const { cacheAuthor } = useAuthorCache()
 
   const props = defineProps({
     show: Boolean,
@@ -616,6 +617,7 @@
 
       // Update profile state
       interface ProfileState {
+        id: string
         display_name: string
         avatar_url: string
         [key: string]: any
@@ -630,6 +632,8 @@
       if (profileState.value && updatedFields.avatar_url) {
         profileState.value.avatar_url = updatedFields.avatar_url
       }
+
+      cacheAuthor(props.user?.id, profileState.value)
 
       close()
     } catch (err: any) {
