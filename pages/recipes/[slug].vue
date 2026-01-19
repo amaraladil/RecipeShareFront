@@ -36,6 +36,7 @@
     removeTag
   } = useRecipeForm()
 
+  const { cacheAuthor } = useAuthorCache()
   const { errorNotif, successNotif } = useNotification()
 
   // Store selected image file for upload
@@ -123,6 +124,7 @@
       image: recipeData.value.image || '',
       status: recipeData.value.status || 1
     })
+    cacheAuthor(recipeData.value.author.id, recipeData.value.author)
   }
 
   // Toggle edit mode

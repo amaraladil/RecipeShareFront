@@ -317,6 +317,7 @@
   import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
   import type { Profile } from '~/types/profile'
   import type { User, Comment, Reply } from '~/types/comment'
+  const { fetchAuthor, fetchAuthors, cacheAuthor } = useAuthorCache()
   const { errorNotif, successNotif } = useNotification()
   const { openAuth } = useAuthModal()
 
@@ -391,32 +392,33 @@
           (comment: Comment) => comment.status !== 3
         )
 
-        // Fetch author info for each comment
-        const commentsWithAuthors = await Promise.all(
-          activeComments.map(async (comment: Comment) => {
-            if (comment.createdBy == '00000000-0000-0000-0000-000000000000') {
-              return {
-                ...comment,
-                author: null
-              }
-            }
-            const authorResponse = await fetchApi(
-              `/users/id/${comment.createdBy}`
-            )
-            return {
-              ...comment,
-              author: authorResponse,
-              showReplies: false,
-              replies: []
-            }
-          })
+        // Collect all unique user IDs
+        const userIds = activeComments.map((c: Comment) => c.createdBy)
+
+        // Batch fetch all authors at once
+        await fetchAuthors(userIds)
+
+        // Attach authors from cache
+        const commentsWithAuthors = activeComments.map((comment: Comment) => ({
+          ...comment,
+          author: fetchAuthor(comment.createdBy), // Already cached, returns immediately
+          showReplies: false,
+          replies: []
+        }))
+
+        // Resolve all author promises
+        const resolved = await Promise.all(
+          commentsWithAuthors.map(async (comment: Comment) => ({
+            ...comment,
+            author: await comment.author
+          }))
         )
 
         if (append) {
-          comments.value.push(...commentsWithAuthors)
+          comments.value.push(...resolved)
         } else {
-          comments.value = commentsWithAuthors
-          totalComments.value = commentsWithAuthors.length
+          comments.value = resolved
+          totalComments.value = resolved.length
         }
 
         hasMore.value = response.length === pageSize
@@ -450,12 +452,15 @@
       })
 
       if (response && profile.value) {
-        // Add new comment to the beginning of the list
         const author: User = {
           id: profile.value.id,
           display_name: profile.value.display_name,
           avatar_url: profile.value.avatar_url || ''
         }
+
+        // Cache the current user's info
+        cacheAuthor(profile.value.id, author)
+
         const newCommentWithAuthor = {
           ...response,
           author: author,
@@ -526,12 +531,15 @@
       })
 
       if (response && profile.value) {
-        // Add reply to the comment
         const author: User = {
           id: profile.value.id,
           display_name: profile.value.display_name,
           avatar_url: profile.value.avatar_url || ''
         }
+
+        // Cache the current user's info
+        cacheAuthor(profile.value.id, author)
+
         const newReply = {
           ...response,
           author: author,
@@ -575,39 +583,45 @@
       )
 
       if (response) {
-        // Filter out deleted replies
         const activeReplies = response.filter(
           (reply: Reply) => reply.status !== 3
         )
 
+        // Collect all unique user IDs (reply authors + replyTo authors)
+        const userIds = new Set<string>()
+        activeReplies.forEach((reply: Reply) => {
+          userIds.add(reply.createdBy)
+          if (reply.replyToId && reply.replyToId !== comment.id) {
+            const originalReply = response.find(
+              (r: Reply) => r.id === reply.replyToId
+            )
+            if (originalReply) {
+              userIds.add(originalReply.createdBy)
+            }
+          }
+        })
+
+        // Batch fetch all authors
+        await fetchAuthors(Array.from(userIds))
+
+        // Attach authors from cache
         const repliesWithAuthors = await Promise.all(
           activeReplies.map(async (reply: Reply) => {
-            if (reply.createdBy == '00000000-0000-0000-0000-000000000000') {
-              return {
-                ...reply,
-                author: null
-              }
-            }
-            const authorResponse = await fetchApi(
-              `/users/id/${reply.createdBy}`
-            )
+            const author = await fetchAuthor(reply.createdBy)
 
             let replyToUser = null
             if (reply.replyToId && reply.replyToId !== comment.id) {
-              // This is a reply to another reply, get the original reply author
               const originalReply = response.find(
                 (r: Reply) => r.id === reply.replyToId
               )
               if (originalReply) {
-                replyToUser = await fetchApi(
-                  `/users/id/${originalReply.createdBy}`
-                )
+                replyToUser = await fetchAuthor(originalReply.createdBy)
               }
             }
 
             return {
               ...reply,
-              author: authorResponse,
+              author,
               replyToUser
             }
           })
@@ -638,28 +652,41 @@
           (reply: Reply) => reply.status !== 3
         )
 
+        // Collect all unique user IDs (reply authors + replyTo authors)
+        const userIds = new Set<string>()
+        activeReplies.forEach((reply: Reply) => {
+          userIds.add(reply.createdBy)
+          if (reply.replyToId && reply.replyToId !== comment.id) {
+            const originalReply = response.find(
+              (r: Reply) => r.id === reply.replyToId
+            )
+            if (originalReply) {
+              userIds.add(originalReply.createdBy)
+            }
+          }
+        })
+
+        // Batch fetch all authors
+        await fetchAuthors(Array.from(userIds))
+
+        // Attach authors from cache
         const repliesWithAuthors = await Promise.all(
           activeReplies.map(async (reply: Reply) => {
-            const authorResponse = await fetchApi(
-              `/users/id/${reply.createdBy}`
-            )
+            const author = await fetchAuthor(reply.createdBy)
 
             let replyToUser = null
             if (reply.replyToId && reply.replyToId !== comment.id) {
-              // This is a reply to another reply, get the original reply author
               const originalReply = response.find(
                 (r: Reply) => r.id === reply.replyToId
               )
               if (originalReply) {
-                replyToUser = await fetchApi(
-                  `/users/id/${originalReply.createdBy}`
-                )
+                replyToUser = await fetchAuthor(originalReply.createdBy)
               }
             }
 
             return {
               ...reply,
-              author: authorResponse,
+              author,
               replyToUser
             }
           })
