@@ -38,19 +38,6 @@
               :alt="'Avatar preview'"
               class="w-full h-full"
             />
-            <!-- <img
-              v-if="avatarPreview || form.avatar_url"
-              :src="avatarPreview || form.avatar_url"
-              alt="Avatar preview"
-              class="w-full h-full object-cover"
-            />
-            <div v-else class="w-full h-full flex items-center justify-center">
-              <Icon
-                name="heroicons:user-circle"
-                class="w-full h-full text-gray-400"
-              />
-            </div> -->
-
             <!-- Overlay on hover -->
             <div
               class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"

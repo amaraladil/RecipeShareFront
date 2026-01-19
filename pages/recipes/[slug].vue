@@ -206,6 +206,9 @@
         recipe.value = response
         toggleEditMode()
         clearNuxtData(`recipe-${slug}`)
+        if (recipe.value.slug !== slug) {
+          router.push(`/recipes/${recipe.value.slug}`)
+        }
         successNotif('Recipe updated successfully')
         console.log('Recipe updated successfully')
       }
