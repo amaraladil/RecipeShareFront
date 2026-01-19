@@ -449,12 +449,16 @@
         })
       })
 
-      if (response) {
+      if (response && profile.value) {
         // Add new comment to the beginning of the list
-        const authorResponse = await fetchApi(`/users/id/${response.createdBy}`)
+        const author: User = {
+          id: profile.value.id,
+          display_name: profile.value.display_name,
+          avatar_url: profile.value.avatar_url || ''
+        }
         const newCommentWithAuthor = {
           ...response,
-          author: authorResponse,
+          author: author,
           showReplies: false,
           replies: []
         }
@@ -521,12 +525,16 @@
         })
       })
 
-      if (response) {
+      if (response && profile.value) {
         // Add reply to the comment
-        const authorResponse = await fetchApi(`/users/id/${response.createdBy}`)
+        const author: User = {
+          id: profile.value.id,
+          display_name: profile.value.display_name,
+          avatar_url: profile.value.avatar_url || ''
+        }
         const newReply = {
           ...response,
-          author: authorResponse,
+          author: author,
           replyToUser: replyToUser.value
         }
 
