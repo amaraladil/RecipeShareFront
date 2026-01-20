@@ -215,7 +215,7 @@
           class="sm:w-53 w-48 sm:h-53 h-48"
         />
         <div>
-          <button v-if="isOwnProfile" class="btn" @click="openModal">
+          <button v-if="isOwnProfile" class="btnEdit" @click="openModal">
             Edit Profile
           </button>
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
@@ -225,34 +225,22 @@
       </div>
 
       <!-- Tabs -->
-      <div class="tabs flex gap-2 mb-4">
+      <div class="tabs flex mb-4">
         <button
           @click="activeTab = 'posts'"
-          :class="
-            activeTab === 'posts'
-              ? 'bg-blue-600 text-white font-bold px-4 py-2 rounded'
-              : 'bg-gray-200 text-gray-700 px-4 py-2 rounded'
-          "
+          :class="activeTab === 'posts' ? 'activeTab' : ''"
         >
           Posts ({{ posts.length }})
         </button>
         <button
           @click="activeTab = 'liked'"
-          :class="
-            activeTab === 'liked'
-              ? 'bg-blue-600 text-white font-bold px-4 py-2 rounded'
-              : 'bg-gray-200 text-gray-700 px-4 py-2 rounded'
-          "
+          :class="activeTab === 'liked' ? 'activeTab' : ''"
         >
           Liked ({{ liked.length }})
         </button>
         <button
           @click="activeTab = 'saved'"
-          :class="
-            activeTab === 'saved'
-              ? 'bg-blue-600 text-white font-bold px-4 py-2 rounded'
-              : 'bg-gray-200 text-gray-700 px-4 py-2 rounded'
-          "
+          :class="activeTab === 'saved' ? 'activeTab' : ''"
         >
           Saved ({{ saved.length }})
         </button>
@@ -337,6 +325,20 @@
 
   .recipes-container {
     min-height: 400px;
+  }
+
+  .tabs button {
+    @apply cursor-pointer font-bold text-gray-400 dark:text-gray-600 bg-transparent border-b-transparent inline-block px-4 py-2 border-b-2;
+    &:hover {
+      @apply border-b-gray-600 dark:border-b-gray-300;
+    }
+    &.activeTab {
+      @apply border-b-gray-600 dark:border-b-gray-300 text-gray-600 dark:text-gray-300;
+    }
+  }
+
+  .btnEdit {
+    @apply cursor-pointer bg-blue-600 text-white font-semibold px-4 py-2 rounded-md hover:bg-blue-500;
   }
 
   .load-more-trigger {

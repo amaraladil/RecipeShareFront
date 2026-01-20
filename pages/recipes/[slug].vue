@@ -593,8 +593,6 @@
           placeholder="Enter recipe description"
         ></textarea>
       </div>
-
-      <!-- Tags Component -->
       <RecipeTagsInput
         :tags="isEditMode ? form.tags : recipe.tags || []"
         :editable="isEditMode"
@@ -602,7 +600,6 @@
         @remove="removeTag"
       />
 
-      <!-- Ingredients Component -->
       <RecipeIngredientsList
         :ingredients="isEditMode ? form.ingredients : recipe.ingredients || []"
         :editable="isEditMode"
@@ -611,7 +608,6 @@
         @update="updateIngredient"
       />
 
-      <!-- Instructions Component -->
       <RecipeStepsList
         :steps="isEditMode ? form.steps : recipe.steps || []"
         :editable="isEditMode"
