@@ -224,28 +224,31 @@
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs flex mb-4">
-        <button
-          @click="activeTab = 'posts'"
-          :class="activeTab === 'posts' ? 'activeTab' : ''"
-        >
-          Posts ({{ posts.length }})
-        </button>
-        <button
-          @click="activeTab = 'liked'"
-          :class="activeTab === 'liked' ? 'activeTab' : ''"
-        >
-          Liked ({{ liked.length }})
-        </button>
-        <button
-          @click="activeTab = 'saved'"
-          :class="activeTab === 'saved' ? 'activeTab' : ''"
-        >
-          Saved ({{ saved.length }})
-        </button>
-        <div class="bg-gray-100 p-2 mb-4 text-xs rounded" v-if="isDev">
-          Debug: {{ debugInfo }}
+      <div
+        class="border-b border-default mb-4 border-b-gray-300 dark:border-b-gray-600"
+      >
+        <div class="tabs flex">
+          <button
+            @click="activeTab = 'posts'"
+            :class="activeTab === 'posts' ? 'activeTab' : ''"
+          >
+            Posts ({{ posts.length }})
+          </button>
+          <button
+            @click="activeTab = 'liked'"
+            :class="activeTab === 'liked' ? 'activeTab' : ''"
+          >
+            Liked ({{ liked.length }})
+          </button>
+          <button
+            @click="activeTab = 'saved'"
+            :class="activeTab === 'saved' ? 'activeTab' : ''"
+          >
+            Saved ({{ saved.length }})
+          </button>
+          <div class="bg-gray-100 p-2 mb-4 text-xs rounded" v-if="isDev">
+            Debug: {{ debugInfo }}
+          </div>
         </div>
       </div>
 
