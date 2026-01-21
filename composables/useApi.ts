@@ -26,14 +26,17 @@ export function useApi<T = any>() {
       }
     }
 
+    // Extract headers from options to merge with auth headers
+    const { headers: customHeaders, ...restOptions } = options
+
     return await $fetch(url, {
       baseURL: config.public.apiBase,
+      ...restOptions, // Spread first so method, body, etc. are at top level
       headers: {
         Authorization: accessToken ? `Bearer ${accessToken}` : '',
         'x-refresh-token': refreshToken || '',
-        ...options.headers
-      },
-      ...options
+        ...customHeaders // Then merge custom headers
+      }
     })
   }
 }
