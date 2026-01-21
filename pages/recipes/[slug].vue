@@ -600,20 +600,17 @@
         @remove="removeTag"
       />
 
-      <RecipeIngredientsList
+      <RecipeSwipeableTabs
         :ingredients="isEditMode ? form.ingredients : recipe.ingredients || []"
-        :editable="isEditMode"
-        @add="addIngredient"
-        @remove="removeIngredient"
-        @update="updateIngredient"
-      />
-
-      <RecipeStepsList
         :steps="isEditMode ? form.steps : recipe.steps || []"
         :editable="isEditMode"
-        @add="addStep"
-        @remove="removeStep"
-        @update="updateStep"
+        :show-swipe-hint="true"
+        @add-ingredient="addIngredient"
+        @remove-ingredient="removeIngredient"
+        @update-ingredient="updateIngredient"
+        @add-step="addStep"
+        @remove-step="removeStep"
+        @update-step="updateStep"
       />
 
       <!-- Comments Section -->
