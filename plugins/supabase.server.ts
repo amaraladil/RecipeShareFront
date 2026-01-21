@@ -4,6 +4,8 @@ import { parseCookies, setCookie, deleteCookie } from 'h3'
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig()
   const event = nuxtApp.ssrContext?.event
+
+  // Only run on server-side
   if (!event) return
 
   const cookies = parseCookies(event)
@@ -14,37 +16,66 @@ export default defineNuxtPlugin((nuxtApp) => {
     {
       cookies: {
         get: (key) => cookies[key],
-        set: (key, value, options) =>
+        set: (key, value, options) => {
           setCookie(event, key, value, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
+            maxAge: 60 * 60 * 24 * 30, // 30 days to match refresh token
             ...options
-          }),
-        remove: (key, options) => deleteCookie(event, key, options)
+          })
+        },
+        remove: (key, options) => {
+          deleteCookie(event, key, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            ...options
+          })
+        }
       }
     }
   )
 
-  // Check session validity and refresh if needed
+  // Check and refresh session if needed during SSR
   nuxtApp.hook('app:rendered', async () => {
-    const {
-      data: { session },
-      error
-    } = await supabase.auth.getSession()
+    try {
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession()
 
-    if (session?.expires_at && session.refresh_token) {
-      const now = Math.floor(Date.now() / 1000)
-      const expiresSoon = session.expires_at - now < 36000
-
-      if (expiresSoon) {
-        await supabase.auth.refreshSession()
+      if (error) {
+        console.error('Session error:', error)
+        await supabase.auth.signOut()
+        return
       }
-    }
 
-    if (error || !session) {
-      await supabase.auth.signOut()
+      if (!session) {
+        return
+      }
+
+      // Check if token expires within 1 hour
+      const expiresAt = session.expires_at
+      if (expiresAt) {
+        const now = Math.floor(Date.now() / 1000)
+        const expiresIn = expiresAt - now
+
+        // Refresh if expiring within 1 hour
+        if (expiresIn < 3600) {
+          console.log('Token expiring soon, refreshing during SSR...')
+          const { error: refreshError } = await supabase.auth.refreshSession()
+
+          if (refreshError) {
+            console.error('Token refresh failed:', refreshError)
+            await supabase.auth.signOut()
+          }
+        }
+      }
+    } catch (err) {
+      console.error('SSR auth check failed:', err)
     }
   })
 
