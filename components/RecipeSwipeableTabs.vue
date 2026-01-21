@@ -25,7 +25,7 @@
     >
       <div
         class="flex transition-transform duration-300 ease-out"
-        :style="{ transform: `translateX(${translateX}px)` }"
+        :style="{ transform: `translateX(${translateXPercent})` }"
       >
         <div class="w-full shrink-0 px-2.5">
           <RecipeIngredientsList
@@ -97,20 +97,25 @@
   const isDragging = ref(false)
   const containerWidth = ref(0)
 
-  const translateX = computed(() => {
-    const baseTranslate =
-      activeTab.value === 'ingredients' ? 0 : -containerWidth.value
+  // Use percentage-based translation instead of pixel-based
+  const translateXPercent = computed(() => {
+    const baseTranslate = activeTab.value === 'ingredients' ? '0%' : '-100%'
 
-    if (isDragging.value) {
+    if (isDragging.value && containerWidth.value > 0) {
       const dragDistance = touchCurrentX.value - touchStartX.value
+      const dragPercentage = (dragDistance / containerWidth.value) * 100
+
+      // Calculate base percentage
+      const basePercent = activeTab.value === 'ingredients' ? 0 : -100
+
       // Add resistance at the edges
       if (
         (activeTab.value === 'ingredients' && dragDistance > 0) ||
         (activeTab.value === 'instructions' && dragDistance < 0)
       ) {
-        return baseTranslate + dragDistance * 0.3
+        return `${basePercent + dragPercentage * 0.3}%`
       }
-      return baseTranslate + dragDistance
+      return `${basePercent + dragPercentage}%`
     }
 
     return baseTranslate
@@ -124,6 +129,7 @@
 
   // Touch handlers
   const handleTouchStart = (e: TouchEvent) => {
+    updateContainerWidth() // Update width at start of drag
     touchStartX.value = touchCurrentX.value = e.touches[0].clientX
     isDragging.value = true
   }
@@ -156,6 +162,7 @@
 
   // Mouse handlers (for desktop drag support)
   const handleMouseDown = (e: MouseEvent) => {
+    updateContainerWidth() // Update width at start of drag
     touchStartX.value = e.clientX
     touchCurrentX.value = e.clientX
     isDragging.value = true
