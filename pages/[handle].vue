@@ -235,12 +235,14 @@
             Posts ({{ posts.length }})
           </button>
           <button
+            v-if="user && isOwnProfile"
             @click="activeTab = 'liked'"
             :class="activeTab === 'liked' ? 'activeTab' : ''"
           >
             Liked ({{ liked.length }})
           </button>
           <button
+            v-if="user && isOwnProfile"
             @click="activeTab = 'saved'"
             :class="activeTab === 'saved' ? 'activeTab' : ''"
           >
@@ -274,8 +276,8 @@
               activeTab === 'posts'
                 ? 'No recipes posted yet'
                 : activeTab === 'liked'
-                ? 'No liked recipes yet'
-                : 'No saved recipes yet'
+                  ? 'No liked recipes yet'
+                  : 'No saved recipes yet'
             }}
           </div>
         </div>
@@ -292,7 +294,10 @@
 
           <!-- No more items indicator -->
           <div
-            v-else-if="currentRecipes.length != 0 && !hasMore[activeTab as 'posts' | 'liked' | 'saved']"
+            v-else-if="
+              currentRecipes.length != 0 &&
+              !hasMore[activeTab as 'posts' | 'liked' | 'saved']
+            "
             class="text-center text-gray-500"
           >
             <div class="text-sm">No more recipes to load</div>

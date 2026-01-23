@@ -38,7 +38,6 @@ export function useApi<T = any>() {
             continue // Retry the request
           } else {
             // Refresh failed, redirect to login
-            console.error('Token refresh failed, logging out...')
             await handleAuthFailure()
             throw new Error('Authentication failed. Please log in again.')
           }
@@ -81,14 +80,12 @@ export function useApi<T = any>() {
         } else {
           accessToken = session.access_token
         }
-        console.log('Access token from client session:', accessToken)
       }
     } else if (import.meta.server) {
       const event = useRequestEvent()
       if (event) {
         const cookies = parseCookies(event)
         accessToken = cookies[config.public.supabaseCookieName] || undefined
-        console.log('Access token from cookies (SSR):', accessToken)
       }
     }
 
