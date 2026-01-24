@@ -235,14 +235,14 @@
             Posts ({{ posts.length }})
           </button>
           <button
-            v-if="user && isOwnProfile"
+            v-if="isOwnProfile"
             @click="activeTab = 'liked'"
             :class="activeTab === 'liked' ? 'activeTab' : ''"
           >
             Liked ({{ liked.length }})
           </button>
           <button
-            v-if="user && isOwnProfile"
+            v-if="isOwnProfile"
             @click="activeTab = 'saved'"
             :class="activeTab === 'saved' ? 'activeTab' : ''"
           >
