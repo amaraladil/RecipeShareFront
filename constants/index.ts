@@ -1,4 +1,3 @@
-export const API_BASE = '/api'
 export const PROFILE_BIO_MAX_LENGTH = 80
 export const PROFILE_BIO_MAX_LINES = 4
 export const PROFILE_USERNAME_MAX_LENGTH = 24
