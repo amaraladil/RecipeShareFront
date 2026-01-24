@@ -3,7 +3,7 @@
   <div class="bg-white shadow-md rounded-xl overflow-hidden mb-4">
     <div class="relative">
       <img
-        :src="recipe.image || '/default-recipe.jpg'"
+        :src="recipe.image || ''"
         alt="Recipe image"
         class="w-full h-48 object-cover"
       />
