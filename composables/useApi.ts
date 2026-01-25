@@ -85,7 +85,39 @@ export function useApi<T = any>() {
       const event = useRequestEvent()
       if (event) {
         const cookies = parseCookies(event)
-        accessToken = cookies[config.public.supabaseCookieName] || undefined
+
+        // Find the base Supabase auth cookie name
+        // Format: sb-{project-ref}-auth-token or sb-{project-ref}-auth-token.0
+        const supabaseAuthCookie = Object.keys(cookies).find((key) =>
+          key.includes(config.public.supabaseCookieName)
+        )
+
+        if (supabaseAuthCookie) {
+          try {
+            let cookieValue = cookies[supabaseAuthCookie]
+
+            if (supabaseAuthCookie.endsWith('.0')) {
+              for (let i = 1; i <= 4; i++) {
+                const chunkKey = supabaseAuthCookie.replace('.0', `.${i}`)
+                cookieValue += cookies[chunkKey] || ''
+              }
+            }
+            // Remove 'base64-' prefix if present
+            const base64Data = cookieValue.startsWith('base64-')
+              ? cookieValue.substring(7)
+              : cookieValue
+
+            // Decode base64 to get the session JSON
+            const sessionJson = Buffer.from(base64Data, 'base64').toString(
+              'utf-8'
+            )
+            const session = JSON.parse(sessionJson)
+
+            accessToken = session.access_token
+          } catch (error) {
+            console.error('Error parsing Supabase session cookie:', error)
+          }
+        }
       }
     }
 
