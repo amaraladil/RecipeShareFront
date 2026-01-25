@@ -86,7 +86,7 @@
   let intersectionObserver: IntersectionObserver | null = null
 
   onMounted(async () => {
-    await fetchPosts()
+    await fetchPosts(true)
     setupIntersectionObserver()
   })
 

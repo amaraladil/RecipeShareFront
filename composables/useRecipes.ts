@@ -3,6 +3,7 @@ import { useApi } from './useApi'
 export function useRecipes(handle: string, isOwner: boolean) {
   console.log('useRecipes initialized with handle:', handle)
   const fetchApi = useApi()
+  const { getCachedList, setCachedList, invalidateList } = useRecipeListCache()
 
   const posts = ref<any[]>([])
   const liked = ref<any[]>([])
@@ -33,12 +34,21 @@ export function useRecipes(handle: string, isOwner: boolean) {
     }
 
     window.addEventListener('resize', updateItemsPerPage)
-
-    // Cleanup function will be handled by the component
   }
 
   const fetchPosts = async (reset = false) => {
     if (isLoading.value || (!hasMorePosts.value && !reset)) return
+
+    // Try to load from cache first
+    if (reset) {
+      const cachedData = getCachedList(handle, 'posts')
+      if (cachedData) {
+        posts.value = cachedData.recipes
+        hasMorePosts.value = cachedData.hasMore
+        console.log('Loaded posts from cache:', posts.value.length)
+        return
+      }
+    }
 
     isLoading.value = true
 
@@ -64,8 +74,10 @@ export function useRecipes(handle: string, isOwner: boolean) {
           posts.value = [...posts.value, ...response]
         }
 
-        // Check if we have more items
         hasMorePosts.value = response.length === itemsPerPage.value
+        console.log('Response posts:', hasMorePosts.value)
+        // Cache the results
+        setCachedList(handle, 'posts', response, skip, hasMorePosts.value)
 
         console.log(
           'Fetched posts:',
@@ -89,6 +101,17 @@ export function useRecipes(handle: string, isOwner: boolean) {
   const fetchLiked = async (reset = false) => {
     if (isLoading.value || (!hasMoreLiked.value && !reset)) return
 
+    // Try to load from cache first
+    if (reset) {
+      const cachedData = getCachedList(handle, 'liked')
+      if (cachedData) {
+        liked.value = cachedData.recipes
+        hasMoreLiked.value = cachedData.hasMore
+        console.log('Loaded liked from cache:', liked.value.length)
+        return
+      }
+    }
+
     isLoading.value = true
 
     try {
@@ -107,13 +130,18 @@ export function useRecipes(handle: string, isOwner: boolean) {
       })
 
       if (response && Array.isArray(response)) {
+        const hasMore = response.length === itemsPerPage.value
+
         if (reset) {
           liked.value = response
         } else {
           liked.value = [...liked.value, ...response]
         }
 
-        hasMoreLiked.value = response.length === itemsPerPage.value
+        hasMoreLiked.value = hasMore
+
+        // Cache the results
+        setCachedList(handle, 'liked', response, skip, hasMore)
 
         console.log(
           'Fetched liked:',
@@ -137,6 +165,17 @@ export function useRecipes(handle: string, isOwner: boolean) {
   const fetchSaved = async (reset = false) => {
     if (isLoading.value || (!hasMoreSaved.value && !reset)) return
 
+    // Try to load from cache first
+    if (reset) {
+      const cachedData = getCachedList(handle, 'saved')
+      if (cachedData) {
+        saved.value = cachedData.recipes
+        hasMoreSaved.value = cachedData.hasMore
+        console.log('Loaded saved from cache:', saved.value.length)
+        return
+      }
+    }
+
     isLoading.value = true
 
     try {
@@ -155,13 +194,18 @@ export function useRecipes(handle: string, isOwner: boolean) {
       })
 
       if (response && Array.isArray(response)) {
+        const hasMore = response.length === itemsPerPage.value
+
         if (reset) {
           saved.value = response
         } else {
           saved.value = [...saved.value, ...response]
         }
 
-        hasMoreSaved.value = response.length === itemsPerPage.value
+        hasMoreSaved.value = hasMore
+
+        // Cache the results
+        setCachedList(handle, 'saved', response, skip, hasMore)
 
         console.log(
           'Fetched saved recipes:',
@@ -205,6 +249,9 @@ export function useRecipes(handle: string, isOwner: boolean) {
   })
 
   const resetTab = async (tab: 'posts' | 'liked' | 'saved') => {
+    // Invalidate cache when explicitly resetting
+    invalidateList(handle, tab)
+
     switch (tab) {
       case 'posts':
         await fetchPosts(true)
