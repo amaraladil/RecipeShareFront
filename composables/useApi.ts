@@ -99,7 +99,14 @@ export function useApi<T = any>() {
             if (supabaseAuthCookie.endsWith('.0')) {
               for (let i = 1; i <= 4; i++) {
                 const chunkKey = supabaseAuthCookie.replace('.0', `.${i}`)
-                cookieValue += cookies[chunkKey] || ''
+
+                const chunkValue = cookies[chunkKey]
+
+                if (!chunkValue) {
+                  break
+                }
+
+                cookieValue += chunkValue
               }
             }
             // Remove 'base64-' prefix if present
