@@ -69,8 +69,8 @@
         editable
           ? 'h-64 md:h-96 cursor-pointer group hover:opacity-90 transition-opacity'
           : displayImage
-          ? 'h-64 md:h-96 cursor-zoom-in'
-          : 'h-64 md:h-96'
+            ? 'h-64 md:h-96 cursor-zoom-in'
+            : 'h-64 md:h-96'
       ]"
     >
       <!-- Image Display -->
@@ -78,15 +78,15 @@
         v-if="displayImage"
         :src="displayImage"
         :alt="title"
-        class="w-full h-full object-cover"
+        class="size-full object-cover"
       />
 
       <!-- Empty State -->
       <div
         v-else
-        class="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"
+        class="size-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500"
       >
-        <UIcon name="ic:outline-image" class="size-16 mb-2" />
+        <Icon name="ic:outline-image" class="size-16 mb-2" />
         <p v-if="editable" class="text-sm">Click to upload image</p>
         <p v-else class="text-sm">No image available</p>
       </div>
@@ -107,7 +107,7 @@
         v-if="!editable && displayImage"
         class="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100"
       >
-        <UIcon
+        <Icon
           name="ic:outline-zoom-in"
           class="size-8 text-white drop-shadow-lg"
         />
@@ -119,7 +119,7 @@
         class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center"
       >
         <div
-          class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-3"
+          class="size-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-3"
         ></div>
         <p class="text-white text-sm font-medium">Compressing image...</p>
       </div>

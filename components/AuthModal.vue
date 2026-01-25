@@ -12,7 +12,7 @@
       >
         <Icon
           name="heroicons:x-mark"
-          class="w-5 h-5 text-gray-500 dark:text-gray-400"
+          class="size-5 text-gray-500 dark:text-gray-400"
         />
       </button>
 
@@ -35,7 +35,7 @@
             :disabled="loading"
             class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+            <svg class="size-5 mr-3" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -62,7 +62,7 @@
             :disabled="loading"
             class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Icon name="simple-icons:apple" class="w-5 h-5 mr-3" />
+            <Icon name="simple-icons:apple" class="size-5 mr-3" />
             Continue with Apple
           </button>
         </div>
@@ -153,7 +153,7 @@
               >
                 <Icon
                   :name="showPassword ? 'heroicons:eye-slash' : 'heroicons:eye'"
-                  class="w-5 h-5"
+                  class="size-5"
                 />
               </button>
             </div>
@@ -179,7 +179,7 @@
           >
             <div
               v-if="loading"
-              class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+              class="size-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
             ></div>
             {{ isLogin ? 'Sign in' : 'Create account' }}
           </button>
@@ -341,6 +341,8 @@
   }
 
   .animate-in {
-    animation: fade-in 0.2s ease-out, zoom-in 0.2s ease-out;
+    animation:
+      fade-in 0.2s ease-out,
+      zoom-in 0.2s ease-out;
   }
 </style>

@@ -11,7 +11,7 @@
     >
       <div class="flex flex-col h-full p-3">
         <div :class="['flex items-center ml-2']">
-          <img class="w-8 h-8 mr-2" src="/LogoRecipeShare.png" />
+          <img class="size-8 mr-2" src="/LogoRecipeShare.png" />
           <h1
             :class="[
               'text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-200 pb-2',
@@ -32,7 +32,7 @@
           >
             <Icon
               name="heroicons:bars-3"
-              class="w-5 h-5 text-gray-600 dark:text-gray-300"
+              class="size-5 text-gray-600 dark:text-gray-300"
             />
           </button>
           <template v-if="!userLoading">
@@ -41,7 +41,7 @@
               to="/"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
-              <Icon name="heroicons:home" class="w-5 h-5 flex-shrink-0" />
+              <Icon name="heroicons:home" class="size-5 flex-shrink-0" />
               <span
                 :class="[
                   'ml-3 transition-all duration-200',
@@ -58,7 +58,7 @@
               to="/explore"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
-              <Icon name="heroicons:compass" class="w-5 h-5 flex-shrink-0" />
+              <Icon name="heroicons:compass" class="size-5 flex-shrink-0" />
               <span
                 :class="[
                   'ml-3 transition-all duration-200',
@@ -104,7 +104,7 @@
                     class="w-5 h-5 flex-shrink-0"
                   />
                   <span
-                    class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center"
+                    class="absolute -top-1 -right-1 size-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center"
                   >
                     5
                   </span>
@@ -143,7 +143,7 @@
             >
               <Icon
                 name="heroicons:arrow-right-on-rectangle"
-                class="w-5 h-5 flex-shrink-0"
+                class="size-5 flex-shrink-0"
               />
               <span
                 :class="[

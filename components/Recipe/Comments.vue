@@ -11,7 +11,7 @@
           <UserAvatar
             :avatar-url="profile.avatar_url"
             :alt="profile.display_name"
-            class="w-8 h-8"
+            class="size-8"
           />
           <div class="flex-1">
             <textarea
@@ -62,7 +62,7 @@
           <UserAvatar
             :avatar-url="comment.author?.avatar_url"
             :alt="comment.author?.display_name"
-            class="w-8 h-8"
+            class="size-8"
           />
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
@@ -100,7 +100,7 @@
                       ? 'ic:baseline-favorite'
                       : 'ic:baseline-favorite-border'
                   "
-                  class="w-4 h-4"
+                  class="size-4"
                 />
                 {{ comment.likeCount }}
               </button>
@@ -141,7 +141,7 @@
                 <UserAvatar
                   :avatar-url="profile?.avatar_url"
                   :alt="profile?.display_name"
-                  class="w-6 h-6"
+                  class="size-6"
                 />
                 <div class="flex-1">
                   <div v-if="replyToUser" class="text-sm text-gray-600 mb-1">
@@ -195,7 +195,7 @@
                 <UserAvatar
                   :avatar-url="reply.author?.avatar_url"
                   :alt="reply.author?.display_name"
-                  class="w-6 h-6"
+                  class="size-6"
                 />
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
@@ -245,7 +245,7 @@
                             ? 'ic:baseline-favorite'
                             : 'ic:baseline-favorite-border'
                         "
-                        class="w-3 h-3"
+                        class="size-3"
                       />
                       {{ reply.likeCount }}
                     </button>
@@ -294,7 +294,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center py-8">
       <div
-        class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+        class="animate-spin rounded-full size-8 border-b-2 border-blue-600"
       ></div>
     </div>
 

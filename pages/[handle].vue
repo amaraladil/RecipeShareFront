@@ -212,7 +212,7 @@
         <UserAvatar
           :avatar-url="profile.avatar_url"
           :alt="profile.display_name"
-          class="sm:w-53 w-48 sm:h-53 h-48"
+          class="sm:size-53 size-48"
         />
         <div>
           <button v-if="isOwnProfile" class="btnEdit" @click="openModal">

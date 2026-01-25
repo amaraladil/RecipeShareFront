@@ -39,7 +39,7 @@
     <ol class="space-y-3">
       <li v-for="(step, index) in steps" :key="index" class="flex gap-4">
         <span
-          class="flex-shrink-0 w-6 h-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center mt-1"
+          class="flex-shrink-0 size-6 bg-blue-600 text-white text-sm rounded-full flex items-center justify-center mt-1"
         >
           {{ index + 1 }}
         </span>

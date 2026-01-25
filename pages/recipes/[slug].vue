@@ -366,7 +366,7 @@
     <!-- Loading State -->
     <div v-if="pending" class="flex justify-center items-center min-h-[50vh]">
       <div
-        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+        class="animate-spin rounded-full size-12 border-b-2 border-blue-600"
       ></div>
       <span class="ml-3 text-lg text-gray-600">Loading recipe...</span>
     </div>
@@ -432,7 +432,7 @@
             <UserAvatar
               :avatar-url="recipe.author.avatar_url"
               :alt="recipe.author.display_name"
-              class="w-8 h-8"
+              class="size-8"
             />
 
             <span class="whitespace-nowrap"
@@ -637,7 +637,7 @@
           <template #fallback>
             <div class="flex justify-center items-center py-8">
               <div
-                class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                class="animate-spin rounded-full size-8 border-b-2 border-blue-600"
               ></div>
               <span class="ml-3 text-gray-600">Loading comments...</span>
             </div>
@@ -663,7 +663,7 @@
   }
 
   .like {
-    @apply relative after:absolute after:w-fit after:h-fit  after:text-[15px] dark:after:text-white after:text-gray-800 after:opacity-0 after:invisible after:transition after:duration-200 after:ease-linear after:top-[115%];
+    @apply relative after:absolute after:size-fit  after:text-[15px] dark:after:text-white after:text-gray-800 after:opacity-0 after:invisible after:transition after:duration-200 after:ease-linear after:top-[115%];
     &::after {
       font-family:
         'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',

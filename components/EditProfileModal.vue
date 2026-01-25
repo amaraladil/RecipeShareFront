@@ -42,7 +42,7 @@
             <div
               class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
             >
-              <Icon name="heroicons:camera" class="w-6 h-6 text-white" />
+              <Icon name="heroicons:camera" class="size-6 text-white" />
             </div>
           </div>
 
@@ -52,7 +52,7 @@
             class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
           >
             <div
-              class="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
+              class="size-6 border-2 border-white border-t-transparent rounded-full animate-spin"
             ></div>
           </div>
         </div>
@@ -213,7 +213,7 @@
         >
           <div
             v-if="saving"
-            class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+            class="size-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
           ></div>
           {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>

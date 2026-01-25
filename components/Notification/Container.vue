@@ -19,7 +19,7 @@
         <Icon
           :name="notificationIcons[notification.type]"
           :class="[
-            'w-5 h-5 flex-shrink-0 mt-0.5',
+            'size-5 flex-shrink-0 mt-0.5',
             iconClasses[notification.type]
           ]"
         />
@@ -32,7 +32,7 @@
           @click="remove(notification.id)"
           class="flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
         >
-          <Icon name="heroicons:x-mark" class="w-5 h-5" />
+          <Icon name="heroicons:x-mark" class="size-5" />
         </button>
 
         <!-- Progress Bar -->

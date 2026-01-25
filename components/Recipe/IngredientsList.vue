@@ -58,7 +58,7 @@
         <!-- View Mode -->
         <template v-if="!editable">
           <span
-            class="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"
+            class="size-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"
           ></span>
           <span class="text-gray-700 dark:text-gray-300 flex gap-2 flex-wrap">
             <span>{{ ingredient.name }}</span>
