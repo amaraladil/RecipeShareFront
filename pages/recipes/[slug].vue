@@ -510,7 +510,14 @@
                 !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
               ]"
             />
-            <div class="flex items-center gap-1">
+            <div
+              :class="[
+                'flex like items-center gap-1',
+                recipe.is_liked
+                  ? `after:content-['unlike'] `
+                  : `after:content-['like'] `
+              ]"
+            >
               <UIcon
                 :name="
                   recipe.is_liked
@@ -653,5 +660,21 @@
   @import '@/assets/styles/main.css';
   .btn {
     @apply px-4 py-2 rounded font-medium transition-colors duration-200;
+  }
+
+  .like {
+    @apply relative after:absolute after:w-fit after:h-fit  after:text-[15px] dark:after:text-white after:text-gray-800 after:opacity-0 after:invisible after:transition after:duration-200 after:ease-linear after:top-[115%];
+    &::after {
+      font-family:
+        'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+        'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+    &:hover::after {
+      @apply visible opacity-100 z-10 top-[105%]
+      /* visibility: visible;
+      opacity: 1;
+      z-index: 10;
+      top: 105%; */;
+    }
   }
 </style>
