@@ -1,8 +1,8 @@
 <script setup lang="ts">
   interface Props {
-    prepTime: number
-    cookTime: number
-    servings: number
+    prepTime?: number
+    cookTime?: number
+    servings?: number
     editable?: boolean
   }
 
@@ -16,7 +16,9 @@
     'update:servings': [value: number]
   }>()
 
-  const totalTime = computed(() => props.prepTime + props.cookTime)
+  const totalTime = computed(
+    () => (props.prepTime || 0) + (props.cookTime || 0)
+  )
 </script>
 
 <template>
