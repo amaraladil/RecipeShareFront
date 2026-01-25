@@ -7,14 +7,22 @@
         alt="Recipe image"
         class="w-full h-48 object-cover"
       />
-
+      <div
+        v-if="recipe.status == 2"
+        class="absolute mt-1 top-2 left-1 size-10 backdrop-blur-sm bg-blue-800/50 rounded-full flex items-center justify-center"
+      >
+        <Icon
+          name="bi:eye-slash"
+          class="size-7 text-gray-100 backdrop-blur-2xl"
+        />
+      </div>
       <div class="absolute mt-1 top-2 right-1 flex gap-1">
-        <UIcon
+        <Icon
           v-if="recipe.is_saved"
           name="ic:outline-bookmark"
           class="size-5 text-gray-900/90 dark:text-gray-300"
         />
-        <UIcon
+        <Icon
           v-if="recipe.is_liked"
           name="ic:outline-favorite"
           class="size-5 text-red-600"
