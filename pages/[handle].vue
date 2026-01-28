@@ -208,20 +208,24 @@
     <div v-if="profileLoading" class="mb-4">Loading profile...</div>
     <div v-else-if="profile">
       <!-- Profile Info -->
-      <div class="flex items-center gap-4 mb-6">
+      <div class="flex items-start gap-4 mb-6">
         <UserAvatar
           :avatar-url="profile.avatar_url"
           :alt="profile.display_name"
           class="sm:size-53 size-48"
         />
-        <div>
+        <div class="mt-1">
           <button v-if="isOwnProfile" class="btnEdit" @click="openModal">
             Edit Profile
           </button>
           <div v-else class="py-5"></div>
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
-          <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
-          <div class="text-gray-500 whitespace-pre-line">{{ profile.bio }}</div>
+          <div class="text-lg text-gray-700 dark:text-gray-300">
+            {{ profile.nick_name }}
+          </div>
+          <div class="text-gray-500 dark:text-gray-400 whitespace-pre-line">
+            {{ profile.bio }}
+          </div>
         </div>
       </div>
 
