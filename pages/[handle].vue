@@ -218,6 +218,7 @@
           <button v-if="isOwnProfile" class="btnEdit" @click="openModal">
             Edit Profile
           </button>
+          <div v-else class="py-5"></div>
           <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
           <div class="text-lg text-gray-700">{{ profile.nick_name }}</div>
           <div class="text-gray-500 whitespace-pre-line">{{ profile.bio }}</div>
@@ -234,20 +235,20 @@
           >
             Posts ({{ posts.length }})
           </button>
-          <button
-            v-if="isOwnProfile"
-            @click="activeTab = 'liked'"
-            :class="activeTab === 'liked' ? 'activeTab' : ''"
-          >
-            Liked ({{ liked.length }})
-          </button>
-          <button
-            v-if="isOwnProfile"
-            @click="activeTab = 'saved'"
-            :class="activeTab === 'saved' ? 'activeTab' : ''"
-          >
-            Saved ({{ saved.length }})
-          </button>
+          <template v-if="isOwnProfile">
+            <button
+              @click="activeTab = 'liked'"
+              :class="activeTab === 'liked' ? 'activeTab' : ''"
+            >
+              Liked ({{ liked.length }})
+            </button>
+            <button
+              @click="activeTab = 'saved'"
+              :class="activeTab === 'saved' ? 'activeTab' : ''"
+            >
+              Saved ({{ saved.length }})
+            </button>
+          </template>
           <div class="bg-gray-100 p-2 mb-4 text-xs rounded" v-if="isDev">
             Debug: {{ debugInfo }}
           </div>
