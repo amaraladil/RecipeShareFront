@@ -109,7 +109,7 @@
                   parseInt(($event.target as HTMLSelectElement).value)
                 )
               "
-              class="px-3 py-2 col-span-1 border border-gray-300 dark:hover:bg-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="px-3 py-2 col-span-1 border border-gray-300 dark:focus-visible:bg-gray-600 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <optgroup
                 v-for="(groupItems, groupName) in UnitGroups"
