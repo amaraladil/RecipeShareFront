@@ -22,7 +22,13 @@
               @keydown.ctrl.enter="submitComment"
             ></textarea>
             <div class="flex justify-between items-center mt-2">
-              <span class="text-sm text-gray-500">
+              <span
+                :class="[
+                  newComment.length > maxCommentLength
+                    ? 'text-red-500 font-medium'
+                    : 'text-gray-500'
+                ]"
+              >
                 {{ newComment.length }}/{{ maxCommentLength }}
               </span>
               <button
@@ -155,7 +161,13 @@
                     @keydown.ctrl.enter="submitReply(comment)"
                   ></textarea>
                   <div class="flex justify-between items-center mt-2">
-                    <span class="text-xs text-gray-500">
+                    <span
+                      :class="[
+                        replyContent.length > maxCommentLength
+                          ? 'text-red-500 font-medium'
+                          : 'text-gray-500'
+                      ]"
+                    >
                       {{ replyContent.length }}/{{ maxCommentLength }}
                     </span>
                     <div class="flex gap-2">
@@ -313,6 +325,13 @@
 
     <!-- Intersection Observer Target -->
     <div ref="scrollTarget" class="h-1"></div>
+
+    <div
+      v-if="!loading && comments.length === 0"
+      class="text-center pt-4 pb-8 text-gray-500"
+    >
+      No comments yet. Be the first to comment!
+    </div>
   </div>
 </template>
 
@@ -407,8 +426,9 @@
         hasMore.value = response.length === pageSize
         currentPage.value = page
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading comments:', error)
+      errorNotif('Failed to load comments. Please refresh the page.')
     } finally {
       loading.value = false
     }
@@ -455,8 +475,28 @@
         totalComments.value++
         newComment.value = ''
       }
-    } catch (error) {
-      errorNotif('Something went wrong with submitting comment, try again.')
+    } catch (error: any) {
+      if (error.statusCode === 422) {
+        const validationErrors = extractValidationErrors(error)
+        const parse = parseValidationErrors(validationErrors)
+
+        if (parse.length > 0) {
+          // Get the first error message
+          const firstError = parse[0]
+          errorNotif(firstError.message || 'Validation failed')
+        } else {
+          errorNotif('Please check your comment and try again')
+        }
+      } else if (error.statusCode === 401) {
+        errorNotif('You must be logged in to comment')
+        openAuth()
+      } else if (error.statusCode === 403) {
+        errorNotif('You do not have permission to comment')
+      } else if (error.statusCode === 400) {
+        errorNotif(error.message || 'Invalid comment')
+      } else {
+        errorNotif('Failed to post comment. Please try again.')
+      }
     } finally {
       isSubmitting.value = false
     }
@@ -538,8 +578,29 @@
 
         cancelReply()
       }
-    } catch (error) {
-      errorNotif('Something went wrong with submitting reply, try again.')
+    } catch (error: any) {
+      console.error('Error submitting reply:', error)
+
+      // Handle validation errors (422)
+      if (error.statusCode === 422) {
+        const validationErrors = extractValidationErrors(error)
+
+        if (validationErrors.length > 0) {
+          const firstError = validationErrors[0]
+          errorNotif(firstError.msg || 'Validation failed')
+        } else {
+          errorNotif('Please check your reply and try again')
+        }
+      } else if (error.statusCode === 401) {
+        errorNotif('You must be logged in to reply')
+        openAuth()
+      } else if (error.statusCode === 403) {
+        errorNotif('You do not have permission to reply')
+      } else if (error.statusCode === 400) {
+        errorNotif(error.message || 'Invalid reply')
+      } else {
+        errorNotif('Failed to post reply. Please try again.')
+      }
     } finally {
       isSubmittingReply.value = false
     }
@@ -612,8 +673,9 @@
 
         comment.replies = repliesWithAuthors
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading replies:', error)
+      errorNotif('Failed to load replies. Please try again.')
     } finally {
       loadingReplies.value[comment.id] = false
     }
@@ -677,8 +739,9 @@
 
         comment.replies.push(...repliesWithAuthors)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading more replies:', error)
+      errorNotif('Failed to load more replies. Please try again.')
     } finally {
       loadingReplies.value[comment.id] = false
     }
@@ -698,7 +761,7 @@
     try {
       const method = wasLiked ? 'DELETE' : 'POST'
       await fetchApi(`/comments/${comment.id}/like`, { method })
-    } catch (error) {
+    } catch (error: any) {
       // Revert on error
       comment.isLikedByUser = wasLiked
       comment.likeCount = originalCount
@@ -720,7 +783,7 @@
     try {
       const method = wasLiked ? 'DELETE' : 'POST'
       await fetchApi(`/comments/${reply.id}/like`, { method })
-    } catch (error) {
+    } catch (error: any) {
       // Revert on error
       reply.isLikedByUser = wasLiked
       reply.likeCount = originalCount
@@ -740,8 +803,16 @@
         comments.value.splice(index, 1)
         totalComments.value--
       }
-    } catch (error) {
-      errorNotif('Something went wrong with deleting comment, try again.')
+    } catch (error: any) {
+      console.error('Error deleting comment:', error)
+
+      if (error.statusCode === 403) {
+        errorNotif('You do not have permission to delete this comment')
+      } else if (error.statusCode === 404) {
+        errorNotif('Comment not found')
+      } else {
+        errorNotif('Something went wrong with deleting comment, try again.')
+      }
     }
   }
 
@@ -759,8 +830,16 @@
           comment.replyCount--
         }
       }
-    } catch (error) {
-      errorNotif('Something went wrong with deleting reply, try again.')
+    } catch (error: any) {
+      console.error('Error deleting reply:', error)
+
+      if (error.statusCode === 403) {
+        errorNotif('You do not have permission to delete this reply')
+      } else if (error.statusCode === 404) {
+        errorNotif('Reply not found')
+      } else {
+        errorNotif('Something went wrong with deleting reply, try again.')
+      }
     }
   }
 
