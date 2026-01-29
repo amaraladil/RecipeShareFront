@@ -73,7 +73,7 @@
               >
                 @{{ comment.author?.display_name || 'Anonymous' }}
               </NuxtLink>
-              <span class="text-sm text-gray-500">
+              <span class="text-sm text-gray-500" :title="comment.createdAt">
                 {{ formatDate(comment.createdAt) }}
               </span>
             </div>
@@ -212,7 +212,10 @@
                     >
                       Hidden User
                     </div>
-                    <span class="text-xs text-gray-500">
+                    <span
+                      class="text-xs text-gray-500"
+                      :title="reply.createdAt"
+                    >
                       {{ formatDate(reply.createdAt) }}
                     </span>
                   </div>
@@ -314,7 +317,6 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
   import type { Profile } from '~/types/profile'
   import type { User, Comment, Reply } from '~/types/comment'
   const { fetchAuthor, fetchAuthors, cacheAuthor } = useAuthorCache()
@@ -357,26 +359,7 @@
   let observer: IntersectionObserver | null = null
 
   // Format date helper
-  const formatDate = (dateString: string) => {
-    // Ensure the dateString is treated as UTC by adding 'Z' if not present
-    const utcDateString = dateString.endsWith('Z')
-      ? dateString
-      : dateString + 'Z'
-    const date = new Date(utcDateString)
-    const now = new Date()
-
-    let diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
-    )
-
-    // If the difference is negative (future date), treat as 0
-    if (diffInMinutes < 0) diffInMinutes = 0
-    if (diffInMinutes < 1) return 'Just now'
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
-    if (diffInMinutes < 43200) return `${Math.floor(diffInMinutes / 1440)}d ago`
-    return date.toLocaleDateString()
-  }
+  import { formatDate } from '~/utils/dateFormat'
 
   // Load comments
   const loadComments = async (page = 0, append = false) => {
