@@ -192,8 +192,7 @@
       </div>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Recipe Title -->
+    <form @submit.prevent="handleSubmit" class="space-y-5">
       <div class="space-y-2">
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -209,41 +208,6 @@
         />
       </div>
 
-      <!-- Recipe Image Upload Component -->
-      <RecipeImageUpload
-        v-model="form.image"
-        :editable="true"
-        @file-selected="handleFileSelected"
-      />
-
-      <!-- Description -->
-      <div class="space-y-2">
-        <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Description <span class="text-red-500">*</span>
-        </label>
-        <textarea
-          v-model="form.description"
-          rows="4"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
-          placeholder="Describe your recipe..."
-          required
-        ></textarea>
-      </div>
-
-      <!-- Recipe Meta Fields Component -->
-      <RecipeMetaFields
-        :prep-time="form.prep_time"
-        :cook-time="form.cook_time"
-        :servings="form.servings"
-        :editable="true"
-        @update:prep-time="form.prep_time = $event"
-        @update:cook-time="form.cook_time = $event"
-        @update:servings="form.servings = $event"
-      />
-
-      <!-- Status -->
       <div class="space-y-2">
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -259,7 +223,37 @@
         </select>
       </div>
 
-      <!-- Tags Component -->
+      <RecipeImageUpload
+        v-model="form.image"
+        :editable="true"
+        @file-selected="handleFileSelected"
+      />
+
+      <RecipeMetaFields
+        :prep-time="form.prep_time"
+        :cook-time="form.cook_time"
+        :servings="form.servings"
+        :editable="true"
+        @update:prep-time="form.prep_time = $event"
+        @update:cook-time="form.cook_time = $event"
+        @update:servings="form.servings = $event"
+      />
+
+      <div class="space-y-2">
+        <label
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Description <span class="text-red-500">*</span>
+        </label>
+        <textarea
+          v-model="form.description"
+          rows="4"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+          placeholder="Describe your recipe..."
+          required
+        ></textarea>
+      </div>
+
       <RecipeTagsInput
         :tags="form.tags"
         :editable="true"
@@ -267,25 +261,19 @@
         @remove="removeTag"
       />
 
-      <!-- Ingredients Component -->
-      <RecipeIngredientsList
+      <RecipeSwipeableTabs
         :ingredients="form.ingredients"
-        :editable="true"
-        @add="addIngredient"
-        @remove="removeIngredient"
-        @update="updateIngredient"
-      />
-
-      <!-- Instructions Component -->
-      <RecipeStepsList
         :steps="form.steps"
         :editable="true"
-        @add="addStep"
-        @remove="removeStep"
-        @update="updateStep"
+        :show-swipe-hint="true"
+        @add-ingredient="addIngredient"
+        @remove-ingredient="removeIngredient"
+        @update-ingredient="updateIngredient"
+        @add-step="addStep"
+        @remove-step="removeStep"
+        @update-step="updateStep"
       />
 
-      <!-- Submit Buttons -->
       <div class="flex gap-4 pt-6 border-t dark:border-gray-700">
         <button
           type="submit"
