@@ -1,5 +1,7 @@
 // composables/useRecipeForm.ts
 import { ref, computed } from 'vue'
+import type { ValidationErrorDetail } from '~/utils/errors'
+import { parseValidationErrors, mapErrorToFormField } from '~/utils/errors'
 
 export interface RecipeIngredient {
   name: string
@@ -43,10 +45,15 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
   })
 
   const errors = ref<ValidationError[]>([])
+  const apiErrors = ref<ValidationError[]>([])
   const newTag = ref('')
 
   const totalTime = computed(() => form.value.prep_time + form.value.cook_time)
   const hasErrors = computed(() => errors.value.length > 0)
+  const hasApiErrors = computed(() => apiErrors.value.length > 0)
+
+  const allErrors = computed(() => [...errors.value, ...apiErrors.value])
+  const hasAnyErrors = computed(() => allErrors.value.length > 0)
 
   const validateTitle = (): boolean => {
     if (!form.value.title || !form.value.title.trim()) {
@@ -105,7 +112,18 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       return false
     }
 
-    return true
+    let hasInvalidAmount = false
+    form.value.ingredients.forEach((ing, index) => {
+      if (ing.name.trim() && ing.amount <= 0) {
+        errors.value.push({
+          field: `ingredients #${index + 1} → amount`,
+          message: 'Amount must be greater than 0'
+        })
+        hasInvalidAmount = true
+      }
+    })
+
+    return !hasInvalidAmount
   }
 
   const validateSteps = (): boolean => {
@@ -184,7 +202,53 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     return validations.every((v) => v === true)
   }
 
-  // Form operations
+  /**
+   * Set API validation errors from backend response
+   *
+   * @param validationErrors - Array of validation error details from FastAPI
+   *
+   * @example
+   * try {
+   *   await createRecipe(data)
+   * } catch (err) {
+   *   if (err.statusCode === 422) {
+   *     setApiErrors(err.data.detail)
+   *   }
+   * }
+   */
+  const setApiErrors = (validationErrors: ValidationErrorDetail[]) => {
+    const parsed = parseValidationErrors(validationErrors)
+
+    apiErrors.value = parsed.map((error) => ({
+      field: error.field,
+      message: error.message
+    }))
+  }
+
+  const clearApiErrors = () => {
+    apiErrors.value = []
+  }
+
+  /**
+   * Get error for a specific form field by its path
+   *
+   * @param path - Array representing the field path (e.g., ['ingredients', '0', 'amount'])
+   * @returns Error message or null
+   */
+  const getFieldErrorByPath = (path: string[]): string | null => {
+    const fieldKey = mapErrorToFormField(path)
+
+    const apiError = apiErrors.value.find((e) => {
+      const errorPath = e.field.toLowerCase().replace(/\s+/g, '-')
+      return errorPath === fieldKey.toLowerCase()
+    })
+
+    if (apiError) return apiError.message
+
+    const clientError = errors.value.find((e) => e.field === fieldKey)
+    return clientError ? clientError.message : null
+  }
+
   const addIngredient = () => {
     form.value.ingredients.push({ name: '', amount: 0, unit: 1 })
   }
@@ -208,7 +272,6 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
 
     if (tagToAdd && !form.value.tags.includes(tagToAdd)) {
       form.value.tags.push(tagToAdd)
-      // Only clear internal state if we used it
       if (tag === undefined) {
         newTag.value = ''
       }
@@ -219,7 +282,6 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     form.value.tags.splice(index, 1)
   }
 
-  // Reset form
   const resetForm = (data?: Partial<RecipeFormData>) => {
     form.value = {
       title: data?.title || '',
@@ -234,23 +296,24 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       status: data?.status || 1
     }
     errors.value = []
+    apiErrors.value = []
     newTag.value = ''
   }
 
-  // Get error for specific field
   const getFieldError = (field: string): string | null => {
+    const apiError = apiErrors.value.find((e) => e.field === field)
+    if (apiError) return apiError.message
+
     const error = errors.value.find((e) => e.field === field)
     return error ? error.message : null
   }
 
-  // Clear errors
   const clearErrors = () => {
     errors.value = []
+    apiErrors.value = []
   }
 
-  // Get form data for submission
   const getFormData = () => {
-    // Clean up empty ingredients and steps
     const cleanedIngredients = form.value.ingredients.filter(
       (ing) => ing && ing.name.trim()
     )
@@ -268,13 +331,11 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
   const getUpdatedData = (originalData?: Partial<RecipeFormData> | null) => {
     const current = getFormData()
     if (!originalData) {
-      // No original provided — return full cleaned payload
       return current
     }
 
     const updated: Partial<RecipeFormData> = {}
 
-    // compare primitives
     const primitiveKeys: (keyof RecipeFormData)[] = [
       'title',
       'description',
@@ -290,23 +351,19 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
       }
     })
 
-    // compare arrays/objects by JSON stringify (normalized)
     const normalize = (v: any) =>
       v === undefined ? null : JSON.stringify(v, Object.keys(v || {}).sort())
 
-    // ingredients
     const origIng = originalData.ingredients
     if (normalize(current.ingredients) !== normalize(origIng)) {
       updated.ingredients = current.ingredients
     }
 
-    // steps
     const origSteps = originalData.steps
     if (normalize(current.steps) !== normalize(origSteps)) {
       updated.steps = current.steps
     }
 
-    // tags
     const origTags = originalData.tags
     if (normalize(current.tags) !== normalize(origTags)) {
       updated.tags = current.tags
@@ -318,9 +375,13 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
   return {
     form,
     errors,
+    apiErrors,
     newTag,
     totalTime,
     hasErrors,
+    hasApiErrors,
+    hasAnyErrors,
+    allErrors,
     validateForm,
     validateTitle,
     validateDescription,
@@ -337,7 +398,10 @@ export const useRecipeForm = (initialData?: Partial<RecipeFormData>) => {
     removeTag,
     resetForm,
     getFieldError,
+    getFieldErrorByPath,
     clearErrors,
+    clearApiErrors,
+    setApiErrors,
     getFormData,
     getUpdatedData
   }

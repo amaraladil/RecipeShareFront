@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
+  import { extractValidationErrors } from '~/utils/errors'
 
   // definePageMeta({
   //   middleware: 'auth' // Require authentication to create recipes
@@ -11,7 +12,11 @@
   const {
     form,
     errors,
+    apiErrors,
     hasErrors,
+    hasApiErrors,
+    hasAnyErrors,
+    allErrors,
     validateForm,
     addIngredient,
     removeIngredient,
@@ -19,7 +24,10 @@
     removeStep,
     addTag,
     removeTag,
-    getFormData
+    getFormData,
+    clearErrors,
+    clearApiErrors,
+    setApiErrors
   } = useRecipeForm()
 
   const isSubmitting = ref(false)
@@ -43,10 +51,13 @@
   }
 
   const handleSubmit = async () => {
+    // Clear all previous errors
     submitError.value = ''
+    clearErrors()
+    clearApiErrors()
 
+    // Run client-side validation first
     if (!validateForm()) {
-      submitError.value = 'Please fix the errors in the form'
       return
     }
 
@@ -68,13 +79,14 @@
           if (uploadResponse && uploadResponse.url) {
             formData.image = uploadResponse.url
           }
-        } catch (uploadErr) {
+        } catch (uploadErr: any) {
           console.error('Error uploading image:', uploadErr)
           submitError.value = 'Failed to upload image. Please try again.'
           return
         }
       }
 
+      // Create the recipe
       const response = await fetchApi('/recipes/', {
         method: 'POST',
         body: JSON.stringify(formData)
@@ -86,8 +98,36 @@
       }
     } catch (err: any) {
       console.error('Error creating recipe:', err)
-      submitError.value =
-        err.message || 'Failed to create recipe. Please try again.'
+
+      // Handle different error types
+      if (err.statusCode === 422) {
+        // Validation error from backend
+        const validationErrors = extractValidationErrors(err)
+
+        if (validationErrors.length > 0) {
+          setApiErrors(validationErrors)
+          submitError.value = 'Please fix the validation errors below'
+        } else {
+          submitError.value = 'Validation failed. Please check your input.'
+        }
+      } else if (err.statusCode === 401) {
+        // Authentication error
+        submitError.value = 'You must be logged in to create recipes'
+      } else if (err.statusCode === 403) {
+        // Permission error
+        submitError.value = 'You do not have permission to create recipes'
+      } else if (err.statusCode === 413) {
+        // Payload too large
+        submitError.value =
+          'The recipe data is too large. Please reduce the image size or content.'
+      } else if (err.statusCode >= 500) {
+        // Server error
+        submitError.value = 'Server error. Please try again later.'
+      } else {
+        // Generic error
+        submitError.value =
+          err.message || 'Failed to create recipe. Please try again.'
+      }
     } finally {
       isSubmitting.value = false
     }
@@ -127,7 +167,7 @@
 
     <!-- Error Summary -->
     <div
-      v-if="hasErrors || submitError"
+      v-if="hasAnyErrors || submitError"
       class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
     >
       <div class="flex items-start gap-2">
@@ -143,8 +183,9 @@
             class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1"
           >
             <li v-if="submitError">{{ submitError }}</li>
-            <li v-for="error in errors" :key="error.field">
-              {{ error.message }}
+            <!-- Show all errors (client-side + API) -->
+            <li v-for="(error, index) in allErrors" :key="`error-${index}`">
+              <strong>{{ error.field }}:</strong> {{ error.message }}
             </li>
           </ul>
         </div>
