@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { pageTitle } from '~/utils/meta'
   import { extractValidationErrors } from '~/utils/errors'
+  const { errorNotif, successNotif } = useNotification()
 
   // definePageMeta({
   //   middleware: 'auth' // Require authentication to create recipes
@@ -65,27 +66,6 @@
       isSubmitting.value = true
       const formData = getFormData()
 
-      // Upload image if one was selected
-      if (selectedImageFile.value) {
-        const uploadFormData = new FormData()
-        uploadFormData.append('image', selectedImageFile.value)
-
-        try {
-          const uploadResponse = await fetchApi('/upload/recipe', {
-            method: 'POST',
-            body: uploadFormData
-          })
-
-          if (uploadResponse && uploadResponse.url) {
-            formData.image = uploadResponse.url
-          }
-        } catch (uploadErr: any) {
-          console.error('Error uploading image:', uploadErr)
-          submitError.value = 'Failed to upload image. Please try again.'
-          return
-        }
-      }
-
       // Create the recipe
       const response = await fetchApi('/recipes/', {
         method: 'POST',
@@ -93,7 +73,30 @@
       })
 
       if (response && response.slug) {
-        // Redirect to the newly created recipe
+        if (selectedImageFile.value) {
+          const uploadFormData = new FormData()
+          uploadFormData.append('recipe_id', response.slug)
+          uploadFormData.append('recipe_url', 'newfile')
+          uploadFormData.append('image', selectedImageFile.value)
+
+          try {
+            const uploadResponse = await fetchApi('/upload/recipe', {
+              method: 'POST',
+              body: uploadFormData
+            })
+
+            if (uploadResponse && uploadResponse.url) {
+              formData.image = uploadResponse.url
+            }
+          } catch (uploadErr: any) {
+            console.error('Error uploading image:', uploadErr)
+            errorNotif(
+              'Error uploading the image, recipe is successful. Re-upload again in a little bit',
+              10000
+            )
+          }
+        }
+
         await router.push(`/recipes/${response.slug}`)
       }
     } catch (err: any) {
