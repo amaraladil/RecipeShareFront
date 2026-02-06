@@ -97,7 +97,7 @@
           : false
 
         if (expired) {
-          return null // Cache expired, fetch new data
+          return null
         }
 
         return data as any
@@ -129,7 +129,6 @@
   // Toggle edit mode
   const toggleEditMode = () => {
     if (isEditMode.value) {
-      // Reset form to original values when canceling edit
       if (recipe.value) {
         resetForm({
           title: recipe.value.title || '',
@@ -143,7 +142,6 @@
           image: recipe.value.image || '',
           status: recipe.value.status || 1
         })
-        // Clear selected image file
         selectedImageFile.value = null
         imageUploadError.value = ''
       }
@@ -250,35 +248,19 @@
       return
     }
 
+    const wasLiked = recipe.value.is_liked
+    const originalCount = recipe.value.counter?.likes || 0
+
+    recipe.value.is_liked = !wasLiked
+    recipe.value.counter.likes += wasLiked ? -1 : 1
+
     try {
-      if (recipe.value.is_liked) {
-        recipe.value.is_liked = false
-        const response = await fetchApi(`/recipes/${recipe.value.id}/like`, {
-          method: 'DELETE'
-        })
-        if (response) {
-          recipe.value.counter.likes -= 1
-        }
-      } else {
-        recipe.value.is_liked = true
-        const response = await fetchApi(`/recipes/${recipe.value.id}/like`, {
-          method: 'POST'
-        })
-        if (response) {
-          recipe.value.counter.likes += 1
-        }
-      }
-    } catch (err) {
-      recipe.value.is_liked = !recipe.value.is_liked
-      errorNotif(
-        recipe.value.is_liked
-          ? 'Failed to like recipe'
-          : 'Failed to unlike recipe'
-      )
-      console.error('Error toggling like:', err)
-      errorMessage.value = recipe.value.is_liked
-        ? 'Failed to unlike recipe'
-        : 'Failed to like recipe'
+      const method = wasLiked ? 'DELETE' : 'POST'
+      await fetchApi(`/recipes/${recipe_id.value}/like`, { method })
+    } catch (error) {
+      recipe.value.is_liked = wasLiked
+      recipe.value.counter.likes = originalCount
+      errorNotif(`Failed to ${wasLiked ? 'unlike' : 'like'} recipe.`)
     }
   }
 
@@ -292,35 +274,16 @@
       return
     }
 
+    const wasSaved = recipe.value.is_saved
+
+    recipe.value.is_saved = !wasSaved
+
     try {
-      if (recipe.value.is_saved) {
-        recipe.value.is_saved = false
-        const response = await fetchApi(`/recipes/${recipe.value.id}/save`, {
-          method: 'DELETE'
-        })
-        if (response) {
-          recipe.value.counter.views -= 1
-        }
-      } else {
-        recipe.value.is_saved = true
-        const response = await fetchApi(`/recipes/${recipe.value.id}/save`, {
-          method: 'POST'
-        })
-        if (response) {
-          recipe.value.counter.views += 1
-        }
-      }
-    } catch (err) {
-      recipe.value.is_saved = !recipe.value.is_saved
-      errorNotif(
-        recipe.value.is_saved
-          ? 'Failed to save recipe'
-          : 'Failed to unsave recipe'
-      )
-      console.error('Error toggling save:', err)
-      errorMessage.value = recipe.value.is_saved
-        ? 'Failed to unsave recipe'
-        : 'Failed to save recipe'
+      const method = wasSaved ? 'DELETE' : 'POST'
+      await fetchApi(`/recipes/${recipe_id.value}/save`, { method })
+    } catch (error) {
+      recipe.value.is_saved = wasSaved
+      errorNotif(`Failed to ${wasSaved ? 'unsave' : 'save'} recipe.`)
     }
   }
 
@@ -341,7 +304,6 @@
     observer.value = null
   })
 
-  // SEO Meta
   watchEffect(() => {
     if (recipe.value) {
       useSeoMeta({
@@ -362,59 +324,26 @@
 
 <template>
   <div class="container mx-auto px-4 py-6 max-w-4xl">
-    <!-- Loading State -->
     <div v-if="pending" class="flex justify-center items-center min-h-[50vh]">
       <div
         class="animate-spin rounded-full size-12 border-b-2 border-blue-600"
       ></div>
       <span class="ml-3 text-lg text-gray-600">Loading recipe...</span>
     </div>
-
-    <!-- Recipe Content -->
     <div v-else-if="recipe" class="space-y-6">
-      <!-- Validation Errors in Edit Mode -->
-      <div
-        v-if="isEditMode && (validationErrors.length > 0 || imageUploadError)"
-        class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
-      >
-        <div class="flex items-start gap-2">
-          <UIcon
-            name="ic:outline-error"
-            class="size-5 text-red-600 dark:text-red-400 mt-0.5"
-          />
-          <div class="flex-1">
-            <h3 class="font-semibold text-red-900 dark:text-red-300 mb-1">
-              Please fix the following errors:
-            </h3>
-            <ul
-              class="list-disc list-inside text-red-700 dark:text-red-400 text-sm space-y-1"
-            >
-              <li v-if="imageUploadError">{{ imageUploadError }}</li>
-              <li v-for="err in validationErrors" :key="err.field">
-                {{ err.message }}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Header with Edit Controls -->
-      <div class="flex justify-between items-start gap-4">
-        <div class="flex-1">
-          <!-- View Mode Title -->
+      <div>
+        <div class="flex flex-row justify-between gap-4">
           <h1
             v-if="!isEditMode"
             class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white/80 mb-2"
           >
             {{ recipe.title }}
           </h1>
-
-          <!-- Edit Mode Title -->
-          <div v-else class="mb-4 flex items-center gap-2">
+          <div v-else class="mb-1 w-full flex items-center gap-2">
             <label
               class="block whitespace-nowrap text-sm dark:text-white/80 font-medium text-gray-700 mb-1"
             >
-              Recipe Title:
+              Title:
             </label>
             <input
               v-model="form.title"
@@ -424,121 +353,122 @@
             />
           </div>
 
-          <!-- Author Info -->
-          <div
-            class="flex items-center gap-3 text-sm md:text-base text-gray-600 dark:text-gray-400"
-          >
-            <UserAvatar
-              :avatar-url="recipe.author.avatar_url"
-              :alt="recipe.author.display_name"
-              class="size-8"
-            />
-
-            <span class="whitespace-nowrap"
-              >by
-              <NuxtLink
-                :to="`/@${recipe.author?.display_name}`"
-                class="text-blue-600 hover:underline cursor-pointer"
-              >
-                @{{ recipe.author?.display_name || 'Unknown' }}
-              </NuxtLink>
-            </span>
-            <span>•</span>
-            <span class="gap-3 flex items-center">
-              <span>{{ new Date(recipe.createdAt).toLocaleDateString() }}</span>
-              <span
-                class="whitespace-nowrap text-xs md:text-sm"
-                v-if="recipe.updatedAt != recipe.createdAt"
-              >
-                (Edit: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
-              </span>
-            </span>
-          </div>
-        </div>
-
-        <div class="grid grid-flow-col grid-rows-2">
-          <!-- Owner Controls -->
-          <div v-if="isOwner" class="row-span-1 flex gap-2">
-            <button
-              v-if="!isEditMode"
-              @click="toggleEditMode"
-              class="bg-blue-600 text-white whitespace-nowrap px-4 py-2 rounded hover:bg-blue-700 transition-colors cursor-pointer"
-            >
-              Edit Recipe
-            </button>
-
-            <template v-else>
+          <div class="flex gap-2 justify-center items-start">
+            <!-- Edit Mode Buttons -->
+            <template v-if="isEditMode">
               <button
                 @click="saveRecipe"
                 :disabled="isSaving"
                 class="bg-green-600 whitespace-nowrap text-white px-4 py-2 rounded hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+                <Icon name="ic:outline-edit-note" />
+                {{ isSaving ? 'Saving...' : 'Save' }}
               </button>
-              <button
+              <icon
+                name="ic:outline-cancel"
                 @click="toggleEditMode"
                 :disabled="isSaving"
-                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                Cancel
-              </button>
+                title="Cancel Edit"
+                class="text-red-500 size-9 mt-0.5 rounded hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+              />
             </template>
 
-            <button
-              v-if="!isEditMode"
-              @click="deleteRecipe"
-              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors cursor-pointer"
-            >
-              Delete
-            </button>
-          </div>
-          <div v-else class="row-span-1 h-10"></div>
-          <div class="row-span-1 flex justify-end items-end gap-2">
-            <UIcon
-              :name="
-                recipe.is_saved
-                  ? 'ic:outline-bookmark'
-                  : 'ic:outline-bookmark-border'
-              "
-              @click="saveRecipeToggle"
-              :class="[
-                'size-7',
-                recipe.is_saved
-                  ? 'text-blue-600'
-                  : 'text-gray-600 dark:text-gray-300',
-                !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
-              ]"
-            />
-            <div
-              :class="[
-                'flex like items-center gap-1',
-                recipe.is_liked
-                  ? `after:content-['unlike'] `
-                  : `after:content-['like'] `
-              ]"
-            >
-              <UIcon
-                :name="
-                  recipe.is_liked
-                    ? 'ic:outline-favorite'
-                    : 'ic:outline-favorite-border'
-                "
-                @click="likeRecipeToggle"
+            <div v-if="!isEditMode" class="flex items-center gap-1">
+              <div
                 :class="[
-                  'size-7',
+                  'flex like items-center gap-1',
                   recipe.is_liked
-                    ? 'text-red-600'
-                    : 'text-gray-600 dark:text-gray-300',
-                  !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
+                    ? `after:content-['unlike'] `
+                    : `after:content-['like'] `
                 ]"
-              />
-              <span class="pr-2">{{ recipe.counter?.likes || 0 }}</span>
+              >
+                <Icon
+                  :name="
+                    recipe.is_liked
+                      ? 'ic:outline-favorite'
+                      : 'ic:outline-favorite-border'
+                  "
+                  @click="likeRecipeToggle"
+                  :class="[
+                    'size-7',
+                    recipe.is_liked
+                      ? 'text-red-600'
+                      : 'text-gray-600 dark:text-gray-300',
+                    !isOwner ? 'cursor-pointer' : 'cursor-not-allowed'
+                  ]"
+                />
+                <span>{{ recipe.counter?.likes || 0 }}</span>
+              </div>
+              <DropdownMenu class="h-7" align="right">
+                <template v-if="isOwner">
+                  <DropdownMenuItem
+                    label="Edit Recipe"
+                    icon="ic:outline-edit"
+                    variant="primary"
+                    @click="toggleEditMode"
+                  />
+                  <DropdownMenuItem
+                    label="Delete Recipe"
+                    icon="ic:outline-delete"
+                    variant="danger"
+                    @click="deleteRecipe"
+                  />
+                </template>
+                <template v-else>
+                  <DropdownMenuItem
+                    :label="recipe.is_saved ? 'Unbookmark' : 'Bookmark'"
+                    :icon="
+                      recipe.is_saved
+                        ? 'ic:outline-bookmark'
+                        : 'ic:outline-bookmark-border'
+                    "
+                    variant="primary"
+                    @click="saveRecipeToggle"
+                  />
+                </template>
+              </DropdownMenu>
             </div>
           </div>
         </div>
-      </div>
+        <div
+          class="flex items-center gap-3 text-sm md:text-base text-gray-600 dark:text-gray-400"
+        >
+          <UserAvatar
+            :avatar-url="recipe.author.avatar_url"
+            :alt="recipe.author.display_name"
+            class="size-8"
+          />
 
-      <!-- Status Selector (Edit Mode Only) -->
+          <span class="whitespace-nowrap"
+            >by
+            <NuxtLink
+              :to="`/@${recipe.author?.display_name}`"
+              class="text-blue-600 hover:underline cursor-pointer"
+            >
+              @{{ recipe.author?.display_name || 'Unknown' }}
+            </NuxtLink>
+          </span>
+          <span>•</span>
+          <span class="gap-3 flex items-center">
+            <span
+              v-if="recipe.updatedAt == recipe.createdAt"
+              :title="
+                'Created: ' + new Date(recipe.createdAt).toLocaleDateString()
+              "
+              >{{ new Date(recipe.createdAt).toLocaleDateString() }}</span
+            >
+            <span
+              class="whitespace-nowrap"
+              v-else
+              :title="
+                'Created: ' + new Date(recipe.createdAt).toLocaleDateString()
+              "
+            >
+              (Edit: {{ new Date(recipe.updatedAt).toLocaleDateString() }})
+            </span>
+          </span>
+        </div>
+      </div>
       <div v-if="isEditMode && isOwner" class="space-y-2">
         <label
           class="block text-sm dark:text-white/80 font-medium text-gray-700"
@@ -599,6 +529,8 @@
           placeholder="Enter recipe description"
         ></textarea>
       </div>
+
+      <!-- Tags -->
       <RecipeTagsInput
         :tags="isEditMode ? form.tags : recipe.tags || []"
         :editable="isEditMode"
@@ -606,6 +538,7 @@
         @remove="removeTag"
       />
 
+      <!-- Ingredients and Steps -->
       <RecipeSwipeableTabs
         :ingredients="isEditMode ? form.ingredients : recipe.ingredients || []"
         :steps="isEditMode ? form.steps : recipe.steps || []"
@@ -669,11 +602,7 @@
         'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     }
     &:hover::after {
-      @apply visible opacity-100 z-10 top-[105%]
-      /* visibility: visible;
-      opacity: 1;
-      z-index: 10;
-      top: 105%; */;
+      @apply visible opacity-100 z-10 top-[105%];
     }
   }
 </style>
