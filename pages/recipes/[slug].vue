@@ -50,16 +50,19 @@
     )
   })
 
+  const observer = ref<IntersectionObserver | null>(null)
+
   // Intersection Observer for lazy loading comments
   const setupCommentsObserver = () => {
-    if (!commentsTrigger.value) return
+    if (!commentsTrigger.value || observer.value) return
 
-    const observer = new IntersectionObserver(
+    observer.value = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !shouldLoadComments.value) {
             shouldLoadComments.value = true
-            observer.disconnect()
+            observer.value?.disconnect()
+            observer.value = null
           }
         })
       },
@@ -68,11 +71,7 @@
       }
     )
 
-    observer.observe(commentsTrigger.value)
-
-    onUnmounted(() => {
-      observer.disconnect()
-    })
+    observer.value.observe(commentsTrigger.value)
   }
 
   const nuxtApp = useNuxtApp()
@@ -325,21 +324,21 @@
     }
   }
 
-  // Update ingredient
   const updateIngredient = (index: number, ingredient: any) => {
     form.value.ingredients[index] = ingredient
   }
 
-  // Update step
   const updateStep = (index: number, value: string) => {
     form.value.steps[index] = value
   }
 
-  // Initialize
-  onMounted(async () => {
-    nextTick(() => {
-      setupCommentsObserver()
-    })
+  watch(commentsTrigger, (el) => {
+    if (el) setupCommentsObserver()
+  })
+
+  onUnmounted(() => {
+    observer.value?.disconnect()
+    observer.value = null
   })
 
   // SEO Meta
@@ -621,14 +620,14 @@
       />
 
       <!-- Comments Section -->
-      <div class="py-4">
+      <div v-if="!shouldLoadComments" class="pt-64">
         <div ref="commentsTrigger" class="h-1"></div>
       </div>
 
       <div
         v-if="shouldLoadComments"
         ref="commentsSection"
-        class="transition-all duration-300 ease-in-out"
+        class="py-8 transition-all duration-300 ease-in-out"
       >
         <Suspense>
           <template #default>
