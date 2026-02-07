@@ -6,46 +6,15 @@
       </h3>
 
       <!-- Add Comment Form -->
-      <div v-if="profile" class="mb-6">
-        <div class="flex gap-3">
-          <UserAvatar
-            :avatar-url="profile.avatar_url"
-            :alt="profile.display_name"
-            class="size-8"
-          />
-          <div class="flex-1">
-            <textarea
-              v-model="newComment"
-              placeholder="Add a comment..."
-              rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              @keydown.ctrl.enter="submitComment"
-            ></textarea>
-            <div class="flex justify-between items-center mt-2">
-              <span
-                :class="[
-                  newComment.length > maxCommentLength
-                    ? 'text-red-500 font-medium'
-                    : 'text-gray-500'
-                ]"
-              >
-                {{ newComment.length }}/{{ maxCommentLength }}
-              </span>
-              <button
-                @click="submitComment"
-                :disabled="
-                  !newComment.trim() ||
-                  isSubmitting ||
-                  newComment.length > maxCommentLength
-                "
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {{ isSubmitting ? 'Posting...' : 'Post Comment' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CommentForm
+        v-if="profile"
+        v-model="newComment"
+        :profile="profile"
+        :error="errorMessage"
+        :is-submitting="isSubmitting"
+        :max-length="maxCommentLength"
+        @submit="submitComment"
+      />
 
       <!-- Login prompt -->
       <div v-else class="mb-6 p-4 bg-gray-50 rounded-lg text-center">
@@ -58,238 +27,59 @@
 
     <!-- Comments List -->
     <div class="space-y-4">
-      <div
+      <CommentItem
         v-for="comment in comments"
         :key="comment.id"
-        class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+        :comment="comment"
+        :user-id="user?.id"
+        :can-reply="!!user"
+        :show-replies="comment.showReplies"
+        @like="toggleLike(comment)"
+        @delete="deleteComment(comment)"
+        @report="reportComment(comment)"
+        @reply="startReply(comment)"
+        @toggle-replies="toggleReplies(comment)"
       >
-        <!-- Comment Content -->
-        <div class="flex gap-3">
-          <UserAvatar
-            :avatar-url="comment.author?.avatar_url"
-            :alt="comment.author?.display_name"
-            class="size-8"
+        <!-- Reply Form Slot -->
+        <template #reply-form>
+          <CommentReplyForm
+            v-if="replyingTo === comment.id"
+            v-model="replyContent"
+            :profile="profile"
+            :error="errorMessage"
+            :reply-to-user="replyToUser"
+            :is-submitting="isSubmittingReply"
+            :max-length="maxCommentLength"
+            @submit="submitReply(comment)"
+            @cancel="cancelReply"
           />
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <NuxtLink
-                v-if="comment.author"
-                :to="`/@${comment.author.display_name}`"
-                class="font-medium text-gray-900 dark:text-white hover:underline"
-              >
-                @{{ comment.author?.display_name || 'Anonymous' }}
-              </NuxtLink>
-              <span class="text-sm text-gray-500" :title="comment.createdAt">
-                {{ formatDate(comment.createdAt) }}
-              </span>
-            </div>
+        </template>
 
-            <p class="text-gray-700 dark:text-gray-300 mb-2">
-              {{ comment.content }}
-            </p>
+        <!-- Replies List Slot -->
+        <template #replies>
+          <div
+            v-if="comment.showReplies && comment.replies"
+            class="mt-4 pl-4 border-l-2 border-gray-200 space-y-3"
+          >
+            <CommentReplyItem
+              v-for="reply in comment.replies"
+              :key="reply.id"
+              :reply="reply"
+              :user-id="user?.id"
+              :can-reply="!!user"
+              @like="toggleReplyLike(reply)"
+              @delete="deleteReply(reply, comment)"
+              @report="reportReply(reply)"
+              @reply="startReplyToReply(reply, comment)"
+            />
 
-            <!-- Comment Actions -->
-            <div class="flex items-center gap-4 text-sm">
-              <button
-                @click="toggleLike(comment)"
-                :class="[
-                  'flex items-center gap-1 transition-colors',
-                  comment.isLikedByUser
-                    ? 'text-red-600 hover:text-red-700'
-                    : 'text-gray-500 hover:text-gray-700',
-                  user?.id == comment.createdBy ? '!cursor-default' : ''
-                ]"
-              >
-                <UIcon
-                  :name="
-                    comment.isLikedByUser
-                      ? 'ic:baseline-favorite'
-                      : 'ic:baseline-favorite-border'
-                  "
-                  class="size-4"
-                />
-                {{ comment.likeCount }}
-              </button>
-
-              <button
-                v-if="user"
-                @click="startReply(comment)"
-                class="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                Reply
-              </button>
-
-              <button
-                v-if="comment.replyCount > 0"
-                @click="toggleReplies(comment)"
-                class="text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                {{ comment.showReplies ? 'Hide' : 'View' }} replies ({{
-                  comment.replyCount
-                }})
-              </button>
-
-              <button
-                v-if="user && user.id === comment.createdBy"
-                @click="deleteComment(comment)"
-                class="text-red-500 hover:text-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-
-            <!-- Reply Form -->
             <div
-              v-if="replyingTo === comment.id"
-              class="mt-3 pl-4 border-l-2 border-blue-500"
+              v-if="
+                comment.replies && comment.replyCount > comment.replies.length
+              "
+              class="pt-2"
             >
-              <div class="flex gap-2">
-                <UserAvatar
-                  :avatar-url="profile?.avatar_url"
-                  :alt="profile?.display_name"
-                  class="size-6"
-                />
-                <div class="flex-1">
-                  <div v-if="replyToUser" class="text-sm text-gray-600 mb-1">
-                    Replying to @{{ replyToUser.display_name }}
-                  </div>
-                  <textarea
-                    v-model="replyContent"
-                    placeholder="Write a reply..."
-                    rows="2"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
-                    @keydown.ctrl.enter="submitReply(comment)"
-                  ></textarea>
-                  <div class="flex justify-between items-center mt-2">
-                    <span
-                      :class="[
-                        replyContent.length > maxCommentLength
-                          ? 'text-red-500 font-medium'
-                          : 'text-gray-500'
-                      ]"
-                    >
-                      {{ replyContent.length }}/{{ maxCommentLength }}
-                    </span>
-                    <div class="flex gap-2">
-                      <button
-                        @click="cancelReply"
-                        class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        @click="submitReply(comment)"
-                        :disabled="
-                          !replyContent.trim() ||
-                          isSubmittingReply ||
-                          replyContent.length > maxCommentLength
-                        "
-                        class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {{ isSubmittingReply ? 'Posting...' : 'Reply' }}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Replies -->
-            <div
-              v-if="comment.showReplies && comment.replies"
-              class="mt-4 pl-4 border-l-2 border-gray-200 space-y-3"
-            >
-              <div
-                v-for="reply in comment.replies"
-                :key="reply.id"
-                class="flex gap-3"
-              >
-                <UserAvatar
-                  :avatar-url="reply.author?.avatar_url"
-                  :alt="reply.author?.display_name"
-                  class="size-6"
-                />
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <NuxtLink
-                      v-if="reply.author"
-                      :to="`/@${reply.author.display_name}`"
-                      class="font-medium text-sm text-gray-900 dark:text-white hover:underline"
-                    >
-                      @{{ reply.author.display_name }}
-                    </NuxtLink>
-                    <div
-                      v-else
-                      class="font-medium text-sm text-gray-900 dark:text-white"
-                    >
-                      Hidden User
-                    </div>
-                    <span
-                      class="text-xs text-gray-500"
-                      :title="reply.createdAt"
-                    >
-                      {{ formatDate(reply.createdAt) }}
-                    </span>
-                  </div>
-
-                  <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">
-                    <span v-if="reply.replyToUser" class="text-blue-600">
-                      @{{ reply.replyToUser.display_name }}
-                    </span>
-                    {{ reply.content }}
-                  </p>
-
-                  <!-- Reply Actions -->
-                  <div
-                    v-if="reply.author"
-                    class="flex items-center gap-3 text-xs"
-                  >
-                    <button
-                      @click="toggleReplyLike(reply)"
-                      :class="[
-                        'flex items-center gap-1 transition-colors',
-                        reply.isLikedByUser
-                          ? 'text-red-600 hover:text-red-700'
-                          : 'text-gray-500 hover:text-gray-700',
-                        user?.id == reply.createdBy ? '!cursor-default' : ''
-                      ]"
-                    >
-                      <UIcon
-                        :name="
-                          reply.isLikedByUser
-                            ? 'ic:baseline-favorite'
-                            : 'ic:baseline-favorite-border'
-                        "
-                        class="size-3"
-                      />
-                      {{ reply.likeCount }}
-                    </button>
-
-                    <button
-                      v-if="user"
-                      @click="startReplyToReply(comment, reply)"
-                      class="text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      Reply
-                    </button>
-
-                    <button
-                      v-if="user && user.id === reply.createdBy"
-                      @click="deleteReply(reply, comment)"
-                      class="text-red-500 hover:text-red-700 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  <div v-else class="h-4"></div>
-                </div>
-              </div>
-
-              <!-- Load More Replies -->
               <button
-                v-if="
-                  comment.replies && comment.replies.length < comment.replyCount
-                "
                 @click="loadMoreReplies(comment)"
                 :disabled="loadingReplies[comment.id]"
                 class="text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors"
@@ -302,8 +92,8 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </CommentItem>
     </div>
 
     <!-- Loading State -->
@@ -377,9 +167,6 @@
   const scrollTarget = ref<HTMLElement>()
   let observer: IntersectionObserver | null = null
 
-  // Format date helper
-  import { formatDate } from '~/utils/dateFormat'
-
   // Load comments
   const loadComments = async (page = 0, append = false) => {
     try {
@@ -403,7 +190,7 @@
         // Attach authors from cache
         const commentsWithAuthors = activeComments.map((comment: Comment) => ({
           ...comment,
-          author: fetchAuthor(comment.createdBy), // Already cached, returns immediately
+          author: fetchAuthor(comment.createdBy),
           showReplies: false,
           replies: []
         }))
@@ -449,31 +236,24 @@
       const response = await fetchApi('/comments/', {
         method: 'POST',
         body: JSON.stringify({
-          recipeId: props.recipeId,
-          content: newComment.value.trim()
+          content: newComment.value.trim(),
+          recipeId: props.recipeId
         })
       })
 
-      if (response && profile.value) {
-        const author: User = {
-          id: profile.value.id,
-          display_name: profile.value.display_name,
-          avatar_url: profile.value.avatar_url || ''
-        }
-
-        // Cache the current user's info
-        cacheAuthor(profile.value.id, author)
-
-        const newCommentWithAuthor = {
+      if (response) {
+        const author = await fetchAuthor(response.createdBy)
+        const newCommentObj: Comment = {
           ...response,
-          author: author,
+          author,
           showReplies: false,
           replies: []
         }
 
-        comments.value.unshift(newCommentWithAuthor)
+        comments.value.unshift(newCommentObj)
         totalComments.value++
         newComment.value = ''
+        successNotif('Comment posted successfully!')
       }
     } catch (error: any) {
       if (error.statusCode === 422) {
@@ -501,45 +281,35 @@
       isSubmitting.value = false
     }
   }
+  // TODO: add error message functionality
+  let errorMessage = ''
 
-  // Reply functionality
+  // Start reply
   const startReply = (comment: Comment) => {
     replyingTo.value = comment.id
+    currentReplyToId.value = comment.id
     replyContent.value = ''
-    replyToUser.value = null
-    currentReplyToId.value = null
-    nextTick(() => {
-      // Focus on the textarea
-      const textarea = document.querySelector(
-        `textarea[placeholder="Write a reply..."]`
-      ) as HTMLTextAreaElement
-      if (textarea) textarea.focus()
-    })
+    replyToUser.value = comment.author || null
   }
 
-  const startReplyToReply = (comment: Comment, reply: Reply) => {
+  const startReplyToReply = (reply: Reply, comment: Comment) => {
     replyingTo.value = comment.id
+    currentReplyToId.value = reply.id
     replyContent.value = ''
     replyToUser.value = reply.author || null
-    currentReplyToId.value = reply.id
-    nextTick(() => {
-      // Focus on the textarea
-      const textarea = document.querySelector(
-        `textarea[placeholder="Write a reply..."]`
-      ) as HTMLTextAreaElement
-      if (textarea) textarea.focus()
-    })
   }
 
   const cancelReply = () => {
     replyingTo.value = null
+    currentReplyToId.value = null
     replyContent.value = ''
     replyToUser.value = null
-    currentReplyToId.value = null
   }
 
+  // Submit reply
   const submitReply = async (comment: Comment) => {
-    if (!replyContent.value.trim() || isSubmittingReply.value) return
+    if (!replyContent.value.trim() || isSubmittingReply.value || !profile.value)
+      return
 
     try {
       isSubmittingReply.value = true
@@ -553,19 +323,12 @@
         })
       })
 
-      if (response && profile.value) {
-        const author: User = {
-          id: profile.value.id,
-          display_name: profile.value.display_name,
-          avatar_url: profile.value.avatar_url || ''
-        }
+      if (response) {
+        const author = await fetchAuthor(response.createdBy)
 
-        // Cache the current user's info
-        cacheAuthor(profile.value.id, author)
-
-        const newReply = {
+        const newReply: Reply = {
           ...response,
-          author: author,
+          author,
           replyToUser: replyToUser.value
         }
 
@@ -574,9 +337,16 @@
         }
         comment.replies.push(newReply)
         comment.replyCount++
-        comment.showReplies = true
 
-        cancelReply()
+        if (!comment.showReplies) {
+          comment.showReplies = true
+        }
+
+        replyContent.value = ''
+        replyingTo.value = null
+        currentReplyToId.value = null
+        replyToUser.value = null
+        successNotif('Reply posted successfully!')
       }
     } catch (error: any) {
       console.error('Error submitting reply:', error)
@@ -618,8 +388,10 @@
     }
   }
 
-  // Load replies for a comment
+  // Load replies
   const loadReplies = async (comment: Comment) => {
+    if (loadingReplies.value[comment.id]) return
+
     try {
       loadingReplies.value[comment.id] = true
       const response = await fetchApi(
@@ -631,7 +403,6 @@
           (reply: Reply) => reply.status !== 3
         )
 
-        // Collect all unique user IDs (reply authors + replyTo authors)
         const userIds = new Set<string>()
         activeReplies.forEach((reply: Reply) => {
           userIds.add(reply.createdBy)
@@ -645,10 +416,8 @@
           }
         })
 
-        // Batch fetch all authors
         await fetchAuthors(Array.from(userIds))
 
-        // Attach authors from cache
         const repliesWithAuthors = await Promise.all(
           activeReplies.map(async (reply: Reply) => {
             const author = await fetchAuthor(reply.createdBy)
@@ -681,7 +450,7 @@
     }
   }
 
-  // Load more replies for a comment
+  // Load more replies
   const loadMoreReplies = async (comment: Comment) => {
     if (!comment.replies || loadingReplies.value[comment.id]) return
 
@@ -692,12 +461,10 @@
       )
 
       if (response) {
-        // Filter out deleted replies
         const activeReplies = response.filter(
           (reply: Reply) => reply.status !== 3
         )
 
-        // Collect all unique user IDs (reply authors + replyTo authors)
         const userIds = new Set<string>()
         activeReplies.forEach((reply: Reply) => {
           userIds.add(reply.createdBy)
@@ -711,10 +478,8 @@
           }
         })
 
-        // Batch fetch all authors
         await fetchAuthors(Array.from(userIds))
 
-        // Attach authors from cache
         const repliesWithAuthors = await Promise.all(
           activeReplies.map(async (reply: Reply) => {
             const author = await fetchAuthor(reply.createdBy)
@@ -754,7 +519,6 @@
     const wasLiked = comment.isLikedByUser
     const originalCount = comment.likeCount
 
-    // Optimistic update
     comment.isLikedByUser = !wasLiked
     comment.likeCount += wasLiked ? -1 : 1
 
@@ -762,7 +526,6 @@
       const method = wasLiked ? 'DELETE' : 'POST'
       await fetchApi(`/comments/${comment.id}/like`, { method })
     } catch (error: any) {
-      // Revert on error
       comment.isLikedByUser = wasLiked
       comment.likeCount = originalCount
       errorNotif(`Failed to ${wasLiked ? 'unlike' : 'like'} comment.`)
@@ -776,7 +539,6 @@
     const wasLiked = reply.isLikedByUser
     const originalCount = reply.likeCount
 
-    // Optimistic update
     reply.isLikedByUser = !wasLiked
     reply.likeCount += wasLiked ? -1 : 1
 
@@ -784,7 +546,6 @@
       const method = wasLiked ? 'DELETE' : 'POST'
       await fetchApi(`/comments/${reply.id}/like`, { method })
     } catch (error: any) {
-      // Revert on error
       reply.isLikedByUser = wasLiked
       reply.likeCount = originalCount
       errorNotif(`Failed to ${wasLiked ? 'unlike' : 'like'} reply.`)
@@ -843,7 +604,21 @@
     }
   }
 
-  // Setup intersection observer for infinite scroll
+  // Report comment (placeholder)
+  const reportComment = (comment: Comment) => {
+    // TODO: Implement report functionality
+    console.log('Report comment:', comment.id)
+    errorNotif('Report functionality coming soon')
+  }
+
+  // Report reply (placeholder)
+  const reportReply = (reply: Reply) => {
+    // TODO: Implement report functionality
+    console.log('Report reply:', reply.id)
+    errorNotif('Report functionality coming soon')
+  }
+
+  // Setup intersection observer
   const setupIntersectionObserver = () => {
     if (!scrollTarget.value) return
 
