@@ -28,7 +28,7 @@
         </div>
 
         <!-- Dropdown Menu -->
-        <UIDropdownMenu align="right">
+        <UIDropdownMenu v-if="reply.author" align="right">
           <!-- User's own reply options -->
           <template v-if="isReplyOwner">
             <UIDropdownMenuItem
@@ -49,6 +49,7 @@
             />
           </template>
         </UIDropdownMenu>
+        <div v-else class="h-7"></div>
       </div>
 
       <!-- Reply Content -->

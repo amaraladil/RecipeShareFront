@@ -1,5 +1,5 @@
 <template>
-  <div class="relative group" ref="dropdownRef">
+  <div class="relative group h-7" ref="dropdownRef">
     <button
       @click="toggleDropdown"
       :class="['cursor-pointer h-7  transition-colors', buttonClass]"
