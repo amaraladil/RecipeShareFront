@@ -28,10 +28,10 @@
         </div>
 
         <!-- Dropdown Menu -->
-        <DropdownMenu align="right">
+        <UIDropdownMenu align="right">
           <!-- User's own reply options -->
           <template v-if="isReplyOwner">
-            <DropdownMenuItem
+            <UIDropdownMenuItem
               label="Delete"
               icon="ic:outline-delete"
               variant="danger"
@@ -41,14 +41,14 @@
 
           <!-- Other users' reply options -->
           <template v-else>
-            <DropdownMenuItem
+            <UIDropdownMenuItem
               label="Report"
               icon="ic:outline-flag"
               variant="danger"
               @click="handleReport"
             />
           </template>
-        </DropdownMenu>
+        </UIDropdownMenu>
       </div>
 
       <!-- Reply Content -->

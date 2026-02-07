@@ -399,15 +399,15 @@
                 />
                 <span>{{ recipe.counter?.likes || 0 }}</span>
               </div>
-              <DropdownMenu class="h-7" align="right">
+              <UIDropdownMenu class="h-7" align="right">
                 <template v-if="isOwner">
-                  <DropdownMenuItem
+                  <UIDropdownMenuItem
                     label="Edit Recipe"
                     icon="ic:outline-edit"
                     variant="primary"
                     @click="toggleEditMode"
                   />
-                  <DropdownMenuItem
+                  <UIDropdownMenuItem
                     label="Delete Recipe"
                     icon="ic:outline-delete"
                     variant="danger"
@@ -415,7 +415,7 @@
                   />
                 </template>
                 <template v-else>
-                  <DropdownMenuItem
+                  <UIDropdownMenuItem
                     :label="recipe.is_saved ? 'Unbookmark' : 'Bookmark'"
                     :icon="
                       recipe.is_saved
@@ -426,7 +426,7 @@
                     @click="saveRecipeToggle"
                   />
                 </template>
-              </DropdownMenu>
+              </UIDropdownMenu>
             </div>
           </div>
         </div>
