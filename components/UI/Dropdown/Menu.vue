@@ -1,17 +1,13 @@
 <template>
-  <div class="relative" ref="dropdownRef">
-    <!-- Trigger button -->
+  <div class="relative group" ref="dropdownRef">
     <button
       @click="toggleDropdown"
-      :class="[
-        'cursor-pointer h-7 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
-        buttonClass
-      ]"
+      :class="['cursor-pointer h-7  transition-colors', buttonClass]"
       :aria-label="ariaLabel"
     >
       <Icon
         name="ic:round-more-vert"
-        class="size-7 text-gray-600 dark:text-gray-300"
+        class="size-7 group-hover:text-blue-600 dark:group-hover:text-blue-300"
       />
     </button>
 
@@ -32,7 +28,7 @@
           align === 'right' ? 'right-0' : 'left-0'
         ]"
       >
-        <div class="py-1" role="menu">
+        <div class="" role="menu">
           <slot />
         </div>
       </div>
