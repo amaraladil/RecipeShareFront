@@ -416,7 +416,7 @@
                 </template>
                 <template v-else>
                   <UIDropdownMenuItem
-                    :label="recipe.is_saved ? 'Unbookmark' : 'Bookmark'"
+                    :label="recipe.is_saved ? 'Bookmarked' : 'Bookmark'"
                     :icon="
                       recipe.is_saved
                         ? 'ic:outline-bookmark'
