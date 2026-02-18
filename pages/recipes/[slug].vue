@@ -312,7 +312,7 @@
         ogTitle: pageTitle(recipe.value.title),
         ogDescription: recipe.value.description,
         ogImage: recipe.value.image || '[og:image]',
-        ogUrl: route.fullPath,
+        ogUrl: useRuntimeConfig().public.baseUrl + route.path,
         twitterTitle: pageTitle(recipe.value.title),
         twitterDescription: recipe.value.description,
         twitterImage: recipe.value.image || '[twitter:image]',

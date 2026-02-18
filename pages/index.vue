@@ -18,11 +18,11 @@
     description: 'Discover the latest recipes shared by our community.',
     ogTitle: pageTitle('Recent Recipes'),
     ogDescription: 'Explore the newest recipes from our users.',
-    ogImage: '/images/og-image.jpg',
+    ogImage: '/LogoRecipeShare.png',
     ogUrl: useRuntimeConfig().public.baseUrl + '/',
     twitterTitle: pageTitle('Recent Recipes'),
     twitterDescription: 'Check out the latest recipes shared by our community.',
-    twitterImage: '/images/twitter-image.jpg',
+    twitterImage: '/LogoRecipeShare.png',
     twitterCard: 'summary_large_image'
   })
 </script>

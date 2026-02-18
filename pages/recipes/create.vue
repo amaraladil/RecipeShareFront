@@ -150,8 +150,13 @@
   useSeoMeta({
     title: pageTitle('Create Recipe'),
     description: 'Create and share your own recipes',
+    ogUrl: useRuntimeConfig().public.baseUrl + useRoute().path,
     ogTitle: pageTitle('Create Recipe'),
-    ogDescription: 'Create and share your own recipes'
+    ogImage: '/LogoRecipeShare.png',
+    ogDescription: 'Create and share your own recipes',
+    twitterTitle: pageTitle('Create Recipe'),
+    twitterDescription: 'Create and share your own recipes',
+    twitterImage: '/LogoRecipeShare.png'
   })
 </script>
 
