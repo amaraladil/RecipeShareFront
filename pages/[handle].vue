@@ -49,6 +49,13 @@
     }
   )
 
+  if (error.value) {
+    throw createError({
+      statusCode: 404,
+      message: "Couldn't find this page"
+    })
+  }
+
   const refreshProfile = async (updatedUserData?: any) => {
     if (updatedUserData) {
       // Use the fresh data from the server
