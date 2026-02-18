@@ -304,22 +304,33 @@
     observer.value = null
   })
 
-  watchEffect(() => {
-    if (recipe.value) {
-      useSeoMeta({
-        title: pageTitle(recipe.value.title),
-        description: recipe.value.description,
-        ogTitle: pageTitle(recipe.value.title),
-        ogDescription: recipe.value.description,
-        ogImage: recipe.value.image || '[og:image]',
-        ogUrl: useRuntimeConfig().public.baseUrl + route.path,
-        twitterTitle: pageTitle(recipe.value.title),
-        twitterDescription: recipe.value.description,
-        twitterImage: recipe.value.image || '[twitter:image]',
-        twitterCard: 'summary_large_image'
-      })
-    }
-  })
+  if (recipe.value) {
+    useSeoMeta({
+      title: pageTitle(recipe.value.title),
+      description: recipe.value.description,
+      ogTitle: pageTitle(recipe.value.title),
+      ogDescription: recipe.value.description,
+      ogImage: recipe.value.image || '[og:image]',
+      ogUrl: useRuntimeConfig().public.baseUrl + route.path,
+      twitterTitle: pageTitle(recipe.value.title),
+      twitterDescription: recipe.value.description,
+      twitterImage: recipe.value.image || '[twitter:image]',
+      twitterCard: 'summary_large_image'
+    })
+  } else {
+    useSeoMeta({
+      title: pageTitle('Recipe Not Found'),
+      description: 'The recipe you are looking for does not exist.',
+      ogTitle: pageTitle('Recipe Not Found'),
+      ogDescription: 'The recipe you are looking for does not exist.',
+      ogImage: '[og:image]',
+      ogUrl: useRuntimeConfig().public.baseUrl + route.path,
+      twitterTitle: pageTitle('Recipe Not Found'),
+      twitterDescription: 'The recipe you are looking for does not exist.',
+      twitterImage: '[twitter:image]',
+      twitterCard: 'summary_large_image'
+    })
+  }
 </script>
 
 <template>
