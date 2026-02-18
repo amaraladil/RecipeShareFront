@@ -573,19 +573,7 @@
         ref="commentsSection"
         class="py-8 transition-all duration-300 ease-in-out"
       >
-        <Suspense>
-          <template #default>
-            <LazyRecipeComments :recipe-id="recipe.id" />
-          </template>
-          <template #fallback>
-            <div class="flex justify-center items-center py-8">
-              <div
-                class="animate-spin rounded-full size-8 border-b-2 border-blue-600"
-              ></div>
-              <span class="ml-3 text-gray-600">Loading comments...</span>
-            </div>
-          </template>
-        </Suspense>
+        <RecipeComments :recipe-id="recipe.id" />
       </div>
     </div>
 
