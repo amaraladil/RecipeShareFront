@@ -8,7 +8,7 @@
   const fetchApi = useApi()
   const { openAuth } = useAuthModal()
 
-  const slug = computed(() => route.params.slug as string)
+  const slug = route.params.slug as string
 
   // Recipe data
   const recipe = ref<any>(null)
