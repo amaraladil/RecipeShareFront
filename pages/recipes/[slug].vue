@@ -353,7 +353,7 @@
             />
           </div>
 
-          <div class="flex gap-2 justify-center items-start">
+          <div class="flex gap-2 justify-center items-center">
             <!-- Edit Mode Buttons -->
             <template v-if="isEditMode">
               <button
