@@ -375,7 +375,7 @@
                 <Icon name="ic:outline-edit-note" />
                 {{ isSaving ? 'Saving...' : 'Save' }}
               </button>
-              <icon
+              <Icon
                 name="ic:outline-cancel"
                 @click="toggleEditMode"
                 :disabled="isSaving"
