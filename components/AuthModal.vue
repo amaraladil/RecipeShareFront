@@ -295,7 +295,7 @@
       const { error: providerError } = await $supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.href}`
+          redirectTo: useRuntimeConfig().public.baseUrl + useRoute().path
         }
       })
 
