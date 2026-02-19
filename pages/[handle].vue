@@ -219,18 +219,22 @@
         <UserAvatar
           :avatar-url="profile.avatar_url"
           :alt="profile.display_name"
-          class="sm:size-53 size-48"
+          class="sm:size-53 size-32"
         />
         <div class="mt-1">
           <button v-if="isOwnProfile" class="btnEdit" @click="openModal">
             Edit Profile
           </button>
           <div v-else class="py-5"></div>
-          <div class="text-2xl font-bold">@{{ profile.display_name }}</div>
-          <div class="text-lg text-gray-700 dark:text-gray-300">
+          <div class="text-lg sm:text-2xl font-bold">
+            @{{ profile.display_name }}
+          </div>
+          <div class="text-base sm:text-lg text-gray-700 dark:text-gray-300">
             {{ profile.nick_name }}
           </div>
-          <div class="text-gray-500 dark:text-gray-400 whitespace-pre-line">
+          <div
+            class="text-sm sm:text-base text-gray-500 dark:text-gray-400 whitespace-pre-line"
+          >
             {{ profile.bio }}
           </div>
         </div>
