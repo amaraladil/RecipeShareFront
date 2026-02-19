@@ -221,7 +221,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
+    <main ref="mainContent" class="flex-1 overflow-y-auto">
       <!-- Mobile backdrop -->
       <div
         v-if="sidebarExpanded && isMobile"
@@ -256,16 +256,15 @@
     removeAll,
     clearNonInfo
   } = useNotification()
-  // removeAll()
-  // warningNotif('Your session will expire in 5 minutes')
-  // infoNotif('New features have been added! Check them out.')
-  // successNotif('Recipe saved successfully!')
-  // errorNotif('Critical error - please contact support', 10000)
 
   // Sidebar state
   const sidebarExpanded = ref(false)
   const isMobile = ref(false)
   const userLoading = ref(true)
+
+  // Main content ref for scroll control
+  const mainContent = ref<HTMLElement | null>(null)
+  const route = useRoute()
 
   // Check if mobile
   const checkMobile = () => {
@@ -291,6 +290,16 @@
     user.value = null
     location.reload()
   }
+
+  // Scroll to top on route change
+  watch(
+    () => route.path,
+    () => {
+      if (mainContent.value) {
+        mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  )
 
   onMounted(async () => {
     checkMobile()
