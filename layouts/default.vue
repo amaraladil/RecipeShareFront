@@ -296,7 +296,7 @@
     () => route.path,
     () => {
       if (mainContent.value) {
-        mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
+        mainContent.value.scrollTo({ top: 0 })
       }
     }
   )
