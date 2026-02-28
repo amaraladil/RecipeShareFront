@@ -17,6 +17,10 @@
   const isSaving = ref(false)
   const errorMessage = ref('')
 
+  // Delete modal state
+  const showDeleteModal = ref(false)
+  const isDeleting = ref(false)
+
   // Comments loading
   const shouldLoadComments = ref(false)
   const commentsTrigger = ref<HTMLElement>()
@@ -219,22 +223,23 @@
     }
   }
 
+  const openDeleteModal = () => {
+    showDeleteModal.value = true
+  }
+
   // Delete recipe
   const deleteRecipe = async () => {
-    if (
-      !confirm(
-        'Are you sure you want to delete this recipe? This action cannot be undone.'
-      )
-    ) {
-      return
-    }
-
     try {
+      isDeleting.value = true
       await fetchApi(`/recipes/${slug}`, { method: 'DELETE' })
+      successNotif('Recipe deleted successfully')
       router.push('/')
     } catch (err) {
       console.error('Error deleting recipe:', err)
-      errorMessage.value = 'Failed to delete recipe'
+      errorNotif('Failed to delete recipe')
+    } finally {
+      isDeleting.value = false
+      showDeleteModal.value = false
     }
   }
 
@@ -422,7 +427,7 @@
                     label="Delete Recipe"
                     icon="ic:outline-delete"
                     variant="danger"
-                    @click="deleteRecipe"
+                    @click="openDeleteModal"
                   />
                 </template>
                 <template v-else>
@@ -585,6 +590,15 @@
       </NuxtLink>
     </div>
   </div>
+
+  <RecipeDeleteModal
+    v-if="showDeleteModal"
+    :is-open="showDeleteModal"
+    :recipe-title="recipe?.title || ''"
+    :loading="isDeleting"
+    @confirm="deleteRecipe"
+    @cancel="showDeleteModal = false"
+  />
 </template>
 
 <style scoped>
