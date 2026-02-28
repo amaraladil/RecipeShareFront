@@ -6,7 +6,6 @@ export async function fetchCurrentUserProfile() {
   const { cacheAuthor } = useAuthorCache()
   try {
     const data = await api('/users/me', { method: 'GET' })
-    console.log('Fetched user profile:', data)
     profileState.value = data
     cacheAuthor(data.id, data)
     return profileState.value
