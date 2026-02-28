@@ -8,7 +8,7 @@
       <!-- Close button -->
       <button
         @click="closeAuth"
-        class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        class="absolute flex items-center justify-center top-4 right-4 size-7 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
       >
         <Icon
           name="heroicons:x-mark"

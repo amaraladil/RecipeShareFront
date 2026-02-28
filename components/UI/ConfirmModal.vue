@@ -29,11 +29,21 @@
             <div
               v-if="isOpen"
               ref="modalRef"
-              class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+              class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6"
               role="dialog"
               aria-modal="true"
               :aria-labelledby="titleId"
             >
+              <button
+                @click="handleCancel"
+                class="absolute flex items-center justify-center top-4 right-4 size-7 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                ref="cancelButtonRef"
+              >
+                <Icon
+                  name="heroicons:x-mark"
+                  class="size-5 text-gray-500 dark:text-gray-400"
+                />
+              </button>
               <!-- Icon -->
               <div
                 v-if="icon"
@@ -62,14 +72,6 @@
 
               <!-- Actions -->
               <div class="flex gap-3">
-                <button
-                  @click="handleCancel"
-                  type="button"
-                  class="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
-                  ref="cancelButtonRef"
-                >
-                  {{ cancelText }}
-                </button>
                 <button
                   @click="handleConfirm"
                   type="button"
