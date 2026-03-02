@@ -3,18 +3,18 @@
     <!-- Sidebar -->
     <aside
       :class="[
-        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out relative z-40',
-        sidebarExpanded ? 'w-64' : 'w-[73px]'
+        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 ease-in-out relative z-40',
+        sidebarExpanded ? 'w-56' : 'w-[60px]'
       ]"
       @mouseenter="handleSidebarHover(true)"
       @mouseleave="handleSidebarHover(false)"
     >
       <div class="flex flex-col h-full p-3">
         <div :class="['flex items-center ml-2']">
-          <img class="size-8 mr-2" src="/LogoRecipeShare.png" />
+          <img class="size-7" src="/LogoRecipeShare.png" />
           <h1
             :class="[
-              'text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-200 pb-2',
+              'ml-2 text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-opacity duration-300  pb-2',
               sidebarExpanded
                 ? 'opacity-100 w-auto'
                 : 'opacity-0 w-0 overflow-hidden'
@@ -28,7 +28,7 @@
         <nav class="flex-1 space-y-2">
           <button
             @click="toggleSidebar"
-            class="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 cursor-pointer"
+            class="px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0 cursor-pointer"
           >
             <Icon
               name="heroicons:bars-3"
@@ -39,7 +39,7 @@
             <!-- Home -->
             <NuxtLink
               to="/"
-              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              class="flex items-center px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <Icon name="heroicons:home" class="size-5 flex-shrink-0" />
               <span
@@ -56,7 +56,7 @@
 
             <NuxtLink
               to="/explore"
-              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              class="flex items-center px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <Icon name="heroicons:compass" class="size-5 flex-shrink-0" />
               <span
@@ -75,7 +75,7 @@
               v-if="user"
               to="/recipes/create"
               title="Create a new recipe"
-              class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              class="flex items-center px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
             >
               <Icon
                 name="heroicons:pencil-square"
@@ -96,7 +96,7 @@
             <div class="relative">
               <NuxtLink
                 to="/messages"
-                class="flex items-center px-3 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                class="flex items-center px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <div class="relative">
                   <Icon
@@ -139,7 +139,7 @@
             <button
               v-if="!user"
               @click="isOpenAuth = true"
-              class="flex items-center w-full px-3 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group cursor-pointer"
+              class="flex items-center w-full px-2 py-3 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group cursor-pointer"
             >
               <Icon
                 name="heroicons:arrow-right-on-rectangle"
@@ -163,12 +163,12 @@
                 v-if="profile"
                 :to="`/@${profile.display_name}`"
                 title="View Profile"
-                class="flex items-center w-full px-2 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                class="flex items-center w-full px-1 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
               >
                 <UserAvatar
                   :avatar-url="profile.avatar_url"
                   :alt="profile.display_name"
-                  class="w-8 h-8 z-10"
+                  class="size-7 z-10"
                 />
                 <div
                   :class="[
@@ -190,7 +190,7 @@
               <!-- Logout button -->
               <button
                 @click="logout"
-                class="flex items-center w-full px-3 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group cursor-pointer"
+                class="flex items-center w-full px-2 py-3 mt-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors group cursor-pointer"
               >
                 <Icon
                   name="heroicons:arrow-left-on-rectangle"
